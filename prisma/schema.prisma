@@ -1,73 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-enum BookingStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model User {
-  id           String   @id @default(uuid())
-  name         String?
-  email        String   @unique
-  passwordHash String?
-  phone        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  reviews              Review[]
-  newsletters          NewsletterEntry[]
-  sessions             Session[]
+  id                   String                @id @default(uuid())
+  name                 String?
+  email                String                @unique
+  passwordHash         String?
+  phone                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
   authProviders        AuthProvider[]
   consultationBookings ConsultationBooking[]
+  newsletters          NewsletterEntry[]
+  reviews              Review[]
+  sessions             Session[]
 }
 
 model AuthProvider {
-  id String @id @default(uuid())
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
+  id             String    @id @default(uuid())
+  userId         String
   provider       String
   providerUserId String
   providerEmail  String?
   providerName   String?
   providerAvatar String?
-
-  accessToken  String?
-  refreshToken String?
-  expiresAt    DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  accessToken    String?
+  refreshToken   String?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerUserId])
 }
 
 model Admin {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String?
-  email        String   @unique
+  email        String    @unique
   passwordHash String
-  role         String   @default("editor")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  createdCars Car[]     @relation("CreatedBy")
-  updatedCars Car[]     @relation("UpdatedBy")
-  sessions    Session[]
+  role         String    @default("editor")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdCars  Car[]     @relation("CreatedBy")
+  updatedCars  Car[]     @relation("UpdatedBy")
+  sessions     Session[]
 }
 
 model Car {
-  id             String   @id @default(uuid())
+  id             String         @id @default(uuid())
   brand          String
   model          String
   price          Float
@@ -75,16 +63,14 @@ model Car {
   mileage        Int
   images         String[]
   specifications Json
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
-
-  createdBy   Admin?  @relation("CreatedBy", fields: [createdById], references: [id])
-  createdById String?
-  updatedBy   Admin?  @relation("UpdatedBy", fields: [updatedById], references: [id])
-  updatedById String?
-
-  availability Availability[]
-  reviews      Review[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now())
+  createdById    String?
+  updatedById    String?
+  availability   Availability[]
+  createdBy      Admin?         @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
+  reviews        Review[]
 }
 
 model Branch {
@@ -99,69 +85,68 @@ model Branch {
 
 model Availability {
   id        String   @id @default(uuid())
-  car       Car      @relation(fields: [carId], references: [id])
   carId     String
-  branch    Branch   @relation(fields: [branchId], references: [id])
   branchId  String
   quantity  Int
   updatedAt DateTime @default(now())
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  car       Car      @relation(fields: [carId], references: [id])
 }
 
 model Review {
   id         String   @id @default(uuid())
-  car        Car      @relation(fields: [carId], references: [id])
   carId      String
-  user       User     @relation(fields: [userId], references: [id])
   userId     String
   rating     Int
   comment    String
   adminReply String?
   createdAt  DateTime @default(now())
+  car        Car      @relation(fields: [carId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model NewsletterEntry {
   id        String   @id @default(uuid())
-  user      User?    @relation(fields: [userId], references: [id])
   userId    String?
   email     String
   message   String?
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model ConsultationBooking {
-  id String @id @default(uuid())
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  fullName String
-  email    String
-  phone    String
-
+  id               String        @id @default(uuid())
+  userId           String?
+  fullName         String
+  email            String
+  phone            String
   vehicleType      String
   consultationType String
-
-  preferredDate DateTime
-  preferredTime String
-
-  message String?
-
-  status       BookingStatus @default(PENDING)
-  adminMessage String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  preferredDate    DateTime
+  preferredTime    String
+  message          String?
+  status           BookingStatus @default(PENDING)
+  adminMessage     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  user             User?         @relation(fields: [userId], references: [id])
 }
 
 model Session {
   id           String   @id @default(uuid())
-  user         User?    @relation(fields: [userId], references: [id])
   userId       String?
-  admin        Admin?   @relation(fields: [adminId], references: [id])
   adminId      String?
   refreshToken String
   userAgent    String?
   ipAddress    String?
   createdAt    DateTime @default(now())
   expiresAt    DateTime
+  admin        Admin?   @relation(fields: [adminId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }

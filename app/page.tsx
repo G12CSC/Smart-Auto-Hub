@@ -6,6 +6,10 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Button } from "../components/ui/button"
 import { ChevronRight, Search, Calendar, MessageSquare } from "lucide-react"
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {useSession} from "next-auth/react";
+
+
 
 interface Vehicle {
   id: number
@@ -52,11 +56,25 @@ const featuredVehicles: Vehicle[] = [
 ]
 
 export default function Home() {
-  const [email, setEmail] = useState<string>("")
+
+
+    const [email, setEmail] = useState<string>("")
+    const {data:session} = useSession();
+
+
+
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
+
+
+        {/* SHOW LOGGED USER */}
+        {session && (
+            <div className="text-center py-4 bg-green-100 text-green-700">
+                Welcome, <b>{session.user?.name || session.user?.email}</b> 👋
+            </div>
+        )}
 
       {/* Hero Section */}
       <section
