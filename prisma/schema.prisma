@@ -107,11 +107,15 @@ model Review {
 
 model NewsletterEntry {
   id        String   @id @default(uuid())
-  userId    String?
-  email     String
+  email     String   @unique
   message   String?
+  status    String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
+  source    String   @default("GUEST") // USER or GUEST
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+
+  // Optional link to User table
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 }
 
 model ConsultationBooking {

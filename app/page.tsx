@@ -8,7 +8,7 @@ import { Button } from "../components/ui/button"
 import { ChevronRight, Search, Calendar, MessageSquare } from "lucide-react"
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 import {useSession} from "next-auth/react";
-
+import {handleSubscribe} from "@/app/APITriggers/handleSubscribe";
 
 
 interface Vehicle {
@@ -218,7 +218,7 @@ export default function Home() {
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 px-4 py-3 rounded bg-white/20 border border-white/30 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white"
             />
-            <Button variant="secondary" onClick={() => setEmail("")}>
+            <Button variant="secondary" onClick={()=>handleSubscribe(email,session?.user?.id)}>
               Subscribe
             </Button>
           </div>

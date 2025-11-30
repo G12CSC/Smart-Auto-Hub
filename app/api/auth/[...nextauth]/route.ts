@@ -11,6 +11,7 @@ export const authOptions = {
     adapter: PrismaAdapter(prisma),
 
     providers: [
+
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -50,6 +51,7 @@ export const authOptions = {
     session: { strategy: "jwt" },
 
     callbacks: {
+
         async jwt({ token, user }) {
             if (user) token.id = user.id;
             return token;
