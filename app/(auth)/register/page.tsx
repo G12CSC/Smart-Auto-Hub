@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { HiMail } from "react-icons/hi";
 
 export default function RegisterPage() {
     const router = useRouter();
 
     const [email, setEmail] = useState("");
-    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
+    const [phone, setPhone] = useState("");
+    const [countryCode, setCountryCode] = useState("+94");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
@@ -21,7 +22,12 @@ export default function RegisterPage() {
 
         const res = await fetch("/api/auth/register", {
             method: "POST",
-            body: JSON.stringify({ email, name, password }),
+            body: JSON.stringify({
+                email,
+                username,
+                password,
+                phone: `${countryCode}${phone}`,
+            }),
         });
 
         setLoading(false);
@@ -35,7 +41,7 @@ export default function RegisterPage() {
     };
 
     const loginWithGoogle = () => {
-        window.location.href = "/api/auth/google";   // <-- YOU WILL IMPLEMENT THIS ROUTE
+        window.location.href = "/api/auth/google";
     };
 
     return (
@@ -46,7 +52,7 @@ export default function RegisterPage() {
                     Create Account
                 </h1>
 
-                {/* GOOGLE LOGIN */}
+                {/* GOOGLE */}
                 <button
                     onClick={loginWithGoogle}
                     className="w-full flex items-center justify-center gap-3 border py-3 rounded-xl hover:bg-gray-50 transition font-medium"
@@ -62,15 +68,16 @@ export default function RegisterPage() {
                     <div className="flex-1 h-px bg-gray-300" />
                 </div>
 
-                {/* EMAIL REGISTER FORM */}
+                {/* FORM */}
                 <form className="space-y-4" onSubmit={handleRegister}>
+
                     <div>
-                        <label className="font-medium">Full Name</label>
+                        <label className="font-medium">Username</label>
                         <input
                             type="text"
-                            placeholder="John Doe"
+                            placeholder="johndoe123"
                             className="w-full border rounded-xl px-4 py-2.5 mt-1"
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
 
@@ -82,6 +89,31 @@ export default function RegisterPage() {
                             className="w-full border rounded-xl px-4 py-2.5 mt-1"
                             onChange={(e) => setEmail(e.target.value)}
                         />
+                    </div>
+
+                    <div>
+                        <label className="font-medium">Phone Number</label>
+
+                        <div className="flex gap-2">
+                            <select
+                                onChange={(e) => setCountryCode(e.target.value)}
+                                className="border rounded-xl px-3 py-2"
+                                defaultValue="+94"
+                            >
+                                <option value="+94">🇱🇰 +94</option>
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+61">🇦🇺 +61</option>
+                            </select>
+
+                            <input
+                                type="number"
+                                placeholder="7xxxxxxx"
+                                className="flex-1 border rounded-xl px-4 py-2"
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -111,8 +143,8 @@ export default function RegisterPage() {
                         onClick={() => router.push("/login")}
                         className="text-blue-600 cursor-pointer font-medium pl-1 hover:underline"
                     >
-            Login
-          </span>
+                        Login
+                    </span>
                 </p>
             </div>
         </main>

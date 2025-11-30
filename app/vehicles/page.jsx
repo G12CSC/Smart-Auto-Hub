@@ -76,12 +76,15 @@ const vehicles = [
 ]
 
 export default function VehiclesPage() {
+
+
   const [sortBy, setSortBy] = useState("newest")
   const [filterAvailability, setFilterAvailability] = useState({
     Available: true,
     Shipped: true,
     "Not Available": true,
   })
+
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(30000000)
 

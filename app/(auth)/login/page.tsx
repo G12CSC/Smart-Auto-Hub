@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook } from "react-icons/fa";
 
 export default function LoginPage() {
 
     const router = useRouter();
-    const [email, setEmail] = useState("");
+
+    const [email, setEmail]     = useState("");
     const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [loading, setLoading]   = useState(false);
+    const [error, setError]       = useState("");
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
@@ -73,12 +76,27 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                <button
-                    onClick={() => signIn("google")}
-                    className="w-full mt-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition"
-                >
-                    Continue with Google
-                </button>
+                {/* SOCIAL LOGIN BUTTONS SECTION */}
+
+                <div className="mt-6 space-y-2">
+
+                    <button
+                        onClick={() => signIn("google")}
+                        className="w-full flex items-center justify-center gap-3 py-2 rounded-lg border hover:bg-gray-200 transition"
+                    >
+                        <FcGoogle size={22}/>
+                        Continue with Google
+                    </button>
+
+                    <button
+                        onClick={() => signIn("facebook")}
+                        className="w-full flex items-center justify-center gap-3 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-600 transition"
+                    >
+                        <FaFacebook size={22} />
+                        Continue with Facebook
+                    </button>
+
+                </div>
 
             </div>
         </main>
