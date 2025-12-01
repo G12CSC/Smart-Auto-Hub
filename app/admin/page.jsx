@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Filter, MoreVertical, Eye, Edit, Trash2, Users, Car, Calendar, Mail, TrendingUp, MapPin, CheckCircle, XCircle, Clock, FileText } from 'lucide-react'
+import NewsletterTable from "./NewsletterTable";
 
 const stats = [
   { 
@@ -407,35 +408,8 @@ export default function AdminPage() {
                 </Button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="px-4 py-3 text-left font-semibold text-sm">Email Address</th>
-                      <th className="px-4 py-3 text-left font-semibold text-sm">Subscribed Date</th>
-                      <th className="px-4 py-3 text-left font-semibold text-sm">Status</th>
-                      <th className="px-4 py-3 text-left font-semibold text-sm">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {newsletterSubscribers.map((subscriber) => (
-                      <tr key={subscriber.id} className="border-b border-border hover:bg-secondary/30 transition">
-                        <td className="px-4 py-4">{subscriber.email}</td>
-                        <td className="px-4 py-4 text-sm text-muted-foreground">{subscriber.subscribedDate}</td>
-                        <td className="px-4 py-4">
-                          <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-700 text-xs font-medium">
-                            {subscriber.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <Button size="sm" variant="ghost">
-                            <Trash2 size={14} />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                  <NewsletterTable/>
               </div>
             </div>
           )}

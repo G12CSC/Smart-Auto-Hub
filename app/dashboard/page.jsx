@@ -145,6 +145,7 @@ export default function DashboardPage() {
               <LogOut size={18} className="mr-2" />
               Logout
             </Button>
+
           </div>
 
           {/* Main Content Area */}

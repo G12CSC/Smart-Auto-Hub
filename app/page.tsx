@@ -6,6 +6,10 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Button } from "../components/ui/button"
 import { ChevronRight, Search, Calendar, MessageSquare } from "lucide-react"
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {useSession} from "next-auth/react";
+import {handleSubscribe} from "@/app/APITriggers/handleSubscribe";
+
 
 interface Vehicle {
   id: number
@@ -52,11 +56,23 @@ const featuredVehicles: Vehicle[] = [
 ]
 
 export default function Home() {
-  const [email, setEmail] = useState<string>("");
+
+
+    const [email, setEmail] = useState<string>("")
+    const {data:session} = useSession();
+
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
+
+
+        {/* SHOW LOGGED USER */}
+        {session && (
+            <div className="text-center py-4 bg-green-100 text-green-700">
+                Welcome, <b>{session.user?.name || session.user?.email}</b> 👋
+            </div>
+        )}
 
       {/* Hero Section */}
       <section
@@ -200,7 +216,7 @@ export default function Home() {
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 px-4 py-3 rounded bg-white/20 border border-white/30 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white"
             />
-            <Button variant="secondary" onClick={() => setEmail("")}>
+            <Button variant="secondary" onClick={()=>handleSubscribe(email,session?.user?.id)}>
               Subscribe
             </Button>
           </div>

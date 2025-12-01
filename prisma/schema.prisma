@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                   String                @id @default(uuid())
+  name                 String?
+  email                String                @unique
+  passwordHash         String?
+  phone                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  authProviders        AuthProvider[]
+  consultationBookings ConsultationBooking[]
+  newsletters          NewsletterEntry[]
+  reviews              Review[]
+  sessions             Session[]
+}
+
+model AuthProvider {
+  id             String    @id @default(uuid())
+  userId         String
+  provider       String
+  providerUserId String
+  providerEmail  String?
+  providerName   String?
+  providerAvatar String?
+  accessToken    String?
+  refreshToken   String?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerUserId])
+}
+
+model Admin {
+  id           String    @id @default(uuid())
+  name         String?
+  email        String    @unique
+  passwordHash String
+  role         String    @default("editor")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdCars  Car[]     @relation("CreatedBy")
+  updatedCars  Car[]     @relation("UpdatedBy")
+  sessions     Session[]
+}
+
+model Car {
+  id             String         @id @default(uuid())
+  brand          String
+  model          String
+  price          Float
+  year           Int
+  mileage        Int
+  images         String[]
+  specifications Json
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now())
+  createdById    String?
+  updatedById    String?
+  availability   Availability[]
+  createdBy      Admin?         @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
+  reviews        Review[]
+}
+
+model Branch {
+  id            String         @id @default(uuid())
+  name          String
+  location      String
+  contactNumber String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now())
+  availability  Availability[]
+}
+
+model Availability {
+  id        String   @id @default(uuid())
+  carId     String
+  branchId  String
+  quantity  Int
+  updatedAt DateTime @default(now())
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  car       Car      @relation(fields: [carId], references: [id])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  carId      String
+  userId     String
+  rating     Int
+  comment    String
+  adminReply String?
+  createdAt  DateTime @default(now())
+  car        Car      @relation(fields: [carId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model NewsletterEntry {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  message   String?
+  status    String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
+  source    String   @default("GUEST") // USER or GUEST
+  createdAt DateTime @default(now())
+
+  // Optional link to User table
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}
+
+model ConsultationBooking {
+  id               String        @id @default(uuid())
+  userId           String?
+  fullName         String
+  email            String
+  phone            String
+  vehicleType      String
+  consultationType String
+  preferredDate    DateTime
+  preferredTime    String
+  message          String?
+  status           BookingStatus @default(PENDING)
+  adminMessage     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  user             User?         @relation(fields: [userId], references: [id])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String?
+  adminId      String?
+  refreshToken String
+  userAgent    String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  admin        Admin?   @relation(fields: [adminId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
