@@ -8,6 +8,14 @@ import Image from "next/image"
 import { headerMenuData } from "@/constants/data"
 import { usePathname } from "next/navigation"
 import path from "path"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -17,7 +25,16 @@ export function Header() {
   //MOCK AUTH
   const isLoggedIn = true;
   const userRole = "admin";
+  const isAdmin = false;
   const userName = "Kavindu";
+
+  const getInitials = (name: string) => {
+    return name 
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+  }
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
