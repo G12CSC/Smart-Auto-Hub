@@ -9,6 +9,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
+      //dfsdfsdfsfs
       {/* Hero Section */}
       <section
         className="relative h-80 bg-gradient-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center"
