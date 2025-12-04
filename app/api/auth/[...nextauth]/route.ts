@@ -7,34 +7,29 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
-
     adapter: PrismaAdapter(prisma),
 
     providers: [
-
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                email: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" }
+                email: {},
+                password: {},
             },
-
             async authorize(credentials) {
-
                 if (!credentials?.email || !credentials?.password) return null;
 
                 const user = await prisma.user.findUnique({
-                    where: { email: credentials.email }
+                    where: { email: credentials.email },
                 });
 
                 if (!user) return null;
 
-                const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-
-                if (!isValid) return null;
+                const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+                if (!ok) return null;
 
                 return user;
-            }
+            },
         }),
 
         GoogleProvider({
@@ -51,19 +46,28 @@ export const authOptions = {
     session: { strategy: "jwt" },
 
     callbacks: {
-
         async jwt({ token, user }) {
-            if (user) token.id = user.id;
+            if (user) {
+                token.id = user.id;
+                //token.role = user.role; // ⭐ ADD ROLE
+            }
             return token;
         },
 
         async session({ session, token }) {
-            if (session.user) session.user.id = token.id;
+            session.user.id = token.id;
+            //session.user.role = token.role; // ⭐ ADD ROLE
             return session;
-        }
-    },
+        },
 
-    secret: process.env.NEXTAUTH_SECRET
+        async redirect({ url,baseUrl }) {
+            // Always redirect to root after login
+            return process.env.BASEURL;
+        },
+    },
+    debug: true,
+
+    secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

@@ -12,33 +12,36 @@ model User {
   id                   String                @id @default(uuid())
   name                 String?
   email                String                @unique
+  emailVerified        DateTime?
   passwordHash         String?
+  image                String?
   phone                String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
-  authProviders        AuthProvider[]
+  authProviders        Account[]
   consultationBookings ConsultationBooking[]
   newsletters          NewsletterEntry[]
   reviews              Review[]
   sessions             Session[]
 }
 
-model AuthProvider {
-  id             String    @id @default(uuid())
-  userId         String
-  provider       String
-  providerUserId String
-  providerEmail  String?
-  providerName   String?
-  providerAvatar String?
-  accessToken    String?
-  refreshToken   String?
-  expiresAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User      @relation(fields: [userId], references: [id])
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
-  @@unique([provider, providerUserId])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
 }
 
 model Admin {
