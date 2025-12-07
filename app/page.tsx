@@ -232,11 +232,64 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="bg-gradient-to-br from-secondary/10 via-primary/5 to-accent/10 py-20 mb-24">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Find your perfect vehicle in three simple steps
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full shadow-lg text-white font-bold text-xl">
+                1
+              </div>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
+                <Search className="text-blue-500" size={40} />
+              </div>
+              <h3 className="font-bold text-2xl mb-4">Search</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Browse our full inventory from all branches with advanced filters.
+              </p>
+            </div>
+
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full shadow-lg text-white font-bold text-xl">
+                2
+              </div>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
+                <MessageSquare className="text-green-500" size={40} />
+              </div>
+              <h3 className="font-bold text-2xl mb-4">Consult</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Book a meeting with our technical specialists for expert advice.
+              </p>
+            </div>
+
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-purple-500 rounded-full shadow-lg text-white font-bold text-xl">
+                3
+              </div>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
+                <Calendar className="text-purple-500" size={40} />
+              </div>
+              <h3 className="font-bold text-2xl mb-4">Book</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Secure your vehicle with an online appointment at your convenience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* YT Reviews */}
       <section className="max-w-7xl mx-auto px-4 mb-24">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-bold mb-2">Video Reviews by Sameera Auto Traders</h2>
+            <h2 className="text-4xl font-bold mb-2">Video Reviews by Sameera Auto Traders</h2>
             <p className="text-muted-foreground text-lg">Watch our detailed car reviews and technical insights</p>
           </div>
           <Button variant="outline" asChild size="lg" className="self-start md:self-auto bg-transparent">
@@ -295,58 +348,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="bg-gradient-to-br from-secondary/10 via-primary/5 to-accent/10 py-20 mb-24">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Find your perfect vehicle in three simple steps
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full shadow-lg text-white font-bold text-xl">
-                1
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <Search className="text-blue-500" size={40} />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Search</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Browse our full inventory from all branches with advanced filters.
-              </p>
-            </div>
-
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full shadow-lg text-white font-bold text-xl">
-                2
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <MessageSquare className="text-green-500" size={40} />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Consult</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Book a meeting with our technical specialists for expert advice.
-              </p>
-            </div>
-
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-purple-500 rounded-full shadow-lg text-white font-bold text-xl">
-                3
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-50 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <Calendar className="text-purple-500" size={40} />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Book</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Secure your vehicle with an online appointment at your convenience.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Customer Reviews */}
       <section className="max-w-7xl mx-auto px-4 mb-16">
