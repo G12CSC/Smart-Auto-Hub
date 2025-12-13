@@ -13,6 +13,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ChatBot from "@/components/ChatBot"
+import { useRouter } from "next/navigation"
 
 
 interface Vehicle {
@@ -96,11 +97,26 @@ const videoReviews = [
   },
 ]
 
-export default function Home() {
+export default function HomePage() {
 
-
+    const router = useRouter()
     const [email, setEmail] = useState<string>("")
     const {data:session} = useSession();
+    const [searchQuery, setSearchQuery] = useState("")
+    const [selectedLocation, setSelectedLocation] = useState("all")
+
+    const handleSearch = () => {
+      const params = new URLSearchParams()
+      if(searchQuery) params.set("search", searchQuery)
+      if(selectedLocation !== "all") params.set("location", selectedLocation)
+      router.push(`/vehicles?${params.toString()}`)
+    }
+
+    const handleKeyPass = (e) => {
+      if(e.key === "Enter") {
+        handleSearch()
+      }
+    }
 
 
   return (
@@ -148,9 +164,14 @@ export default function Home() {
             <input
               type="text"
               placeholder="Search by Make, Model..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPass}
               className="flex-1 px-4 py-3 rounded bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <Select>
+            <Select value={selectedLocation}
+              onValueChange={setSelectedLocation}
+            >
               <SelectTrigger className="flex-1 py-6 px-6 rounded-lg bg-input border-2 border-border text-foreground">
               <SelectValue placeholder="Filter by Location/Branch..." />
               </SelectTrigger>
@@ -160,7 +181,7 @@ export default function Home() {
               <SelectItem value="colombo">Colombo Branch</SelectItem>
               </SelectContent>
             </Select>
-            <Button asChild className="h-13">
+            <Button onClick={handleSearch} className="h-13">
               <Link href="/vehicles">
               <Search size={18} className="mr-2" />
               Search

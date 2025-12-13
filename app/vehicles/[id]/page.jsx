@@ -1,64 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Button } from "@/components/ui/button"
-import { Star, ChevronLeft, MessageSquare } from 'lucide-react'
+import { Star, ChevronLeft, MessageSquare, Loader2 } from 'lucide-react'
 import ChatBot from "@/components/ChatBot"
+import { vehicleAPI } from "../../../lib/api/vehicles"
 
-const vehiclesData = {
-  1: {
-    id: 1,
-    name: "2022 Toyota Prius",
-    price: 17500000,
-    status: "Available",
-    location: "Nugegoda Branch",
-    make: "Toyota",
-    model: "Prius",
-    year: 2022,
-    condition: "Registered",
-    mileage: 25000,
-    transmission: "Automatic",
-    fuelType: "Hybrid",
-    image: "/toyota-prius-2022-front.jpg",
-    description:
-      "Premium hybrid vehicle with excellent fuel efficiency. Recently serviced, no accidents, single owner. Features include cruise control, alloy wheels, and modern infotainment system.",
-    reviews: [
-      { author: "John D.", rating: 5, text: "Excellent vehicle! Very reliable." },
-      { author: "Sarah M.", rating: 4, text: "Great fuel efficiency, highly recommended." },
-    ],
-  },
-  2: {
-    id: 2,
-    name: "2021 Honda Civic",
-    price: 15200000,
-    status: "Available",
-    location: "Nugegoda Branch",
-    make: "Honda",
-    model: "Civic",
-    year: 2021,
-    condition: "Registered",
-    mileage: 35000,
-    transmission: "Manual",
-    fuelType: "Petrol",
-    image: "/honda-civic-2021-red.jpg",
-    description:
-      "Sporty sedan with performance and style. Well-maintained with full service history. Features alloy wheels, ABS, power steering, and modern safety features.",
-    reviews: [
-      { author: "Mike P.", rating: 5, text: "Amazing performance!" },
-      { author: "Lisa R.", rating: 5, text: "Perfect daily driver." },
-    ],
-  },
-}
 
 export default function VehicleDetailsPage({ params }) {
-  const vehicle = vehiclesData[params.id] || vehiclesData["1"]
+  //const vehicle = vehiclesData[params.id] || vehiclesData["1"]
+  const [vehicle, setVehicle] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+
   const [monthlyPayment, setMonthlyPayment] = useState(0)
-  const [loanAmount, setLoanAmount] = useState(vehicle.price)
+  //const [loanAmount, setLoanAmount] = useState(vehicle.price)
+  const [loanAmount, setLoanAmount] = useState(0)
   const [downPayment, setDownPayment] = useState(0)
   const [loanTerm, setLoanTerm] = useState(5)
+
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      setLoading(true)
+      const result = await vehicleAPI.getVehicleById(params.id)
+
+      if(result.success) {
+        setVehicle(result.data)
+        setLoanAmount(result.data.price)
+      } else {
+        setError(result.error)
+      }
+      setLoading(false)
+    }
+
+    fetchVehicle()
+  }, [params.id])
+
 
   const calculatePayment = () => {
     const principal = loanAmount - downPayment
@@ -68,6 +49,36 @@ export default function VehicleDetailsPage({ params }) {
       (principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments))) /
       (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
     setMonthlyPayment(monthlyPaymentCalc)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="w-16 h-16 animate-spin text-primary" /> 
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !vehicle) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 py-32 text-center">
+          <h1 className="text-3xl font-bold mb-4">Vehicle Not Found</h1>
+          <p className="text-muted-foreground mb-8">
+            The vehicle you're looking for doesn't exist or has been removed.
+          </p>
+          <Button asChild>
+            <Link href="/vehicles">Back to Vehicle Listing</Link>
+          </Button>
+        </div>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -115,7 +126,9 @@ export default function VehicleDetailsPage({ params }) {
                   className={`px-4 py-2 rounded-lg font-semibold ${
                     vehicle.status === "Available"
                       ? "bg-green-500/20 text-green-700"
-                      : "bg-yellow-500/20 text-yellow-700"
+                      : vehicle.status === "Shipped" 
+                        ? "bg-yellow-500/20 text-yellow-700"
+                        : "bg-red-500/20 text-red-700"
                   }`}
                 >
                   {vehicle.status}
@@ -141,8 +154,8 @@ export default function VehicleDetailsPage({ params }) {
                   <p className="font-semibold">{vehicle.year}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Condition</p>
-                  <p className="font-semibold">{vehicle.condition}</p>
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="font-semibold">{vehicle.type}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mileage</p>
@@ -161,11 +174,11 @@ export default function VehicleDetailsPage({ params }) {
 
             {/* Action Buttons */}
             <div className="flex gap-4">
-              <Button className="flex-1 h-12" size="lg">
-                Book Appointment
+              <Button asChild className="flex-1 h-12" size="lg">
+                <Link href="/consultation">Book an Appointment</Link>
               </Button>
-              <Button variant="outline" className="flex-1 h-12 bg-transparent" size="lg">
-                Book Technical Consultation
+              <Button asChild variant="outline" className="flex-1 h-12 bg-transparent" size="lg">
+                <Link href="/contact">Contact Us</Link>
               </Button>
             </div>
           </div>
@@ -211,7 +224,7 @@ export default function VehicleDetailsPage({ params }) {
               >
                 {[1, 2, 3, 4, 5, 6, 7].map((year) => (
                   <option key={year} value={year}>
-                    {year} years
+                    {year} {year === 1 ? "year" : "years"}
                   </option>
                 ))}
               </select>
@@ -230,8 +243,26 @@ export default function VehicleDetailsPage({ params }) {
               <p className="text-3xl font-bold text-primary">
                 LKR {monthlyPayment.toLocaleString("en-US", { maximumFractionDigits: 0 })}
               </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Based on 6% annual interset rate.
+                Actual rates may vary.
+              </p>
             </div>
           )}
+        </div>
+
+        {/* Similar Vehicles Section */}
+        <div className="mb-12">
+          <h3 className="font-bold text-2xl mb-6">Similar Vehicles you might like</h3>
+          <div className="bg-card rounded-lg border border-border p-6 text-center">
+            <p className="text-muted-foreground">
+              Check out our{" "}
+              <Link href="/vehicles" className="text-primary font-semibold hover:underline">
+                full inventory
+              </Link>{" "}
+              for more options
+            </p>
+          </div>
         </div>
 
         {/* Reviews Section */}

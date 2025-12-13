@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, Clock, User, MapPin, MessageSquare, AlertCircle, Loader2 } from 'lucide-react'
 import ChatBot from "@/components/ChatBot"
 import { resolve } from "path"
-import { setTimeout } from "timers/promises"
+// import { setTimeout } from "timers/promises"
 
 export default function ConsultationPage() {
   const [formData, setFormData] = useState({

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Button } from "@/components/ui/button"
-import { Phone, Mail, MapPin, Clock, Send, MessageSquare, Building, AlertCircle } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, Send, MessageSquare, Building, AlertCircle, Loader2 } from 'lucide-react'
 import ChatBot from "@/components/ChatBot"
  
 export default function ContactPage() {
