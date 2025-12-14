@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
@@ -10,7 +10,8 @@ import ChatBot from "@/components/ChatBot"
 import { vehicleAPI } from "../../../lib/api/vehicles"
 
 
-export default function VehicleDetailsPage({ params }) {
+export default function VehicleDetailsPage({ params: paramsPromise }) {
+  const params = use(paramsPromise)
   //const vehicle = vehiclesData[params.id] || vehiclesData["1"]
   const [vehicle, setVehicle] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -119,22 +120,22 @@ export default function VehicleDetailsPage({ params }) {
           {/* Right Column - Info */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <h1 className="text-4xl font-bold mb-3">{vehicle.name}</h1>
+              <h1 className="text-4xl font-bold mb-3">{vehicle?.name || 'Vehicle'}</h1>
               <div className="flex items-center gap-4 mb-4">
-                <span className="text-3xl font-bold text-primary">LKR {vehicle.price.toLocaleString()}</span>
+                <span className="text-3xl font-bold text-primary">LKR {vehicle?.price?.toLocaleString?.() || 'N/A'}</span>
                 <span
                   className={`px-4 py-2 rounded-lg font-semibold ${
-                    vehicle.status === "Available"
+                    vehicle?.status === "Available"
                       ? "bg-green-500/20 text-green-700"
-                      : vehicle.status === "Shipped" 
+                      : vehicle?.status === "Shipped" 
                         ? "bg-yellow-500/20 text-yellow-700"
                         : "bg-red-500/20 text-red-700"
                   }`}
                 >
-                  {vehicle.status}
+                  {vehicle?.status || 'Unknown'}
                 </span>
               </div>
-              <p className="text-lg text-muted-foreground">{vehicle.location}</p>
+              <p className="text-lg text-muted-foreground">{vehicle?.location || 'N/A'}</p>
             </div>
 
             {/* Key Details Table */}
@@ -143,31 +144,31 @@ export default function VehicleDetailsPage({ params }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Make</p>
-                  <p className="font-semibold">{vehicle.make}</p>
+                  <p className="font-semibold">{vehicle?.make || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Model</p>
-                  <p className="font-semibold">{vehicle.model}</p>
+                  <p className="font-semibold">{vehicle?.model || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Year</p>
-                  <p className="font-semibold">{vehicle.year}</p>
+                  <p className="font-semibold">{vehicle?.year || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="font-semibold">{vehicle.type}</p>
+                  <p className="font-semibold">{vehicle?.type || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mileage</p>
-                  <p className="font-semibold">{vehicle.mileage.toLocaleString()} km</p>
+                  <p className="font-semibold">{vehicle?.mileage ? vehicle.mileage.toLocaleString() : 'N/A'} km</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Transmission</p>
-                  <p className="font-semibold">{vehicle.transmission}</p>
+                  <p className="font-semibold">{vehicle?.transmission || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Fuel Type</p>
-                  <p className="font-semibold">{vehicle.fuelType}</p>
+                  <p className="font-semibold">{vehicle?.fuelType || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -187,7 +188,7 @@ export default function VehicleDetailsPage({ params }) {
         {/* Description */}
         <div className="bg-card rounded-lg border border-border p-6 mb-12">
           <h3 className="font-bold text-xl mb-4">Description</h3>
-          <p className="text-foreground leading-relaxed">{vehicle.description}</p>
+          <p className="text-foreground leading-relaxed">{vehicle?.description || 'No description available'}</p>
         </div>
 
         {/* Leasing Calculator */}
@@ -266,29 +267,33 @@ export default function VehicleDetailsPage({ params }) {
         </div>
 
         {/* Reviews Section */}
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <h3 className="font-bold text-2xl mb-6">Customer Reviews</h3>
 
           <div className="space-y-4 mb-8">
-            {vehicle.reviews.map((review, idx) => (
-              <div key={idx} className="bg-card rounded-lg border border-border p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="font-semibold">{review.author}</p>
-                  <div className="flex gap-1">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={16} className="fill-yellow-500 text-yellow-500" />
-                    ))}
+            {vehicle?.reviews && Array.isArray(vehicle.reviews) && vehicle.reviews.length > 0 ? (
+              vehicle.reviews.map((review, idx) => (
+                <div key={idx} className="bg-card rounded-lg border border-border p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="font-semibold">{review?.author || 'Anonymous'}</p>
+                    <div className="flex gap-1">
+                      {[...Array(review?.rating || 0)].map((_, i) => (
+                        <Star key={i} size={16} className="fill-yellow-500 text-yellow-500" />
+                      ))}
+                    </div>
                   </div>
+                  <p className="text-foreground">{review?.text || 'No review text'}</p>
                 </div>
-                <p className="text-foreground">{review.text}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-muted-foreground">No reviews available yet</p>
+            )}
           </div>
 
           <Button variant="outline" className="w-full h-12 bg-transparent">
             Write a Review (Sign in required)
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Chatbot Icon */}
