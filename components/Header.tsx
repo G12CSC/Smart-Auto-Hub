@@ -30,6 +30,7 @@ export function Header() {
 
     // ✅ Dynamic role check (from NextAuth session)
     const isAdmin = user?.role === "admin";
+    //const isAdmin = useState(true)
 
     const getInitials = (name: string) =>
         name
@@ -103,6 +104,28 @@ export function Header() {
                 <div className="hidden md:flex items-center gap-4">
                     {!user ? (
                         <>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="hover:opacity-80 transition" title="Open account menu">
+                                        <Avatar className="h-10 w-10 border-2 border-border">
+                                            <AvatarFallback className="bg-muted">
+                                                <User className="h-5 w-5 text-muted-foreground" />
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel>Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/login" className="cursor-pointer">
+                                            <User className="mr-2 h-4 w-4" />
+                                            <span>Login to See your Dashboard</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
                             <Button variant="outline" asChild>
                                 <Link href="/login">Login</Link>
                             </Button>
@@ -111,56 +134,60 @@ export function Header() {
                             </Button>
                         </>
                     ) : (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-2 hover:opacity-80 transition">
-                                    <Avatar className="h-10 w-10 border-2 border-primary">
-                                        <AvatarImage src={user.image || ""} />
-                                        <AvatarFallback>
-                                            {getInitials(user.name || "U")}
-                                        </AvatarFallback>
-                                    </Avatar>
+                        <>
+                        {/* // ---------- LOGGED IN VIEW ---------- */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="flex items-center gap-2 hover:opacity-80 transition">
+                                        <Avatar className="h-10 w-10 border-2 border-primary">
+                                            <AvatarImage src={user.image || ""} />
+                                            <AvatarFallback className="bg-primary text-primary-foreground">
+                                                {getInitials(user.name || "U")}
+                                            </AvatarFallback>
+                                        </Avatar>
 
-                                    <div className="text-left">
-                                        <p className="text-sm font-medium">{user.name}</p>
-                                        {isAdmin && (
-                                            <p className="text-xs text-muted-foreground">Admin</p>
-                                        )}
-                                    </div>
-                                </button>
-                            </DropdownMenuTrigger>
+                                        <div className="text-left">
+                                            <p className="text-sm font-medium text-foreground">{user.name}</p>
+                                            {isAdmin && (
+                                                <p className="text-xs text-muted-foreground">Admin</p>
+                                            )}
+                                        </div>
+                                    </button>
+                                </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
 
-                                <DropdownMenuItem asChild>
-                                    <Link href="/dashboard">
-                                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                                        Dashboard
-                                    </Link>
-                                </DropdownMenuItem>
-
-                                {isAdmin && (
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin">
-                                            <Shield className="mr-2 h-4 w-4" />
-                                            Admin Panel
+                                        <Link href="/dashboard" className="cursor-pointer">
+                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                            Dashboard
                                         </Link>
                                     </DropdownMenuItem>
-                                )}
 
-                                <DropdownMenuSeparator />
+                                    {isAdmin && (
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/admin" className="cursor-pointer">
+                                                <Shield className="mr-2 h-4 w-4" />
+                                                Admin Panel
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )}
 
-                                <DropdownMenuItem
-                                    className="text-destructive cursor-pointer"
-                                    onClick={() => signOut({ callbackUrl: "/login" })}
-                                >
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    Logout
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <DropdownMenuSeparator />
+
+                                    {/* -------- DESKTOP LOGOUT -------- */}
+                                    <DropdownMenuItem
+                                        className="text-destructive cursor-pointer"
+                                        onClick={() => signOut({ callbackUrl: "/login" })}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
                     )}
                 </div>
 
@@ -175,58 +202,78 @@ export function Header() {
 
             {/* MOBILE MENU */}
             {mobileMenuOpen && (
-                <div className="md:hidden bg-card border-t border-border px-4 py-4 space-y-4">
-                    {headerMenuData.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className="block text-foreground"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            {item.title}
-                        </Link>
-                    ))}
-
-                    {!user ? (
-                        <div className="flex gap-2 pt-4">
-                            <Button variant="outline" className="flex-1" asChild>
-                                <Link href="/login">Login</Link>
-                            </Button>
-                            <Button className="flex-1" asChild>
-                                <Link href="/register">Register</Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="border-t pt-4" />
-
-                            <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user.image || ""} />
-                                    <AvatarFallback>
-                                        {getInitials(user.name || "U")}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">
-                  {user.name}
-                                    {isAdmin && (
-                                        <span className="text-destructive ml-1">(Admin)</span>
-                                    )}
-                </span>
-                            </div>
-
-                            <Link href="/dashboard">Dashboard</Link>
-
-                            {isAdmin && <Link href="/admin">Admin Panel</Link>}
-
-                            <button
-                                onClick={() => signOut({ callbackUrl: "/login" })}
-                                className="w-full text-left text-destructive"
+                <div className="md:hidden bg-card border-t border-border">
+                    <div className="px-4 py-4 space-y-4">
+                        {headerMenuData.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className="block text-foreground hover:text-primary"
+                                onClick={() => setMobileMenuOpen(false)}
                             >
-                                Logout
-                            </button>
-                        </>
-                    )}
+                                {item.title}
+                            </Link>
+                        ))}
+
+                        {!user ? (
+                            <>
+                                {/* <div className="border-t border-border my-4" /> */}
+                                <div className="flex gap-2 pt-4">
+                                    <Button variant="outline" className="flex-1 bg-transparent" asChild>
+                                        <Link href="/login">Login</Link>
+                                    </Button>
+                                    <Button className="flex-1" asChild>
+                                        <Link href="/register">Register</Link>
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="border-t border-border my-4" />
+
+                                <div className="flex items-center gap-2 py-2">
+                                    <Avatar className="h-8 w-8 border-2 border-primary">
+                                        <AvatarImage src={user.image || ""} />
+                                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                            {getInitials(user.name || "U")}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium text-foreground">
+                                        {user.name}
+                                        {isAdmin && (
+                                            <span className="text-destructive ml-1">(Admin)</span>
+                                        )}
+                                    </span>
+                                </div>
+
+                                <Link 
+                                    href="/dashboard"
+                                    className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2"
+                                    >
+                                        <LayoutDashboard className="h-4 w-4" />
+                                        <span>Dashboard</span>
+                                </Link>
+
+                                {isAdmin && (
+                                    <Link 
+                                        href="/admin"
+                                        className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2"
+                                        >
+                                            <Shield className="h-4 w-4" />
+                                            <span>Admin Panel</span>
+                                </Link>)}
+                                
+                                {/* -------- MOBILE LOGOUT -------- */}
+                                <button
+                                    onClick={() => signOut({ callbackUrl: "/login" })}
+                                    className="flex items-center gap-2 text-foreground hover:text-destructive py-2 pl-2 w-full text-left"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    <span>Logout</span>
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
         </header>

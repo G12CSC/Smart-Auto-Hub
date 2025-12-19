@@ -227,9 +227,9 @@ export function Header() {
                                         </AvatarFallback>
                                     </Avatar>
                                     <span className="font-medium text-foreground">
-                    {userName}
+                                        {userName}
                                         {isAdmin && <span className="text-destructive ml-1">(Admin)</span>}
-                  </span>
+                                    </span>
                                 </div>
 
                                 <Link
