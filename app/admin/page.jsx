@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Plus, Search, Filter, MoreVertical, Eye, Edit, Trash2, Users, Car, Calendar, Mail, TrendingUp, MapPin, CheckCircle, XCircle, Clock, FileText, Video, ExternalLink } from 'lucide-react'
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot"
+import {approveBookings, updateBookings} from "../APITriggers/approveBookingsByAdmins.js";
+import {sendAdminMessagesForBookings} from "../APITriggers/sendAdminMessagesForBookings.js";
 
 const stats = [
   { 
@@ -234,6 +236,7 @@ export default function AdminPage() {
                       <th className="px-4 py-3 text-left font-semibold text-sm">Date</th>
                       <th className="px-4 py-3 text-left font-semibold text-sm">Time</th>
                       <th className="px-4 py-3 text-left font-semibold text-sm">Status</th>
+                        <th className="px-4 py-3 text-left font-semibold text-sm">Actions</th>
                     </tr>
                   </thead>
 
@@ -246,7 +249,45 @@ export default function AdminPage() {
                             <td>{request.vehicleType}</td>
                             <td>{request.preferredDate}</td>
                             <td>{request.preferredTime}</td>
-                            <td>{request.status}</td>
+                            <td className="px-4 py-2">
+        <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                request.status === "APPROVED"
+                    ? "bg-green-500/20 text-green-700"
+                    : request.status === "REJECTED"
+                        ? "bg-red-500/20 text-red-700"
+                        : "bg-yellow-500/20 text-yellow-700"
+            }`}
+        >
+          {request.status}
+        </span>
+                            </td>
+                            <td className="px-4 py-2 flex gap-2">
+
+                                {request.status === "PENDING" && (
+                                    <>
+                                        <button
+                                            className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                                            onClick={() => approveBookings(request.id, "ACCEPTED")}
+                                        >
+                                            Approve
+                                        </button>
+                                        <button
+                                            className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                                            onClick={() =>approveBookings(request.id, "REJECTED")}
+                                        >
+                                            Decline
+                                        </button>
+                                    </>
+                                )}
+                                <button
+                                    className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                                    onClick={() => sendAdminMessagesForBookings(request.id)}
+                                >
+                                    Send Message
+                                </button>
+                            </td>
+
                         </tr>
                     ))}
                     </tbody>

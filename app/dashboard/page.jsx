@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import Link from "next/link"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
@@ -9,95 +9,68 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar, CalendarIcon, Clock, MapPin, Car, User, Mail, Phone, Edit, Trash2, CheckCircle, XCircle, Star, MessageSquare, LogOut, Settings, FileText } from 'lucide-react'
 import ChatBot from "@/components/ChatBot"
+import {signOut, useSession} from "next-auth/react"
 
 const upcomingAppointments = [
-  {
-    id: 1,
-    type: "Technical Consultation",
-    consultant: "Mr. K R Wijeweera",
-    branch: "Head Office - Nugegoda",
-    date: "November 18, 2025",
-    time: "10:30 AM",
-    status: "Confirmed",
-    vehicle: null,
-    notes: "General vehicle consultation and financing options",
-  },
-  {
-    id: 2,
-    type: "Vehicle Viewing",
-    consultant: "Sales Team",
-    branch: "Nugegoda Branch",
-    date: "November 20, 2025",
-    time: "2:00 PM",
-    status: "Pending",
-    vehicle: "2022 Honda Vezel",
-    notes: "Interested in test drive and trade-in options",
-  },
-  {
-    id: 3,
-    type: "Test Drive",
-    consultant: "Mr. Sameera",
-    branch: "Matara Branch",
-    date: "November 22, 2025",
-    time: "11:00 AM",
-    status: "Confirmed",
-    vehicle: "2023 Toyota Aqua",
-    notes: "Scheduled test drive on highway and city roads",
-  },
+
 ]
 
 const appointmentHistory = [
-  {
-    id: 1,
-    type: "Vehicle Viewing",
-    date: "November 10, 2025",
-    status: "Completed",
-    vehicle: "2021 Toyota Prius",
-    rating: 5,
-    branch: "Nugegoda",
-  },
-  {
-    id: 2,
-    type: "Technical Consultation",
-    date: "October 25, 2025",
-    status: "Completed",
-    vehicle: null,
-    rating: 4,
-    branch: "Colombo",
-  },
-  {
-    id: 3,
-    type: "Test Drive",
-    date: "October 15, 2025",
-    status: "Completed",
-    vehicle: "2022 Suzuki Swift",
-    rating: 5,
-    branch: "Matara",
-  },
+
 ]
 
 const userReviews = [
-  {
-    id: 1,
-    vehicle: "2021 Toyota Prius",
-    rating: 5,
-    comment: "Excellent service and very professional staff. Highly recommended!",
-    date: "November 11, 2025",
-  },
-  {
-    id: 2,
-    vehicle: "General Consultation",
-    rating: 4,
-    comment: "Very helpful consultation regarding financing options.",
-    date: "October 26, 2025",
-  },
+
 ]
 
 export default function DashboardPage() {
+
   const [activeTab, setActiveTab] = useState("appointments")
   const [isEditingProfile, setIsEditingProfile] = useState(false)
+    const { data: session, status } = useSession();
+    const [upcomingAppointments, setUpcomingAppointments] = useState([])
+    const [appointmentHistory, setAppointmentHistory] = useState([])
+    const [userReviews, setUserReviews] = useState([])
+    const [loading, setLoading] = useState(true)
 
-  return (
+    useEffect(() => {
+        if (status !== "authenticated") return;
+
+        const loadAppointments = async () => {
+            try {
+                const res = await fetch("/api/Consultations/user");
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error("API error:", text);
+                    return;
+                }
+
+                const data = await res.json();
+
+                // Upcoming = not completed
+                setUpcomingAppointments(
+                    data.filter((apt) => apt.status !== "COMPLETED")
+                );
+
+                // History = completed
+                setAppointmentHistory(
+                    data.filter((apt) => apt.status === "COMPLETED")
+                );
+
+                setLoading(false);
+            } catch (error) {
+                console.error("Failed to load appointments", error);
+            }
+        };
+
+        loadAppointments();
+    }, [status]);
+
+
+
+
+    return (
     <div className="min-h-screen bg-background">
       <Header />
 
@@ -109,8 +82,11 @@ export default function DashboardPage() {
               JD
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Welcome back, John!</h1>
-              <p className="text-muted-foreground">Manage your appointments and profile</p>
+                <h1 className="text-3xl font-bold">
+                    Welcome back, {session?.user?.name || "User"}!
+                </h1>
+
+                <p className="text-muted-foreground">Manage your appointments and profile</p>
             </div>
           </div>
         </div>
@@ -142,152 +118,208 @@ export default function DashboardPage() {
               </div>
             </nav>
 
-            <Button className="w-full mt-4" variant="outline">
-              <LogOut size={18} className="mr-2" />
-              Logout
-            </Button>
+              <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="w-full text-left text-destructive"
+              >
+                  Logout
+              </button>
 
           </div>
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             {/* Appointments Tab */}
-            {activeTab === "appointments" && (
-              <div className="space-y-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <h2 className="text-2xl font-bold">My Appointments</h2>
-                  <Button asChild>
-                    <Link href="/consultation">
-                      <Calendar size={18} className="mr-2" />
-                      Book New Appointment
-                    </Link>
-                  </Button>
-                </div>
+              {activeTab === "appointments" && (
+                  <div className="space-y-6">
 
-                {/* Upcoming Appointments */}
-                <div>
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Clock size={20} className="text-primary" />
-                    Upcoming Appointments
-                  </h3>
-                  <div className="space-y-4">
-                    {upcomingAppointments.map((apt) => (
-                      <div key={apt.id} className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition">
-                        <div className="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="font-semibold text-lg">{apt.type}</p>
-                                <p className="text-sm text-muted-foreground">With: {apt.consultant}</p>
-                              </div>
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                  apt.status === "Confirmed"
-                                    ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                                    : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
-                                }`}
-                              >
-                                {apt.status === "Confirmed" ? <CheckCircle size={12} /> : <Clock size={12} />}
-                                {apt.status}
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <CalendarIcon size={16} className="text-primary" />
-                                <span>{apt.date}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Clock size={16} className="text-primary" />
-                                <span>{apt.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <MapPin size={16} className="text-primary" />
-                                <span>{apt.branch}</span>
-                              </div>
-                              {apt.vehicle && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Car size={16} className="text-primary" />
-                                  <span>{apt.vehicle}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {apt.notes && (
-                              <div className="mt-4 p-3 bg-secondary/30 rounded text-sm">
-                                <p className="font-medium text-xs text-muted-foreground mb-1">Notes:</p>
-                                <p>{apt.notes}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-                          <Button variant="outline" size="sm">
-                            <Edit size={14} className="mr-2" />
-                            Reschedule
+                      {/* Header */}
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                          <h2 className="text-2xl font-bold">My Appointments</h2>
+                          <Button asChild>
+                              <Link href="/consultation">
+                                  <Calendar size={18} className="mr-2" />
+                                  Book New Appointment
+                              </Link>
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <MessageSquare size={14} className="mr-2" />
-                            Contact
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                            <XCircle size={14} className="mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Appointment History */}
-                <div className="mt-12">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <FileText size={20} className="text-primary" />
-                    Appointment History
-                  </h3>
-                  <div className="bg-card rounded-lg border border-border overflow-hidden">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border bg-secondary/30">
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Type</th>
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Vehicle</th>
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Branch</th>
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Date</th>
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Rating</th>
-                          <th className="px-6 py-3 text-left font-semibold text-sm">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {appointmentHistory.map((apt) => (
-                          <tr key={apt.id} className="border-b border-border hover:bg-secondary/20 transition">
-                            <td className="px-6 py-3 text-sm font-medium">{apt.type}</td>
-                            <td className="px-6 py-3 text-sm">{apt.vehicle || "-"}</td>
-                            <td className="px-6 py-3 text-sm">{apt.branch}</td>
-                            <td className="px-6 py-3 text-sm text-muted-foreground">{apt.date}</td>
-                            <td className="px-6 py-3 text-sm">
-                              <div className="flex items-center gap-1">
-                                {[...Array(apt.rating)].map((_, i) => (
-                                  <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
-                                ))}
+                      {/* Upcoming Appointments */}
+                      <div>
+                          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                              <Clock size={20} className="text-primary" />
+                              Upcoming Appointments
+                          </h3>
+
+                          {upcomingAppointments.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">
+                                  No upcoming appointments.
+                              </p>
+                          ) : (
+                              <div className="space-y-4">
+                                  {upcomingAppointments.map((apt) => (
+                                      <div
+                                          key={apt.id}
+                                          className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition"
+                                      >
+                                          <div className="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
+                                              <div className="flex-1">
+
+                                                  <div className="flex items-start justify-between mb-2">
+                                                      <div>
+                                                          <p className="font-semibold text-lg">
+                                                              {apt.consultationType}
+                                                          </p>
+
+                                                      </div>
+
+                                                      <span
+                                                          className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
+                                                              apt.status === "CONFIRMED"
+                                                                  ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                                                                  : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                                                          }`}
+                                                      >
+                      {apt.status}
+                    </span>
+                                                  </div>
+
+                                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                          <CalendarIcon size={16} className="text-primary" />
+                                                          <span>{apt.preferredDate}</span>
+                                                      </div>
+
+                                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                          <Clock size={16} className="text-primary" />
+                                                          <span>{apt.preferredTime}</span>
+                                                      </div>
+
+                                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                          <MapPin size={16} className="text-primary" />
+                                                          <span>{apt.branch}</span>
+                                                      </div>
+
+                                                      {apt.vehicleType && (
+                                                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                              <Car size={16} className="text-primary" />
+                                                              <span>{apt.vehicleType}</span>
+                                                          </div>
+                                                      )}
+                                                  </div>
+
+                                                  {/* ✅ ADMIN MESSAGE (OPTIONAL) */}
+                                                  {apt.adminMessage && (
+                                                      <div className="mt-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                                                          <div className="flex items-center gap-2 mb-1">
+                                                              <MessageSquare
+                                                                  size={14}
+                                                                  className="text-blue-600"
+                                                              />
+                                                              <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                                                                  Message from Admin
+                                                              </p>
+                                                          </div>
+                                                          <p className="text-sm text-muted-foreground">
+                                                              {apt.adminMessage}
+                                                          </p>
+                                                      </div>
+                                                  )}
+
+                                                  {apt.message && (
+                                                      <div className="mt-4 p-3 bg-secondary/30 rounded text-sm">
+                                                          <p className="font-medium text-xs text-muted-foreground mb-1">
+                                                              Notes:
+                                                          </p>
+                                                          <p>{apt.message}</p>
+                                                      </div>
+                                                  )}
+                                              </div>
+                                          </div>
+
+                                          <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
+                                              <Button variant="outline" size="sm">
+                                                  <Edit size={14} className="mr-2" />
+                                                  Reschedule
+                                              </Button>
+                                              <Button variant="outline" size="sm">
+                                                  <MessageSquare size={14} className="mr-2" />
+                                                  Contact
+                                              </Button>
+                                              <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="text-red-600 hover:text-red-700"
+                                              >
+                                                  <XCircle size={14} className="mr-2" />
+                                                  Cancel
+                                              </Button>
+                                          </div>
+                                      </div>
+                                  ))}
                               </div>
-                            </td>
-                            <td className="px-6 py-3 text-sm">
-                              <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-400 font-medium text-xs">
-                                {apt.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
+                          )}
+                      </div>
 
-            {/* Reviews Tab */}
+                      {/* Appointment History */}
+                      <div className="mt-12">
+                          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                              <FileText size={20} className="text-primary" />
+                              Appointment History
+                          </h3>
+
+                          {appointmentHistory.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">
+                                  No completed appointments.
+                              </p>
+                          ) : (
+                              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                                  <table className="w-full">
+                                      <thead>
+                                      <tr className="border-b border-border bg-secondary/30">
+                                          <th className="px-6 py-3 text-left font-semibold text-sm">Type</th>
+                                          <th className="px-6 py-3 text-left font-semibold text-sm">Vehicle</th>
+                                          <th className="px-6 py-3 text-left font-semibold text-sm">Branch</th>
+                                          <th className="px-6 py-3 text-left font-semibold text-sm">Date</th>
+                                          <th className="px-6 py-3 text-left font-semibold text-sm">Status</th>
+                                      </tr>
+                                      </thead>
+                                      <tbody>
+                                      {appointmentHistory.map((apt) => (
+                                          <tr
+                                              key={apt.id}
+                                              className="border-b border-border hover:bg-secondary/20 transition"
+                                          >
+                                              <td className="px-6 py-3 text-sm font-medium">
+                                                  {apt.consultationType}
+                                              </td>
+                                              <td className="px-6 py-3 text-sm">
+                                                  {apt.vehicle || "-"}
+                                              </td>
+                                              <td className="px-6 py-3 text-sm">
+                                                  {apt.branch}
+                                              </td>
+                                              <td className="px-6 py-3 text-sm text-muted-foreground">
+                                                  {new Date(apt.date).toLocaleDateString()}
+                                              </td>
+                                              <td className="px-6 py-3 text-sm">
+                    <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-400 font-medium text-xs">
+                      {apt.status}
+                    </span>
+                                              </td>
+                                          </tr>
+                                      ))}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          )}
+                      </div>
+
+                  </div>
+              )}
+
+
+              {/* Reviews Tab */}
             {activeTab === "reviews" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
@@ -432,7 +464,7 @@ export default function DashboardPage() {
             {activeTab === "settings" && (
               <div className="bg-card rounded-lg border border-border p-8">
                 <h2 className="text-2xl font-bold mb-6">Settings</h2>
-                
+
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-4">Notification Preferences</h3>
