@@ -34,6 +34,8 @@ import {
   updateBookings,
 } from "../APITriggers/approveBookingsByAdmins.js";
 import { sendAdminMessagesForBookings } from "../APITriggers/sendAdminMessagesForBookings.js";
+import { localStorageAPI } from "@/lib/storage/localStorage";
+import { count } from "console";
 
 const stats = [
   {
@@ -160,6 +162,35 @@ export default function AdminPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const [notifications, setNotifications] = useState({
+    requests: 0,
+    vehicles: 0,
+    videos: 0,
+    newsletter: 0,
+  });
+
+  useEffect(() => {
+    const notifs = localStorageAPI.getNotifications();
+    setNotifications(notifs.admin);
+  }, []);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+
+    if (tabId === "requests") {
+      localStorageAPI.clearNotification("admin", "requests");
+    } else if (tabId === "vehicles") {
+      localStorageAPI.clearNotification("admin", "vehicles");
+    } else if (tabId === "videos") {
+      localStorageAPI.clearNotification("admin", "videos");
+    } else if (tabId === "newsletter") {
+      localStorageAPI.clearNotification("admin", "newsletter");
+    }
+
+    const notifs = localStorageAPI.getNotifications();
+    setNotifications(notifs.admin);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -207,16 +238,42 @@ export default function AdminPage() {
         <div className="bg-card rounded-t-lg border-x border-t border-border">
           <div className="flex items-center gap-2 px-6 py-3 border-b border-border overflow-x-auto">
             {[
-              { id: "requests", label: "Consultation Bookings", icon: Users },
-              { id: "vehicles", label: "Vehicle Management", icon: Car },
-              { id: "videos", label: "Video Reviews", icon: Video },
-              { id: "newsletter", label: "Newsletter", icon: Mail },
-              { id: "branches", label: "Branch Inventory", icon: MapPin },
+              {
+                id: "requests",
+                label: "Consultation Bookings",
+                icon: Users,
+                count: notifications.requests,
+              },
+              {
+                id: "vehicles",
+                label: "Vehicle Management",
+                icon: Car,
+                count: notifications.vehicles,
+              },
+              {
+                id: "videos",
+                label: "Video Reviews",
+                icon: Video,
+                count: notifications.videos,
+              },
+              {
+                id: "newsletter",
+                label: "Newsletter",
+                icon: Mail,
+                count: notifications.newsletter,
+              },
+              {
+                id: "branches",
+                label: "Branch Inventory",
+                icon: MapPin,
+                count: 0,
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${
+                // onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap relative ${
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -224,6 +281,11 @@ export default function AdminPage() {
               >
                 <tab.icon size={18} />
                 {tab.label}
+                {tab.count > 0 && (
+                  <span className="h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center animate-pulse">
+                    {tab.count > 9 ? "9+" : tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>

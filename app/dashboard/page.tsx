@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import ChatBot from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
+import { localStorageAPI } from "@/lib/storage/localStorage";
+import { count } from "console";
 
 const upcomingAppointments = [];
 
@@ -76,6 +78,29 @@ export default function DashboardPage() {
     loadAppointments();
   }, [status]);
 
+  const [notifications, setNotifications] = useState({
+    appointments: 0,
+    reviews: 0,
+  });
+
+  useEffect(() => {
+    const notifs = localStorageAPI.getNotifications();
+    setNotifications(notifs.dashboard);
+  }, []);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+
+    if (tabId === "appointments") {
+      localStorageAPI.clearNotification("dashboard", "appointments");
+    } else if (tabId === "reviews") {
+      localStorageAPI.clearNotification("dashboard", "reviews");
+    }
+
+    const notifs = localStorageAPI.getNotifications();
+    setNotifications(notifs.dashboard);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -109,15 +134,27 @@ export default function DashboardPage() {
                     label: "My Appointments",
                     id: "appointments",
                     icon: Calendar,
+                    count: notifications.appointments,
                   },
-                  { label: "My Reviews", id: "reviews", icon: Star },
-                  { label: "My Profile", id: "profile", icon: User },
-                  { label: "Settings", id: "settings", icon: Settings },
+                  {
+                    label: "My Reviews",
+                    id: "reviews",
+                    icon: Star,
+                    count: notifications.reviews,
+                  },
+                  { label: "My Profile", id: "profile", icon: User, count: 0 },
+                  {
+                    label: "Settings",
+                    id: "settings",
+                    icon: Settings,
+                    count: 0,
+                  },
                 ].map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-4 font-medium transition ${
+                    //onClick={() => setActiveTab(item.id)}
+                    onClick={() => handleTabChange(item.id)}
+                    className={`w-full flex items-center gap-3 px-6 py-4 font-medium transition relative ${
                       activeTab === item.id
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-secondary/50"
@@ -125,6 +162,11 @@ export default function DashboardPage() {
                   >
                     <item.icon size={18} />
                     {item.label}
+                    {item.count > 0 && (
+                      <span className="ml-auto h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center animate-pulse">
+                        {item.count > 9 ? "9+" : item.count}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

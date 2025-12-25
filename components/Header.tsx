@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
@@ -30,6 +30,7 @@ import {
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useTheme } from "next-themes";
+import { localStorageAPI } from "@/lib/storage/localStorage";
 
 export function Header() {
   const { data: session } = useSession();
@@ -49,6 +50,19 @@ export function Header() {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
+
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+      const count = localStorageAPI.getTotalNotificationCount();
+      setNotificationCount(count);
+    };
+
+    updateCount();
+    const interval = setInterval(updateCount, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
@@ -188,7 +202,12 @@ export function Header() {
               {/* // ---------- LOGGED IN VIEW ---------- */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 hover:opacity-80 transition">
+                  <button className="flex items-center gap-2 hover:opacity-80 transition relative">
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center animate-pulse z-10">
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                      </span>
+                    )}
                     <div className="relative flex items-center justify-center">
                       {/* RING */}
                       <span
@@ -229,7 +248,19 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" className="cursor-pointer">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                      <span>Dashboard</span>
+                      {(() => {
+                        const notifications =
+                          localStorageAPI.getNotifications();
+                        const dashCount = Object.values(
+                          notifications.dashboard
+                        ).reduce((a: number, b: number) => a + b, 0);
+                        return dashCount > 0 ? (
+                          <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                            {dashCount > 9 ? "9+" : dashCount}
+                          </span>
+                        ) : null;
+                      })()}
                     </Link>
                   </DropdownMenuItem>
 
@@ -237,7 +268,19 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Admin Panel
+                        <span>Admin Panel</span>
+                        {(() => {
+                          const notifications =
+                            localStorageAPI.getNotifications();
+                          const adminCount = Object.values(
+                            notifications.admin
+                          ).reduce((a: number, b: number) => a + b, 0);
+                          return adminCount > 0 ? (
+                            <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                              {adminCount > 9 ? "9+" : adminCount}
+                            </span>
+                          ) : null;
+                        })()}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -342,19 +385,41 @@ export function Header() {
 
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2"
+                  className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2 relative"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   <span>Dashboard</span>
+                  {(() => {
+                    const notifications = localStorageAPI.getNotifications();
+                    const dashCount = Object.values(
+                      notifications.dashboard
+                    ).reduce((a: number, b: number) => a + b, 0);
+                    return dashCount > 0 ? (
+                      <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                        {dashCount > 9 ? "9+" : dashCount}
+                      </span>
+                    ) : null;
+                  })()}
                 </Link>
 
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2"
+                    className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2 relative"
                   >
                     <Shield className="h-4 w-4" />
                     <span>Admin Panel</span>
+                    {(() => {
+                      const notifications = localStorageAPI.getNotifications();
+                      const adminCount = Object.values(
+                        notifications.admin
+                      ).reduce((a: number, b: number) => a + b, 0);
+                      return adminCount > 0 ? (
+                        <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                          {adminCount > 9 ? "9+" : adminCount}
+                        </span>
+                      ) : null;
+                    })()}
                   </Link>
                 )}
 
