@@ -25,6 +25,7 @@ export default function VehiclesPage() {
   const [filterStatus, setFilterStatus] = useState({
     Available: true,
     Shipped: true,
+    Reserved: true,
     "Not Available": true,
   })
   const [filterType, setFilterType] = useState({
@@ -109,7 +110,7 @@ export default function VehiclesPage() {
   const handleResetFilters = () => {
     setSearchQuery("")
     setLocationFilter("all")
-    setFilterStatus({ Available: true, Shipped: true, "Not Available": true })
+    setFilterStatus({ Available: true, Shipped: true, Reserved: true, "Not Available": true })
     setFilterType({ Sedan: true, SUV: true, Hatchback: true, Van: true, Hybrid: true })
     setFilterTransmission({ Automatic: true, Manual: true })
     setMinPrice(0)
@@ -198,7 +199,7 @@ export default function VehiclesPage() {
               {/* Availability Filter */}
               <div className="mb-6">
                 <h3 className="font-semibold mb-3 text-sm">Availability</h3>
-                {["Available", "Shipped", "Not Available"].map((status) => (
+                {["Available", "Shipped", "Reserved", "Not Available"].map((status) => (
                   // <label key={status} className="flex items-center gap-3 mb-3 cursor-pointer">
                   <label
                     key={status}
@@ -411,7 +412,9 @@ export default function VehiclesPage() {
                               ? "bg-green-500/90 text-white"
                               : vehicle.status === "Shipped"
                                 ? "bg-yellow-500/90 text-white"
-                                : "bg-red-500/90 text-white"
+                                : vehicle.status === "Reserved"
+                                  ? "bg-blue-500/90 text-white"
+                                  : "bg-red-500/90 text-white"
                           }`}
                         >
                           {vehicle.status}

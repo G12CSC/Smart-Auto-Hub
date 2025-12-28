@@ -12,7 +12,7 @@ import { localStorageAPI } from "@/lib/storage/localStorage.js"
 
 export default function VehicleDetailsClient({ vehicleId, initialVehicle, initialError }) {
   const [vehicle, setVehicle] = useState(initialVehicle || null)
-  const [loading, setLoading] = useState(!initialVehicle && !initialError)
+  const [loading, setLoading] = useState(!initialVehicle)
   const [error, setError] = useState(initialError || null)
 
   const [monthlyPayment, setMonthlyPayment] = useState(0)
@@ -31,12 +31,9 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
       return
     }
 
-    if (initialError) {
-      return
-    }
-
     const fetchVehicle = async () => {
       setLoading(true)
+      setError(null)
       const result = await vehicleAPI.getVehicleById(vehicleId)
 
       if (result.success) {
@@ -51,7 +48,7 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
     }
 
     fetchVehicle()
-  }, [vehicleId, initialVehicle, initialError])
+  }, [vehicleId, initialVehicle])
 
   useEffect(() => {
     if (initialVehicle) {
@@ -110,6 +107,13 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
     )
   }
 
+  const primaryImage =
+    vehicle.image || (Array.isArray(vehicle.images) && vehicle.images[0]) || "/placeholder.svg"
+  const galleryImages =
+    Array.isArray(vehicle.images) && vehicle.images.length > 0
+      ? vehicle.images.slice(0, 3)
+      : [1, 2, 3].map((i) => `/vehicle-angle-.jpg?height=100&width=100&query=vehicle angle ${i}`)
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -127,16 +131,16 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
           <div className="lg:col-span-1">
             <div className="bg-muted rounded-lg overflow-hidden mb-4 h-80">
               <img
-                src={vehicle.image || "/placeholder.svg"}
+                src={primaryImage}
                 alt={vehicle.name}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-muted rounded h-20">
+              {galleryImages.map((image, index) => (
+                <div key={`${image}-${index}`} className="bg-muted rounded h-20">
                   <img
-                    src={`/vehicle-angle-.jpg?height=100&width=100&query=vehicle angle ${i}`}
+                    src={image}
                     alt="thumbnail"
                     className="w-full h-full object-cover rounded cursor-pointer hover:opacity-75 transition"
                   />
@@ -171,7 +175,9 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
                       ? "bg-green-500/20 text-green-700"
                       : vehicle?.status === "Shipped"
                         ? "bg-yellow-500/20 text-yellow-700"
-                        : "bg-red-500/20 text-red-700"
+                        : vehicle?.status === "Reserved"
+                          ? "bg-blue-500/20 text-blue-700"
+                          : "bg-red-500/20 text-red-700"
                   }`}
                 >
                   {vehicle?.status || "Unknown"}
