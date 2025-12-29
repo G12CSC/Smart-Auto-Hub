@@ -14,7 +14,6 @@ import {
   Loader2,
 } from "lucide-react";
 import ChatBot from "@/components/ChatBot";
-import { resolve } from "path";
 // import { setTimeout } from "timers/promises"
 import { handleConsultationRequests } from "../APITriggers/handleConsultationRequests";
 import { toast } from "sonner";
@@ -63,7 +62,7 @@ export default function ConsultationPage() {
     return "";
   };
 
-  const validateFeild = (name, value) => {
+  const validateField = (name, value) => {
     switch (name) {
       case "fullName":
         return !value ? "Full name is required" : "";
@@ -89,7 +88,7 @@ export default function ConsultationPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (touched[name]) {
-      const error = validateFeild(name, value);
+      const error = validateField(name, value);
       setErrors((prev) => ({ ...prev, [name]: error }));
     }
   };
@@ -97,7 +96,7 @@ export default function ConsultationPage() {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
-    const error = validateFeild(name, value);
+    const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
@@ -107,7 +106,7 @@ export default function ConsultationPage() {
     const newErrors = {};
     Object.keys(formData).forEach((key) => {
       if (key !== "message") {
-        const error = validateFeild(key, formData[key]);
+        const error = validateField(key, formData[key]);
         if (error) newErrors[key] = error;
       }
     });
