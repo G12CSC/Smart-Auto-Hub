@@ -29,7 +29,6 @@ import {
 import ChatBot from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { localStorageAPI } from "@/lib/storage/localStorage";
-import { count } from "console";
 
 const upcomingAppointments = [];
 

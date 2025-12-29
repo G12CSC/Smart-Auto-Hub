@@ -31,10 +31,6 @@ export const metadata: Metadata = {
         url: "/favicon32x32.png",
         media: "(prefers-color-scheme: dark)",
       },
-      {
-        url: " ",
-        type: "image/svg+xml",
-      },
     ],
     apple: "/favicon128x128.png",
   },

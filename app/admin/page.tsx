@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   Search,
@@ -35,7 +36,16 @@ import {
 } from "../APITriggers/approveBookingsByAdmins.js";
 import { sendAdminMessagesForBookings } from "../APITriggers/sendAdminMessagesForBookings.js";
 import { localStorageAPI } from "@/lib/storage/localStorage";
-import { count } from "console";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { BRANCHES } from "@/lib/branches";
+import { vehicleAPI } from "@/lib/api/vehicles";
 
 const stats = [
   {
@@ -71,6 +81,24 @@ const stats = [
     icon: MapPin,
   },
 ];
+
+const branchOptions = ["Colombo", "Matara", "Nugegoda"];
+const statusOptions = ["Available", "Shipped", "Reserved"];
+
+const vehicleFormDefaults = {
+  companyName: "",
+  model: "",
+  year: "",
+  type: "",
+  mileage: "",
+  transmission: "",
+  fuelType: "",
+  branch: "Nugegoda",
+  price: "",
+  description: "",
+  images: "",
+  status: "Available",
+};
 
 const recentRequests = [];
 
@@ -143,7 +171,19 @@ export default function AdminPage() {
   });
 
   const [recentRequests, setRecentRequests] = useState([]);
-
+  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
+  const [isSavingVehicle, setIsSavingVehicle] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
+  const [vehicleFormError, setVehicleFormError] = useState("");
+  
+  const [recentRequests, setRecentRequests] = useState([]);
+  const [notifications, setNotifications] = useState({
+    requests: 0,
+    vehicles: 0,
+    videos: 0,
+    newsletter: 0,
+  });
+  
   const fetchBookings = async () => {
     try {
       const res = await fetch("/api/Consultations/getBooking");
@@ -161,6 +201,86 @@ export default function AdminPage() {
     const interval = setInterval(fetchBookings, 5000);
     return () => clearInterval(interval);
   }, []);
+  
+  const loadVehicles = async () => {
+    const result = await vehicleAPI.getAllVehicles();
+    if (result.success) {
+      const sortedVehicles = [...result.data].sort(
+        (a, b) => Number(b.id) - Number(a.id)
+      );
+      setAdminVehicles(sortedVehicles);
+    }
+  };
+  
+  const handleVehicleFieldChange = (field, value) => {
+    setVehicleForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+  
+  const handleAddVehicle = async (event) => {
+    event.preventDefault();
+    setIsSavingVehicle(true);
+    setVehicleFormError("");
+
+    if (
+      !vehicleForm.companyName.trim() ||
+      !vehicleForm.model.trim() ||
+      !vehicleForm.year ||
+      !vehicleForm.type.trim() ||
+      !vehicleForm.mileage ||
+      !vehicleForm.transmission.trim() ||
+      !vehicleForm.fuelType.trim() ||
+      !vehicleForm.branch ||
+      !vehicleForm.price ||
+      !vehicleForm.status
+    ) {
+      setVehicleFormError("Please fill in all required fields.");
+      setIsSavingVehicle(false);
+      return;
+    }
+
+    const images = vehicleForm.images
+      .split(/,|\n/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const nameParts = [
+      vehicleForm.year,
+      vehicleForm.companyName,
+      vehicleForm.model,
+    ].filter(Boolean);
+    const vehicleName = nameParts.join(" ");
+
+    const newVehicle = {
+      name: vehicleName,
+      make: vehicleForm.companyName.trim(),
+      model: vehicleForm.model.trim(),
+      year: Number(vehicleForm.year),
+      type: vehicleForm.type.trim(),
+      mileage: Number(vehicleForm.mileage),
+      transmission: vehicleForm.transmission.trim(),
+      fuelType: vehicleForm.fuelType.trim(),
+      location: vehicleForm.branch,
+      price: Number(vehicleForm.price),
+      status: vehicleForm.status,
+      description: vehicleForm.description.trim(),
+      images,
+      views: 0,
+    };
+
+    const result = await vehicleAPI.addVehicle(newVehicle);
+    if (result.success) {
+      await loadVehicles();
+      setVehicleForm(vehicleFormDefaults);
+      setIsAddVehicleOpen(false);
+    } else {
+      setVehicleFormError(result.error || "Failed to add vehicle.");
+    }
+
+    setIsSavingVehicle(false);
+  };
 
   const [notifications, setNotifications] = useState({
     requests: 0,
@@ -413,66 +533,237 @@ export default function AdminPage() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">Vehicle Management</h2>
-                <Button>
-                  <Plus size={18} className="mr-2" />
-                  Add New Vehicle
-                </Button>
+                <Dialog
+                  open={isAddVehicleOpen}
+                  onOpenChange={(open) => {
+                    setIsAddVehicleOpen(open)
+                    if (!open) {
+                      setVehicleFormError("")
+                    }
+                  }}
+                >
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus size={18} className="mr-2" />
+                      Add New Vehicle
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add Vehicle</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleAddVehicle} className="space-y-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground">Vehicle Details</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Company Name</label>
+                          <Input
+                            value={vehicleForm.companyName}
+                            onChange={(e) => handleVehicleFieldChange("companyName", e.target.value)}
+                            placeholder="e.g., Toyota"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Vehicle Model</label>
+                          <Input
+                            value={vehicleForm.model}
+                            onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
+                            placeholder="e.g., Prius"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Year</label>
+                          <Input
+                            type="number"
+                            value={vehicleForm.year}
+                            onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
+                            placeholder="2024"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Vehicle Type</label>
+                          <Input
+                            value={vehicleForm.type}
+                            onChange={(e) => handleVehicleFieldChange("type", e.target.value)}
+                            placeholder="Sedan, SUV..."
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Current Mileage (km)</label>
+                          <Input
+                            type="number"
+                            value={vehicleForm.mileage}
+                            onChange={(e) => handleVehicleFieldChange("mileage", e.target.value)}
+                            placeholder="25000"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Transmission Type</label>
+                          <Input
+                            value={vehicleForm.transmission}
+                            onChange={(e) => handleVehicleFieldChange("transmission", e.target.value)}
+                            placeholder="Automatic"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Fuel Type</label>
+                          <Input
+                            value={vehicleForm.fuelType}
+                            onChange={(e) => handleVehicleFieldChange("fuelType", e.target.value)}
+                            placeholder="Hybrid"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Branch</label>
+                          <select
+                            value={vehicleForm.branch}
+                            onChange={(e) => handleVehicleFieldChange("branch", e.target.value)}
+                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            required
+                          >
+                            {branchOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Vehicle Price (LKR)</label>
+                          <Input
+                            type="number"
+                            value={vehicleForm.price}
+                            onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
+                            placeholder="7500000"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Status</label>
+                          <select
+                            value={vehicleForm.status}
+                            onChange={(e) => handleVehicleFieldChange("status", e.target.value)}
+                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            required
+                          >
+                            {statusOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium mb-2">Description</label>
+                          <Textarea
+                            value={vehicleForm.description}
+                            onChange={(e) => handleVehicleFieldChange("description", e.target.value)}
+                            placeholder="Brief description of the vehicle..."
+                            rows={4}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium mb-2">Images (array)</label>
+                          <Textarea
+                            value={vehicleForm.images}
+                            onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
+                            placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                            rows={3}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Separate multiple image URLs with commas or new lines.
+                          </p>
+                        </div>
+                      </div>
+                      {vehicleFormError && <p className="text-sm text-destructive">{vehicleFormError}</p>}
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setIsAddVehicleOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSavingVehicle}>
+                          {isSavingVehicle ? "Saving..." : "Save Vehicle"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                {vehicles.map((vehicle) => (
-                  <div
-                    key={vehicle.id}
-                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-24 bg-secondary rounded flex items-center justify-center">
-                        <Car size={32} className="text-muted-foreground" />
+              {adminVehicles.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">No vehicles available yet.</div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {adminVehicles.map((vehicle) => (
+                    <div
+                      key={vehicle.id}
+                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-16 w-24 bg-secondary rounded flex items-center justify-center overflow-hidden">
+                          {vehicle.image ? (
+                            <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Car size={32} className="text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{vehicle.name}</h3>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1">
+                              <MapPin size={14} />
+                              {vehicle.location || vehicle.branch || "N/A"}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye size={14} />
+                              {vehicle.views ?? 0} views
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">
-                          {vehicle.name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <MapPin size={14} />
-                            {vehicle.branch}
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="font-bold text-lg">
+                            {typeof vehicle.price === "number" ? `LKR ${vehicle.price.toLocaleString()}` : vehicle.price}
+                          </p>
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              vehicle.status === "Available"
+                                ? "bg-green-500/20 text-green-700"
+                                : vehicle.status === "Shipped"
+                                  ? "bg-orange-500/20 text-orange-700"
+                                  : vehicle.status === "Reserved"
+                                    ? "bg-blue-500/20 text-blue-700"
+                                    : "bg-red-500/20 text-red-700"
+                            }`}
+                          >
+                            {vehicle.status}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Eye size={14} />
-                            {vehicle.views} views
-                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" variant="ghost">
+                            <Eye size={16} />
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <Edit size={16} />
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="font-bold text-lg">{vehicle.price}</p>
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            vehicle.status === "Available"
-                              ? "bg-green-500/20 text-green-700"
-                              : "bg-orange-500/20 text-orange-700"
-                          }`}
-                        >
-                          {vehicle.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="ghost">
-                          <Eye size={16} />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Edit size={16} />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

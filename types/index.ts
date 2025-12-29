@@ -81,3 +81,11 @@ export interface Branch {
   phone: string
   vehicleCount: number
 }
+
+export type NewsletterBroadcast = {
+  id: string;
+  title: string;
+  message: string;
+  sentAt: string | null;
+  createdAt: string;
+};
