@@ -12,12 +12,12 @@ model User {
   id                   String                @id @default(uuid())
   name                 String?
   email                String                @unique
-  emailVerified        DateTime?
   passwordHash         String?
-  image                String?
   phone                String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  emailVerified        DateTime?
+  image                String?
   authProviders        Account[]
   consultationBookings ConsultationBooking[]
   newsletters          NewsletterEntry[]
@@ -30,16 +30,15 @@ model Account {
   userId            String
   type              String
   provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id])
+  access_token      String?
+  expires_at        Int?
+  providerAccountId String
+  refresh_token     String?
+  user              User    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
@@ -110,15 +109,13 @@ model Review {
 
 model NewsletterEntry {
   id        String   @id @default(uuid())
+  userId    String?
   email     String   @unique
   message   String?
-  status    String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
-  source    String   @default("GUEST") // USER or GUEST
   createdAt DateTime @default(now())
-
-  // Optional link to User table
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  source    String   @default("GUEST")
+  status    String   @default("ACTIVE")
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model ConsultationBooking {
@@ -152,8 +149,17 @@ model Session {
   user         User?    @relation(fields: [userId], references: [id])
 }
 
+model NewsletterBroadcast {
+  id        String    @id
+  title     String
+  message   String
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
 enum BookingStatus {
   PENDING
   ACCEPTED
   REJECTED
+  COMPLETED
 }

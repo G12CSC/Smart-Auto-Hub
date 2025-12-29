@@ -16,7 +16,9 @@ export const authOptions = {
                 email: {},
                 password: {},
             },
+
             async authorize(credentials) {
+
                 if (!credentials?.email || !credentials?.password) return null;
 
                 const user = await prisma.user.findUnique({
@@ -26,6 +28,7 @@ export const authOptions = {
                 if (!user) return null;
 
                 const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+
                 if (!ok) return null;
 
                 return user;
@@ -43,14 +46,22 @@ export const authOptions = {
         }),
     ],
 
-    session: { strategy: "jwt" },
+    session: {
+        strategy: "jwt",
+        maxAge: 30 * 60,
+    },
+
+    jwt: {
+        maxAge: 30 * 60, // 30 minutes
+    },
 
     callbacks: {
+
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                //token.role = user.role; // ⭐ ADD ROLE
             }
+
             return token;
         },
 

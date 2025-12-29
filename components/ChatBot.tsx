@@ -9,9 +9,8 @@ export default function ChatBot() {
         <div
           className="
             absolute -inset-1 rounded-full
-            bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500
-            opacity-70 blur-md
-            animate-spin-slow group-hover:animate-spin-fast
+            bg-linear-to-r from-purple-500 via-blue-500 to-cyan-500
+            opacity-70 blur-md group-hover:animate-spin-fast
             glow-pulse
           "
         ></div>
@@ -20,7 +19,7 @@ export default function ChatBot() {
         <button
           className="
             relative p-4 rounded-full
-            bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-600
+            bg-linear-to-br from-purple-600 via-blue-600 to-cyan-600
             text-white shadow-2xl
             transition-all duration-300
             hover:scale-110 active:scale-95

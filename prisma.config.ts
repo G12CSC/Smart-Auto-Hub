@@ -1,11 +1,12 @@
-import { defineConfig } from '@prisma/config'
+import { defineConfig } from "@prisma/config";
 import dotenv from "dotenv";
 
-dotenv.config();
+// Load environment variables from .env
+dotenv.config({ path: ".env" });
 
 export default defineConfig({
-    schema: './prisma/schema.prisma',
+    schema: "./prisma/schema.prisma",
     seed: {
-        command: 'node prisma/seed.js',
+        command: "node prisma/seed.js",
     },
-})
+});

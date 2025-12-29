@@ -1,9 +1,11 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import {Analytics} from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Providers from "@/app/providers";
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,19 +19,20 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Smart AutoHub - Sameera Auto Traders",
-  description: "Find your perfect vehicle at Sameera Auto Traders. Browse our complete inventory, book consultations, and get expert guidance.",
+  description:
+    "Find your perfect vehicle at Sameera Auto Traders. Browse our complete inventory, book consultations, and get expert guidance.",
   icons: {
     icon: [
       {
-        url: "/car32x32.png",
+        url: "/favicon32x32.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/car32x32.png",
+        url: "/favicon32x32.png",
         media: "(prefers-color-scheme: dark)",
       },
     ],
-    apple: "/car128x128.png",
+    apple: "/favicon128x128.png",
   },
 };
 
@@ -39,16 +42,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-sans antialiased`}>
         <Providers>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
-            <Analytics />
-            </Providers>
-
-
+            <Toaster />
+          </ThemeProvider>
+          <Analytics />
+        </Providers>
       </body>
     </html>
   );

@@ -5,74 +5,133 @@
 
 /* Updated theme to match Sameera Auto Traders logo colors (red, black, white) */
 :root {
-  --background: oklch(0.99 0 0);
+  /* Backgrounds - Clean white with subtle warm tint */
+  --background: oklch(1 0 0);
   --foreground: oklch(0.15 0.02 0);
-  --card: oklch(1 0 0);
+
+  /* Cards - Slight off-white for depth */
+  --card: oklch(0.99 0 0);
   --card-foreground: oklch(0.15 0.02 0);
+
+  /* Popovers */
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0.02 0);
-  --primary: oklch(0.55 0.22 25);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.15 0.02 0);
-  --secondary-foreground: oklch(0.99 0 0);
-  --muted: oklch(0.94 0.01 0);
-  --muted-foreground: oklch(0.45 0.01 0);
-  --accent: oklch(0.55 0.22 25);
-  --accent-foreground: oklch(1 0 0);
+
+  /* Primary - Vibrant red from logo */
+  --primary: oklch(0.55 0.24 27);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - Black from logo */
+  --secondary: oklch(0.2 0.02 0);
+  --secondary-foreground: oklch(1 0 0);
+
+  /* Muted - Light gray backgrounds */
+  --muted: oklch(0.96 0.005 0);
+  --muted-foreground: oklch(0.5 0.01 0);
+
+  /* Accent - Bright red for highlights */
+  --accent: oklch(0.96 0.005 0);
+  --accent-foreground: oklch(0.55 0.24 27);
+
+  /* Destructive - Error red */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.005 0);
-  --input: oklch(0.96 0.005 0);
-  --ring: oklch(0.55 0.22 25);
-  --chart-1: oklch(0.55 0.22 25);
+
+  /* Borders and inputs */
+  --border: oklch(0.88 0.005 0);
+  --input: oklch(0.94 0.005 0);
+  --ring: oklch(0.55 0.24 27);
+
+  /* Status colors for light mode */
+  --success: oklch(0.55 0.15 145);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.65 0.18 75);
+  --warning-foreground: oklch(0.15 0 0);
+  --info: oklch(0.55 0.15 240);
+  --info-foreground: oklch(1 0 0);
+
+  /* Chart colors */
+  --chart-1: oklch(0.55 0.24 27);
   --chart-2: oklch(0.25 0.02 0);
   --chart-3: oklch(0.65 0.18 20);
-  --chart-4: oklch(0.45 0.15 15);
-  --chart-5: oklch(0.35 0.1 10);
+  --chart-4: oklch(0.55 0.15 240);
+  --chart-5: oklch(0.55 0.15 145);
+
   --radius: 0.625rem;
+
+  /* Sidebar colors */
   --sidebar: oklch(0.99 0 0);
   --sidebar-foreground: oklch(0.15 0.02 0);
-  --sidebar-primary: oklch(0.55 0.22 25);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.94 0.01 0);
-  --sidebar-accent-foreground: oklch(0.55 0.22 25);
-  --sidebar-border: oklch(0.9 0.005 0);
-  --sidebar-ring: oklch(0.55 0.22 25);
+  --sidebar-primary: oklch(0.55 0.24 27);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.005 0);
+  --sidebar-accent-foreground: oklch(0.55 0.24 27);
+  --sidebar-border: oklch(0.88 0.005 0);
+  --sidebar-ring: oklch(0.55 0.24 27);
 }
 
 .dark {
-  --background: oklch(0.12 0.01 0);
-  --foreground: oklch(0.95 0.005 0);
-  --card: oklch(0.18 0.01 0);
-  --card-foreground: oklch(0.95 0.005 0);
-  --popover: oklch(0.18 0.01 0);
-  --popover-foreground: oklch(0.95 0.005 0);
-  --primary: oklch(0.6 0.22 25);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.25 0.02 0);
-  --secondary-foreground: oklch(0.95 0.005 0);
-  --muted: oklch(0.25 0.01 0);
-  --muted-foreground: oklch(0.65 0.01 0);
-  --accent: oklch(0.6 0.22 25);
-  --accent-foreground: oklch(0.12 0.01 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.95 0.005 0);
-  --border: oklch(0.28 0.01 0);
-  --input: oklch(0.22 0.01 0);
-  --ring: oklch(0.6 0.22 25);
-  --chart-1: oklch(0.6 0.22 25);
-  --chart-2: oklch(0.35 0.02 0);
-  --chart-3: oklch(0.7 0.18 20);
-  --chart-4: oklch(0.5 0.15 15);
-  --chart-5: oklch(0.4 0.1 10);
-  --sidebar: oklch(0.15 0.01 0);
-  --sidebar-foreground: oklch(0.95 0.005 0);
-  --sidebar-primary: oklch(0.6 0.22 25);
-  --sidebar-primary-foreground: oklch(0.12 0.01 0);
-  --sidebar-accent: oklch(0.25 0.01 0);
-  --sidebar-accent-foreground: oklch(0.95 0.005 0);
-  --sidebar-border: oklch(0.28 0.01 0);
-  --sidebar-ring: oklch(0.6 0.22 25);
+  /* Backgrounds - Softer dark with better contrast */
+  --background: oklch(0.15 0.01 0);
+  --foreground: oklch(0.97 0.005 0);
+
+  /* Cards - Elevated surface with clear separation */
+  --card: oklch(0.22 0.01 0);
+  --card-foreground: oklch(0.97 0.005 0);
+
+  /* Popovers */
+  --popover: oklch(0.22 0.01 0);
+  --popover-foreground: oklch(0.97 0.005 0);
+
+  /* Primary - Brighter red for dark mode */
+  --primary: oklch(0.65 0.25 27);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - Lighter gray */
+  --secondary: oklch(0.3 0.02 0);
+  --secondary-foreground: oklch(0.97 0.005 0);
+
+  /* Muted - Mid-tone gray */
+  --muted: oklch(0.3 0.01 0);
+  --muted-foreground: oklch(0.72 0.01 0);
+
+  /* Accent */
+  --accent: oklch(0.3 0.01 0);
+  --accent-foreground: oklch(0.65 0.25 27);
+
+  /* Destructive - Softer red for dark mode */
+  --destructive: oklch(0.5 0.18 27);
+  --destructive-foreground: oklch(0.97 0.005 0);
+
+  /* Borders and inputs */
+  --border: oklch(0.35 0.01 0);
+  --input: oklch(0.28 0.01 0);
+  --ring: oklch(0.65 0.25 27);
+
+  /* Status colors - brighter for dark mode visibility */
+  --success: oklch(0.68 0.18 145);
+  --success-foreground: oklch(0.15 0 0);
+  --warning: oklch(0.72 0.16 75);
+  --warning-foreground: oklch(0.15 0 0);
+  --info: oklch(0.68 0.15 240);
+  --info-foreground: oklch(0.15 0 0);
+
+  /* Chart colors */
+  --chart-1: oklch(0.65 0.25 27);
+  --chart-2: oklch(0.68 0.18 145);
+  --chart-3: oklch(0.72 0.16 75);
+  --chart-4: oklch(0.68 0.15 240);
+  --chart-5: oklch(0.6 0.12 300);
+
+  /* Sidebar colors */
+  --sidebar: oklch(0.18 0.01 0);
+  --sidebar-foreground: oklch(0.97 0.005 0);
+  --sidebar-primary: oklch(0.65 0.25 27);
+  --sidebar-primary-foreground: oklch(0.15 0.01 0);
+  --sidebar-accent: oklch(0.3 0.01 0);
+  --sidebar-accent-foreground: oklch(0.97 0.005 0);
+  --sidebar-border: oklch(0.35 0.01 0);
+  --sidebar-ring: oklch(0.65 0.25 27);
 }
 
 @theme inline {
@@ -116,13 +175,59 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+/* Added custom keyframe animations for hero section */
+@keyframes imageReveal {
+  from {
+    filter: blur(10px);
+    opacity: 0;
   }
-  body {
-    @apply bg-background text-foreground;
+  to {
+    filter: blur(0);
+    opacity: 1;
   }
+}
+
+@keyframes kenBurnsZoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slideUpFade {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-image-reveal {
+  animation: imageReveal 1.2s ease-out forwards;
+}
+
+.animate-ken-burns {
+  animation: kenBurnsZoom 4s ease-out forwards;
+}
+
+.animate-slide-up-1 {
+  animation: slideUpFade 0.8s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-slide-up-2 {
+  animation: slideUpFade 0.8s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.animate-slide-up-3 {
+  animation: slideUpFade 0.8s ease-out 0.6s forwards;
+  opacity: 0;
 }
 
 /* Adding custom animations for AI chatbot icon */
@@ -152,6 +257,180 @@
 }
 
 @keyframes glow {
-  0%,100% { opacity: 0.7; filter: blur(6px); }
-  50% { opacity: 1; filter: blur(10px); }
+  0%,
+  100% {
+    opacity: 0.7;
+    filter: blur(6px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(10px);
+  }
+}
+
+/* ================================
+   ROLE-BASED AVATAR RINGS
+   ================================ */
+
+/* ---------- USER RING ---------- */
+@utility avatar-ring-user {
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  animation: avatar-pulse 2.5s ease-in-out infinite;
+}
+
+/* ---------- ADMIN RING ---------- */
+@utility avatar-ring-admin {
+  background: linear-gradient(135deg, #facc15, #f97316, #ef4444);
+  animation: avatar-spin 5s linear infinite;
+}
+
+/* ---------- SHARED ---------- */
+@utility avatar-ring {
+  border-radius: 9999px;
+  filter: blur(10px);
+}
+
+/* ---------- KEYFRAMES ---------- */
+@keyframes avatar-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes avatar-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===================
+UI Polish & Animations
+====================== */
+
+/* Smooth Scroll behaviour for entire site */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Shimmer Animation for skeleton loaders */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Fade in from bottom animation for scroll-triggered elements */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in from sides for alternating content */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scale in animation for cards */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Utility classes for scroll animations */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.fade-in-left {
+  animation: fadeInLeft 0.6s ease-out forwards;
+}
+
+.fade-in-right {
+  animation: fadeInRight 0.6s ease-out forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+/* Staggered animation delays for multiple elements */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+/* Enhanced hover glow effect for interactive cards */
+.hover-glow {
+  transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 10px 40px rgba(255, 59, 48, 0.2);
+  transform: translateY(-4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
