@@ -5,8 +5,9 @@ import FacebookProvider from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { AuthOptions } from "next-auth";
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
     adapter: PrismaAdapter(prisma),
 
     providers: [
@@ -27,7 +28,7 @@ export const authOptions = {
 
                 if (!user) return null;
 
-                const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+                const ok = await bcrypt.compare(credentials.password, user.passwordHash || "");
 
                 if (!ok) return null;
 
@@ -56,24 +57,31 @@ export const authOptions = {
     },
 
     callbacks: {
-
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                
+                if (user.email) {
+                    const admin = await prisma.admin.findUnique({
+                        where: { email: user.email }
+                    });
+                    
+                    if (admin) {
+                        token.isAdmin = true;
+                        token.role = admin.role;
+                    }
+                }
             }
-
             return token;
         },
 
         async session({ session, token }) {
-            session.user.id = token.id;
-            //session.user.role = token.role; // ⭐ ADD ROLE
+            if (session.user) {
+                session.user.id = token.id as string;
+                session.user.role = token.role as string | undefined;
+                session.user.isAdmin = token.isAdmin as boolean | undefined;
+            }
             return session;
-        },
-
-        async redirect({ url,baseUrl }) {
-            // Always redirect to root after login
-            return process.env.BASEURL;
         },
     },
     debug: true,
