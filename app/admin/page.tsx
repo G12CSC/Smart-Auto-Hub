@@ -175,8 +175,7 @@ export default function AdminPage() {
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
   const [vehicleFormError, setVehicleFormError] = useState("");
-  
-  const [recentRequests, setRecentRequests] = useState([]);
+  // Notification counts for each admin tab.
   const [notifications, setNotifications] = useState({
     requests: 0,
     vehicles: 0,
@@ -281,13 +280,6 @@ export default function AdminPage() {
 
     setIsSavingVehicle(false);
   };
-
-  const [notifications, setNotifications] = useState({
-    requests: 0,
-    vehicles: 0,
-    videos: 0,
-    newsletter: 0,
-  });
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
