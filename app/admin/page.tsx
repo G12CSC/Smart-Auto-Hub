@@ -171,6 +171,7 @@ export default function AdminPage() {
   });
 
   const [recentRequests, setRecentRequests] = useState([]);
+  const [adminVehicles, setAdminVehicles] = useState([]);
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
