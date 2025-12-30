@@ -86,6 +86,12 @@ const branchOptions = ["Colombo", "Matara", "Nugegoda"];
 const statusOptions = ["Available", "Shipped", "Reserved"];
 const transmissionOptions = ["Automatic", "Manual"];
 const fuelOptions = ["Petrol", "Diesel", "EV", "Hybrid"];
+const MAX_IMAGE_COUNT = 6;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+const IMAGE_JPEG_QUALITY = 0.82;
+const MAX_IMAGE_DATA_URL_CHARS = 750000;
+const MAX_TOTAL_IMAGE_DATA_URL_CHARS = 2000000;
 
 const vehicleFormDefaults = {
   companyName: "",
@@ -115,6 +121,50 @@ const readFileAsDataUrl = (file) =>
     reader.onerror = () => reject(reader.error || new Error("File read failed."));
     reader.readAsDataURL(file);
   });
+
+const loadImageElement = (file) =>
+  new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Invalid image file."));
+    };
+    image.src = objectUrl;
+  });
+
+const processVehicleImage = async (file) => {
+  const image = await loadImageElement(file);
+  const shouldResize =
+    file.size > MAX_IMAGE_BYTES ||
+    image.width > MAX_IMAGE_DIMENSION ||
+    image.height > MAX_IMAGE_DIMENSION;
+
+  if (!shouldResize) {
+    return readFileAsDataUrl(file);
+  }
+
+  const scale = Math.min(
+    1,
+    MAX_IMAGE_DIMENSION / Math.max(image.width, image.height)
+  );
+  const targetWidth = Math.max(1, Math.round(image.width * scale));
+  const targetHeight = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Image processing failed.");
+  }
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  return canvas.toDataURL("image/jpeg", IMAGE_JPEG_QUALITY);
+};
 
 const recentRequests = [];
 
@@ -241,7 +291,10 @@ export default function AdminPage() {
   };
 
   const handleImageFilesChange = async (event) => {
-    const files = Array.from(event.target.files || []);
+    const input = event.target;
+    const files = Array.from(input.files || []);
+
+    setVehicleFormError("");
 
     if (files.length === 0) {
       setSelectedImageNames([]);
@@ -249,13 +302,48 @@ export default function AdminPage() {
       return;
     }
 
+    if (files.length > MAX_IMAGE_COUNT) {
+      setVehicleFormError(`Select up to ${MAX_IMAGE_COUNT} images.`);
+      input.value = "";
+      setSelectedImageNames([]);
+      handleVehicleFieldChange("images", []);
+      return;
+    }
+
     try {
-      const imageData = await Promise.all(files.map(readFileAsDataUrl));
+      const imageData = await Promise.all(files.map(processVehicleImage));
+      const totalChars = imageData.reduce((sum, value) => sum + value.length, 0);
+      const maxChars = imageData.reduce(
+        (max, value) => Math.max(max, value.length),
+        0
+      );
+
+      if (maxChars > MAX_IMAGE_DATA_URL_CHARS) {
+        setVehicleFormError(
+          "One or more images are still too large after resize. Please choose smaller files."
+        );
+        input.value = "";
+        setSelectedImageNames([]);
+        handleVehicleFieldChange("images", []);
+        return;
+      }
+
+      if (totalChars > MAX_TOTAL_IMAGE_DATA_URL_CHARS) {
+        setVehicleFormError(
+          "Selected images are too large to store locally. Use fewer or smaller files."
+        );
+        input.value = "";
+        setSelectedImageNames([]);
+        handleVehicleFieldChange("images", []);
+        return;
+      }
+
       setSelectedImageNames(files.map((file) => file.name));
       handleVehicleFieldChange("images", imageData);
     } catch (error) {
       console.error("Failed to read image files", error);
       setVehicleFormError("Unable to load selected images.");
+      input.value = "";
       setSelectedImageNames([]);
       handleVehicleFieldChange("images", []);
     }
@@ -266,67 +354,81 @@ export default function AdminPage() {
     setIsSavingVehicle(true);
     setVehicleFormError("");
 
-    if (
-      !vehicleForm.companyName.trim() ||
-      !vehicleForm.model.trim() ||
-      !vehicleForm.year ||
-      !vehicleForm.type.trim() ||
-      !vehicleForm.mileage ||
-      !vehicleForm.transmission.trim() ||
-      !vehicleForm.fuelType.trim() ||
-      !vehicleForm.branch ||
-      !vehicleForm.price ||
-      !vehicleForm.status
-    ) {
-      setVehicleFormError("Please fill in all required fields.");
+    try {
+      if (
+        !vehicleForm.companyName.trim() ||
+        !vehicleForm.model.trim() ||
+        !vehicleForm.year ||
+        !vehicleForm.type.trim() ||
+        !vehicleForm.mileage ||
+        !vehicleForm.transmission.trim() ||
+        !vehicleForm.fuelType.trim() ||
+        !vehicleForm.branch ||
+        !vehicleForm.price ||
+        !vehicleForm.status
+      ) {
+        setVehicleFormError("Please fill in all required fields.");
+        return;
+      }
+
+      const images = Array.isArray(vehicleForm.images)
+        ? vehicleForm.images.filter(
+            (image) => typeof image === "string" && image.trim()
+          )
+        : String(vehicleForm.images || "")
+            .split(/,|\n/)
+            .map((value) => value.trim())
+            .filter(Boolean);
+
+      const totalChars = images.reduce((sum, value) => sum + value.length, 0);
+      if (totalChars > MAX_TOTAL_IMAGE_DATA_URL_CHARS) {
+        setVehicleFormError(
+          "Selected images are too large to store locally. Use fewer or smaller files."
+        );
+        return;
+      }
+
+      const nameParts = [
+        vehicleForm.year,
+        vehicleForm.companyName,
+        vehicleForm.model,
+      ].filter(Boolean);
+      const vehicleName = nameParts.join(" ");
+
+      const newVehicle = {
+        name: vehicleName,
+        make: vehicleForm.companyName.trim(),
+        model: vehicleForm.model.trim(),
+        year: Number(vehicleForm.year),
+        type: vehicleForm.type.trim(),
+        mileage: Number(vehicleForm.mileage),
+        transmission: vehicleForm.transmission.trim(),
+        fuelType: vehicleForm.fuelType.trim(),
+        location: vehicleForm.branch,
+        price: Number(vehicleForm.price),
+        status: vehicleForm.status,
+        description: vehicleForm.description.trim(),
+        images,
+        views: 0,
+      };
+
+      const result = await vehicleAPI.addVehicle(newVehicle);
+      if (result.success) {
+        await loadVehicles();
+        setVehicleForm(vehicleFormDefaults);
+        setSelectedImageNames([]);
+        setIsAddVehicleOpen(false);
+      } else {
+        setVehicleFormError(result.error || "Failed to add vehicle.");
+      }
+    } catch (error) {
+      console.error("Failed to add vehicle", error);
+      setVehicleFormError(
+        "Failed to save vehicle. Please try smaller images."
+      );
+    } finally {
       setIsSavingVehicle(false);
-      return;
     }
-
-    const images = Array.isArray(vehicleForm.images)
-      ? vehicleForm.images.filter(
-          (image) => typeof image === "string" && image.trim()
-        )
-      : String(vehicleForm.images || "")
-          .split(/,|\n/)
-          .map((value) => value.trim())
-          .filter(Boolean);
-
-    const nameParts = [
-      vehicleForm.year,
-      vehicleForm.companyName,
-      vehicleForm.model,
-    ].filter(Boolean);
-    const vehicleName = nameParts.join(" ");
-
-    const newVehicle = {
-      name: vehicleName,
-      make: vehicleForm.companyName.trim(),
-      model: vehicleForm.model.trim(),
-      year: Number(vehicleForm.year),
-      type: vehicleForm.type.trim(),
-      mileage: Number(vehicleForm.mileage),
-      transmission: vehicleForm.transmission.trim(),
-      fuelType: vehicleForm.fuelType.trim(),
-      location: vehicleForm.branch,
-      price: Number(vehicleForm.price),
-      status: vehicleForm.status,
-      description: vehicleForm.description.trim(),
-      images,
-      views: 0,
-    };
-
-    const result = await vehicleAPI.addVehicle(newVehicle);
-    if (result.success) {
-      await loadVehicles();
-      setVehicleForm(vehicleFormDefaults);
-      setSelectedImageNames([]);
-      setIsAddVehicleOpen(false);
-    } else {
-      setVehicleFormError(result.error || "Failed to add vehicle.");
-    }
-
-    setIsSavingVehicle(false);
   };
 
   useEffect(() => {
@@ -740,7 +842,7 @@ export default function AdminPage() {
                           <p className="text-xs text-muted-foreground mt-1">
                             {selectedImageNames.length > 0
                               ? `Selected: ${selectedImageNames.join(", ")}`
-                              : "Select one or more images from your device."}
+                              : "Select up to 6 images. Large images are resized to 1600px and compressed."}
                           </p>
                         </div>
                       </div>
