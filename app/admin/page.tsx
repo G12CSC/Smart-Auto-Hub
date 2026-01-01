@@ -100,8 +100,6 @@ const vehicleFormDefaults = {
   status: "Available",
 };
 
-const recentRequests = [];
-
 const vehicles = [
   {
     id: 1,
@@ -170,21 +168,16 @@ export default function AdminPage() {
     videoId: "",
   });
 
-  const [recentRequests, setRecentRequests] = useState([]);
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
   const [vehicleFormError, setVehicleFormError] = useState("");
   
   const [recentRequests, setRecentRequests] = useState([]);
-  const [notifications, setNotifications] = useState({
-    requests: 0,
-    vehicles: 0,
-    videos: 0,
-    newsletter: 0,
-  });
-  
-  const fetchBookings = async () => {
+    const [adminVehicles, setAdminVehicles] = useState([]);
+
+
+    const fetchBookings = async () => {
     try {
       const res = await fetch("/api/Consultations/getBooking");
       const data = await res.json();
