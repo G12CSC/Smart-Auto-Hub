@@ -176,7 +176,7 @@ export default function VehiclesPage() {
       <Header />
 
       <section
-        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24"
+        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
           backgroundImage:
             "url(/placeholder.svg?height=384&width=1600&query=modern car showroom inventory luxury vehicles)",
@@ -186,10 +186,10 @@ export default function VehiclesPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-6xl font-bold mb-4 text-balance">
+          <h1 className="text-6xl font-bold mb-4 text-balance animate-text-reveal">
             Find Your Perfect Car
           </h1>
-          <p className="text-xl opacity-90 text-balance max-w-2xl">
+          <p className="text-xl opacity-90 text-balance max-w-2xl animate-text-reveal stagger-1">
             Browse our extensive inventory of quality vehicles. From sedans to
             SUVs, we have something for everyone.
           </p>
@@ -203,7 +203,7 @@ export default function VehiclesPage() {
           {/* Filters Panel */}
           <div className="lg:col-span-1">
             {/* <div className="bg-card rounded-lg p-6 border border-border sticky top-24"> */}
-            <div className="bg-card rounded-lg p-6 border border-border sticky top-24 shadow-sm hover:shadow-md transition">
+            <div className="bg-card rounded-lg p-6 border border-border sticky top-24 shadow-sm hover:shadow-md transition animate-slide-in-left">
               <h2 className="font-bold text-xl mb-6">Filters</h2>
 
               {/* Search Input */}
@@ -393,7 +393,7 @@ export default function VehiclesPage() {
 
           {/* Results */}
           <div className="lg:col-span-3">
-            <div className="flex items-center justify-between mb-8 bg-secondary/10 rounded-lg px-6 py-4">
+            <div className="flex items-center justify-between mb-8 bg-secondary/10 rounded-lg px-6 py-4 animate-text-reveal">
               <p className="text-muted-foreground font-semibold">
                 {loading ? "Loading..." : `Showing ${vehicles.length} vehicles`}
               </p>
@@ -460,14 +460,11 @@ export default function VehiclesPage() {
                   {currentVehicles.map((vehicle, index) => (
                     <div
                       key={vehicle.id}
-                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up delay-${
-                        Math.min(index % 3, 3) * 100
+                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up animate-bounce-in-up
                       }`}
                       style={{
                         opacity: 0,
-                        animation: `fadeInUp 0.6s ease-out ${
-                          index * 0.1
-                        }s forwards`,
+                        animationDelay: `${(index % 3) * 0.1}s`,
                       }}
                     >
                       <Link

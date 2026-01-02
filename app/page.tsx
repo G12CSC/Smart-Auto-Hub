@@ -396,10 +396,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           {/* Section Header */}
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance animate-text-reveal">
               Your Journey to the Perfect Vehicle
             </h2>
-            <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
+            <p className="text-muted-foreground text-xl max-w-3xl mx-auto animate-text-reveal stagger-1">
               From discovery to ownership, we ensure every step builds trust and
               confidence
             </p>
@@ -409,7 +409,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {/* Step 1 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-100">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full shadow-lg text-white font-bold text-xl">
                 1
               </div>
@@ -427,7 +427,7 @@ export default function Home() {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-200">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up stagger-1">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-emerald-600 dark:bg-emerald-500 rounded-full shadow-lg text-white font-bold text-xl">
                 2
               </div>
@@ -444,7 +444,7 @@ export default function Home() {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-300">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up stagger-2">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full shadow-lg text-white font-bold text-xl">
                 3
               </div>
@@ -462,7 +462,7 @@ export default function Home() {
           {/* Trust Metrics - This process leads to trust */}
 
           <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-8 md:p-12 mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center animate-text-reveal">
               Trusted by Thousands
             </h3>
 
@@ -501,7 +501,7 @@ export default function Home() {
               ].map((stat, index) => (
                 <div
                   key={index}
-                  className="text-center hover:scale-105 transition-transform duration-300 fade-in-up"
+                  className="text-center hover:scale-105 transition-transform duration-300 animate-pop-in"
                   style={{
                     animationDelay: `${index * 0.1}s`,
                   }}
@@ -566,7 +566,7 @@ export default function Home() {
               ].map((benefit, index) => (
                 <div
                   key={index}
-                  className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-300 fade-in-up"
+                  className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-300 animate-slide-in-right"
                   style={{
                     animationDelay: `${index * 0.1}s`,
                   }}
@@ -705,10 +705,10 @@ export default function Home() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-4xl font-bold mb-2">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
               Video Reviews by Sameera Auto Traders
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Watch our detailed car reviews and technical insights
             </p>
           </div>
@@ -735,7 +735,7 @@ export default function Home() {
         {/* Featured Video */}
         <div className="mb-12">
           <div
-            className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+            className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
             onClick={() =>
               window.open(
                 `https://www.youtube.com/watch?v=${videoReviews[0].videoId}`,
