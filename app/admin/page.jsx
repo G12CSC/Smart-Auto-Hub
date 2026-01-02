@@ -42,7 +42,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { BRANCHES } from "@/lib/branches";
 import { vehicleAPI } from "@/lib/api/vehicles";
@@ -83,7 +82,15 @@ const stats = [
 ];
 
 const branchOptions = ["Colombo", "Matara", "Nugegoda"];
-const statusOptions = ["Available", "Shipped", "Reserved"];
+const statusOptions = ["Available", "Shipped", "Reserved", "Not Available"];
+const transmissionOptions = ["Automatic", "Manual"];
+const fuelOptions = ["Petrol", "Diesel", "EV", "Hybrid"];
+const MAX_IMAGE_COUNT = 6;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+const IMAGE_JPEG_QUALITY = 0.82;
+const MAX_IMAGE_DATA_URL_CHARS = 750000;
+const MAX_TOTAL_IMAGE_DATA_URL_CHARS = 2000000;
 
 const vehicleFormDefaults = {
   companyName: "",
@@ -96,7 +103,7 @@ const vehicleFormDefaults = {
   branch: "Nugegoda",
   price: "",
   description: "",
-  images: "",
+  images: [],
   status: "Available",
 };
 
@@ -159,6 +166,32 @@ const videoReviews = [
   },
 ];
 
+const normalizeValue = (value) => String(value || "").trim().toLowerCase();
+
+const getStatusKey = (status) => {
+  const normalized = normalizeValue(status);
+  if (normalized === "available") return "available";
+  if (normalized === "shipped") return "shipped";
+  if (normalized === "reserved") return "reserved";
+  return "other";
+};
+
+const getStatusBadgeClass = (status) => {
+  switch (normalizeValue(status)) {
+    case "available":
+      return "bg-green-500/20 text-green-700";
+    case "shipped":
+      return "bg-orange-500/20 text-orange-700";
+    case "reserved":
+      return "bg-blue-500/20 text-blue-700";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
+
+const formatVehiclePrice = (price) =>
+  typeof price === "number" ? `LKR ${price.toLocaleString()}` : price || "N/A";
+
 export default function AdminPage() {
 
 
@@ -191,21 +224,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchBookings();
+    loadVehicles();
 
     // ✅ Polling every 5 seconds
-    const interval = setInterval(fetchBookings, 5000);
+    const interval = setInterval(() => {
+      fetchBookings();
+      loadVehicles();
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
-  
-  const loadVehicles = async () => {
-    const result = await vehicleAPI.getAllVehicles();
-    if (result.success) {
-      const sortedVehicles = [...result.data].sort(
-        (a, b) => Number(b.id) - Number(a.id)
-      );
-      setAdminVehicles(sortedVehicles);
-    }
-  };
   
   const handleVehicleFieldChange = (field, value) => {
     setVehicleForm((prev) => ({
@@ -213,12 +240,121 @@ export default function AdminPage() {
       [field]: value,
     }));
   };
-  
-  const handleAddVehicle = async (event) => {
-    event.preventDefault();
-    setIsSavingVehicle(true);
+
+  const handleImageFilesChange = async (event) => {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+
     setVehicleFormError("");
 
+    if (files.length === 0) {
+      setSelectedImageNames([]);
+      handleVehicleFieldChange("images", []);
+      return;
+    }
+
+    if (files.length > MAX_IMAGE_COUNT) {
+      setVehicleFormError(`Select up to ${MAX_IMAGE_COUNT} images.`);
+      input.value = "";
+      setSelectedImageNames([]);
+      handleVehicleFieldChange("images", []);
+      return;
+    }
+
+    try {
+      const imageData = await Promise.all(files.map(processVehicleImage));
+      const totalChars = imageData.reduce((sum, value) => sum + value.length, 0);
+      const maxChars = imageData.reduce(
+        (max, value) => Math.max(max, value.length),
+        0
+      );
+
+      if (maxChars > MAX_IMAGE_DATA_URL_CHARS) {
+        setVehicleFormError(
+          "One or more images are still too large after resize. Please choose smaller files."
+        );
+        input.value = "";
+        setSelectedImageNames([]);
+        handleVehicleFieldChange("images", []);
+        return;
+      }
+
+      if (totalChars > MAX_TOTAL_IMAGE_DATA_URL_CHARS) {
+        setVehicleFormError(
+          "Selected images are too large to store locally. Use fewer or smaller files."
+        );
+        input.value = "";
+        setSelectedImageNames([]);
+        handleVehicleFieldChange("images", []);
+        return;
+      }
+
+      setSelectedImageNames(files.map((file) => file.name));
+      handleVehicleFieldChange("images", imageData);
+    } catch (error) {
+      console.error("Failed to read image files", error);
+      setVehicleFormError("Unable to load selected images.");
+      input.value = "";
+      setSelectedImageNames([]);
+      handleVehicleFieldChange("images", []);
+    }
+  };
+
+  const resetVehicleForm = () => {
+    setVehicleForm(vehicleFormDefaults);
+    setSelectedImageNames([]);
+    setVehicleFormError("");
+  };
+
+  const populateVehicleFormFromVehicle = (vehicle) => {
+    const images =
+      Array.isArray(vehicle?.images) && vehicle.images.length > 0
+        ? vehicle.images
+        : vehicle?.image
+          ? [vehicle.image]
+          : [];
+
+    setVehicleForm({
+      companyName: vehicle?.make || "",
+      model: vehicle?.model || "",
+      year: vehicle?.year ? String(vehicle.year) : "",
+      type: vehicle?.type || "",
+      mileage: vehicle?.mileage ? String(vehicle.mileage) : "",
+      transmission: vehicle?.transmission || "",
+      fuelType: vehicle?.fuelType || "",
+      branch: vehicle?.location || vehicle?.branch || "Nugegoda",
+      price: vehicle?.price ? String(vehicle.price) : "",
+      description: vehicle?.description || "",
+      images,
+      status: vehicle?.status || "Available",
+    });
+    setSelectedImageNames([]);
+    setVehicleFormError("");
+  };
+
+  const handleOpenAddVehicle = () => {
+    setVehicleDialogMode("add");
+    setEditingVehicle(null);
+    resetVehicleForm();
+    setIsVehicleDialogOpen(true);
+  };
+
+  const handleOpenEditVehicle = (vehicle) => {
+    setVehicleDialogMode("edit");
+    setEditingVehicle(vehicle);
+    populateVehicleFormFromVehicle(vehicle);
+    setIsVehicleDialogOpen(true);
+  };
+
+  const handleVehicleDialogOpenChange = (open) => {
+    setIsVehicleDialogOpen(open);
+    if (!open) {
+      setEditingVehicle(null);
+      resetVehicleForm();
+    }
+  };
+
+  const buildVehiclePayload = () => {
     if (
       !vehicleForm.companyName.trim() ||
       !vehicleForm.model.trim() ||
@@ -231,15 +367,25 @@ export default function AdminPage() {
       !vehicleForm.price ||
       !vehicleForm.status
     ) {
-      setVehicleFormError("Please fill in all required fields.");
-      setIsSavingVehicle(false);
-      return;
+      return { error: "Please fill in all required fields." };
     }
 
-    const images = vehicleForm.images
-      .split(/,|\n/)
-      .map((value) => value.trim())
-      .filter(Boolean);
+    const images = Array.isArray(vehicleForm.images)
+      ? vehicleForm.images.filter(
+          (image) => typeof image === "string" && image.trim()
+        )
+      : String(vehicleForm.images || "")
+          .split(/,|\n/)
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+    const totalChars = images.reduce((sum, value) => sum + value.length, 0);
+    if (totalChars > MAX_TOTAL_IMAGE_DATA_URL_CHARS) {
+      return {
+        error:
+          "Selected images are too large to store locally. Use fewer or smaller files.",
+      };
+    }
 
     const nameParts = [
       vehicleForm.year,
@@ -248,41 +394,133 @@ export default function AdminPage() {
     ].filter(Boolean);
     const vehicleName = nameParts.join(" ");
 
-    const newVehicle = {
-      name: vehicleName,
-      make: vehicleForm.companyName.trim(),
-      model: vehicleForm.model.trim(),
-      year: Number(vehicleForm.year),
-      type: vehicleForm.type.trim(),
-      mileage: Number(vehicleForm.mileage),
-      transmission: vehicleForm.transmission.trim(),
-      fuelType: vehicleForm.fuelType.trim(),
-      location: vehicleForm.branch,
-      price: Number(vehicleForm.price),
-      status: vehicleForm.status,
-      description: vehicleForm.description.trim(),
-      images,
-      views: 0,
+    return {
+      data: {
+        name: vehicleName,
+        make: vehicleForm.companyName.trim(),
+        model: vehicleForm.model.trim(),
+        year: Number(vehicleForm.year),
+        type: vehicleForm.type.trim(),
+        mileage: Number(vehicleForm.mileage),
+        transmission: vehicleForm.transmission.trim(),
+        fuelType: vehicleForm.fuelType.trim(),
+        location: vehicleForm.branch,
+        price: Number(vehicleForm.price),
+        status: vehicleForm.status,
+        description: vehicleForm.description.trim(),
+        images,
+      },
     };
-
-    const result = await vehicleAPI.addVehicle(newVehicle);
-    if (result.success) {
-      await loadVehicles();
-      setVehicleForm(vehicleFormDefaults);
-      setIsAddVehicleOpen(false);
-    } else {
-      setVehicleFormError(result.error || "Failed to add vehicle.");
-    }
-
-    setIsSavingVehicle(false);
   };
 
-  const [notifications, setNotifications] = useState({
-    requests: 0,
-    vehicles: 0,
-    videos: 0,
-    newsletter: 0,
-  });
+  const handleAddVehicle = async (event) => {
+    event.preventDefault();
+    setIsSavingVehicle(true);
+    setVehicleFormError("");
+
+    try {
+      const { data, error } = buildVehiclePayload();
+      if (error) {
+        setVehicleFormError(error);
+        return;
+      }
+
+      const result = await vehicleAPI.addVehicle(data);
+      if (result.success) {
+        await loadVehicles();
+        resetVehicleForm();
+        setIsVehicleDialogOpen(false);
+      } else {
+        setVehicleFormError(result.error || "Failed to add vehicle.");
+      }
+    } catch (error) {
+      console.error("Failed to add vehicle", error);
+      setVehicleFormError(
+        "Failed to save vehicle. Please try smaller images."
+      );
+    } finally {
+      setIsSavingVehicle(false);
+    }
+  };
+
+  const handleUpdateVehicle = async (event) => {
+    event.preventDefault();
+
+    if (!editingVehicle) {
+      setVehicleFormError("Select a vehicle to edit.");
+      return;
+    }
+
+    setIsSavingVehicle(true);
+    setVehicleFormError("");
+
+    try {
+      const { data, error } = buildVehiclePayload();
+      if (error) {
+        setVehicleFormError(error);
+        return;
+      }
+
+      const result = await vehicleAPI.updateVehicle(editingVehicle.id, data);
+      if (result.success) {
+        await loadVehicles();
+        resetVehicleForm();
+        setEditingVehicle(null);
+        setIsVehicleDialogOpen(false);
+      } else {
+        setVehicleFormError(result.error || "Failed to update vehicle.");
+      }
+    } catch (error) {
+      console.error("Failed to update vehicle", error);
+      setVehicleFormError("Failed to update vehicle. Please try again.");
+    } finally {
+      setIsSavingVehicle(false);
+    }
+  };
+
+  const handleViewVehicle = (vehicle) => {
+    setViewVehicle(vehicle);
+    setIsViewVehicleOpen(true);
+  };
+
+  const closeViewVehicleDialog = () => {
+    setIsViewVehicleOpen(false);
+    setViewVehicle(null);
+  };
+
+  const handleOpenDeleteVehicle = (vehicle) => {
+    setVehicleToDelete(vehicle);
+    setDeleteVehicleError("");
+    setIsDeleteVehicleOpen(true);
+  };
+
+  const closeDeleteVehicleDialog = () => {
+    setIsDeleteVehicleOpen(false);
+    setVehicleToDelete(null);
+    setDeleteVehicleError("");
+  };
+
+  const handleDeleteVehicle = async () => {
+    if (!vehicleToDelete) return;
+
+    setIsDeletingVehicle(true);
+    setDeleteVehicleError("");
+
+    try {
+      const result = await vehicleAPI.deleteVehicle(vehicleToDelete.id);
+      if (result.success) {
+        await loadVehicles();
+        closeDeleteVehicleDialog();
+      } else {
+        setDeleteVehicleError(result.error || "Failed to delete vehicle.");
+      }
+    } catch (error) {
+      console.error("Failed to delete vehicle", error);
+      setDeleteVehicleError("Failed to delete vehicle.");
+    } finally {
+      setIsDeletingVehicle(false);
+    }
+  };
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
@@ -304,6 +542,46 @@ export default function AdminPage() {
 
     const notifs = localStorageAPI.getNotifications();
     setNotifications(notifs.admin);
+  };
+
+  const branchInventory = BRANCHES.map((branch) => {
+    const branchName = normalizeValue(branch.name);
+    const branchVehicles = adminVehicles.filter((vehicle) => {
+      const location = normalizeValue(vehicle.location || vehicle.branch);
+      return location === branchName;
+    });
+
+    const counts = branchVehicles.reduce(
+      (acc, vehicle) => {
+        const statusKey = getStatusKey(vehicle.status);
+        if (statusKey === "available") {
+          acc.available += 1;
+        } else if (statusKey === "shipped") {
+          acc.shipped += 1;
+        } else if (statusKey === "reserved") {
+          acc.reserved += 1;
+        } else {
+          acc.other += 1;
+        }
+        acc.total += 1;
+        return acc;
+      },
+      { total: 0, available: 0, shipped: 0, reserved: 0, other: 0 }
+    );
+
+    return {
+      ...branch,
+      ...counts,
+      vehicles: branchVehicles,
+    };
+  });
+
+  const selectedBranch =
+    branchInventory.find((branch) => branch.slug === selectedBranchSlug) || null;
+
+  const handleOpenBranchDetails = (branchSlug) => {
+    setSelectedBranchSlug(branchSlug);
+    setIsBranchDialogOpen(true);
   };
 
   return (
@@ -531,100 +809,171 @@ export default function AdminPage() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">Vehicle Management</h2>
+                <Button onClick={handleOpenAddVehicle}>
+                  <Plus size={18} className="mr-2" />
+                  Add New Vehicle
+                </Button>
                 <Dialog
-                  open={isAddVehicleOpen}
-                  onOpenChange={(open) => {
-                    setIsAddVehicleOpen(open)
-                    if (!open) {
-                      setVehicleFormError("")
-                    }
-                  }}
+                  open={isVehicleDialogOpen}
+                  onOpenChange={handleVehicleDialogOpenChange}
                 >
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus size={18} className="mr-2" />
-                      Add New Vehicle
-                    </Button>
-                  </DialogTrigger>
                   <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Add Vehicle</DialogTitle>
+                      <DialogTitle>
+                        {vehicleDialogMode === "edit"
+                          ? "Edit Vehicle"
+                          : "Add Vehicle"}
+                      </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleAddVehicle} className="space-y-4">
+                    <form
+                      onSubmit={
+                        vehicleDialogMode === "edit"
+                          ? handleUpdateVehicle
+                          : handleAddVehicle
+                      }
+                      className="space-y-4"
+                    >
                       <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground">Vehicle Details</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground">
+                          Vehicle Details
+                        </h3>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Company Name</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Company Name
+                          </label>
                           <Input
                             value={vehicleForm.companyName}
-                            onChange={(e) => handleVehicleFieldChange("companyName", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "companyName",
+                                e.target.value
+                              )
+                            }
                             placeholder="e.g., Toyota"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Model</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Model
+                          </label>
                           <Input
                             value={vehicleForm.model}
-                            onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("model", e.target.value)
+                            }
                             placeholder="e.g., Prius"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Year</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Year
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.year}
-                            onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("year", e.target.value)
+                            }
                             placeholder="2024"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Type</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Type
+                          </label>
                           <Input
                             value={vehicleForm.type}
-                            onChange={(e) => handleVehicleFieldChange("type", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("type", e.target.value)
+                            }
                             placeholder="Sedan, SUV..."
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Current Mileage (km)</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Current Mileage (km)
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.mileage}
-                            onChange={(e) => handleVehicleFieldChange("mileage", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "mileage",
+                                e.target.value
+                              )
+                            }
                             placeholder="25000"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Transmission Type</label>
-                          <Input
+                          <label className="block text-sm font-medium mb-2">
+                            Transmission Type
+                          </label>
+                          <select
                             value={vehicleForm.transmission}
-                            onChange={(e) => handleVehicleFieldChange("transmission", e.target.value)}
-                            placeholder="Automatic"
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "transmission",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
-                          />
+                          >
+                            <option value="" disabled>
+                              Select transmission
+                            </option>
+                            {transmissionOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Fuel Type</label>
-                          <Input
+                          <label className="block text-sm font-medium mb-2">
+                            Fuel Type
+                          </label>
+                          <select
                             value={vehicleForm.fuelType}
-                            onChange={(e) => handleVehicleFieldChange("fuelType", e.target.value)}
-                            placeholder="Hybrid"
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "fuelType",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
-                          />
+                          >
+                            <option value="" disabled>
+                              Select fuel type
+                            </option>
+                            {fuelOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Branch</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Branch
+                          </label>
                           <select
                             value={vehicleForm.branch}
-                            onChange={(e) => handleVehicleFieldChange("branch", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "branch",
+                                e.target.value
+                              )
+                            }
                             className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                           >
@@ -636,20 +985,28 @@ export default function AdminPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Price (LKR)</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Price (LKR)
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.price}
-                            onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("price", e.target.value)
+                            }
                             placeholder="7500000"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Status</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Status
+                          </label>
                           <select
                             value={vehicleForm.status}
-                            onChange={(e) => handleVehicleFieldChange("status", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("status", e.target.value)
+                            }
                             className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                           >
@@ -661,34 +1018,63 @@ export default function AdminPage() {
                           </select>
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">Description</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Description
+                          </label>
                           <Textarea
                             value={vehicleForm.description}
-                            onChange={(e) => handleVehicleFieldChange("description", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "description",
+                                e.target.value
+                              )
+                            }
                             placeholder="Brief description of the vehicle..."
                             rows={4}
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">Images (array)</label>
-                          <Textarea
-                            value={vehicleForm.images}
-                            onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
-                            placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                            rows={3}
+                          <label className="block text-sm font-medium mb-2">
+                            Images
+                          </label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageFilesChange}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Separate multiple image URLs with commas or new lines.
+                            {selectedImageNames.length > 0
+                              ? `Selected: ${selectedImageNames.join(", ")}`
+                              : vehicleDialogMode === "edit" &&
+                                  Array.isArray(vehicleForm.images) &&
+                                  vehicleForm.images.length > 0
+                                ? `Using ${vehicleForm.images.length} existing image${
+                                    vehicleForm.images.length > 1 ? "s" : ""
+                                  }. Choose files to replace.`
+                                : "Select up to 6 images. Large images are resized to 1600px and compressed."}
                           </p>
                         </div>
                       </div>
-                      {vehicleFormError && <p className="text-sm text-destructive">{vehicleFormError}</p>}
+                      {vehicleFormError && (
+                        <p className="text-sm text-destructive">
+                          {vehicleFormError}
+                        </p>
+                      )}
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setIsAddVehicleOpen(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleVehicleDialogOpenChange(false)}
+                        >
                           Cancel
                         </Button>
                         <Button type="submit" disabled={isSavingVehicle}>
-                          {isSavingVehicle ? "Saving..." : "Save Vehicle"}
+                          {isSavingVehicle
+                            ? "Saving..."
+                            : vehicleDialogMode === "edit"
+                              ? "Update Vehicle"
+                              : "Save Vehicle"}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -747,13 +1133,25 @@ export default function AdminPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="ghost">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewVehicle(vehicle)}
+                          >
                             <Eye size={16} />
                           </Button>
-                          <Button size="sm" variant="ghost">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleOpenEditVehicle(vehicle)}
+                          >
                             <Edit size={16} />
                           </Button>
-                          <Button size="sm" variant="ghost">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleOpenDeleteVehicle(vehicle)}
+                          >
                             <Trash2 size={16} />
                           </Button>
                         </div>
@@ -762,6 +1160,192 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+
+              <Dialog
+                open={isViewVehicleOpen}
+                onOpenChange={(open) => {
+                  setIsViewVehicleOpen(open);
+                  if (!open) {
+                    setViewVehicle(null);
+                  }
+                }}
+              >
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {viewVehicle?.name || "Vehicle Details"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  {viewVehicle ? (
+                    <div className="space-y-6">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="w-full md:w-1/2">
+                          <div className="h-56 w-full rounded-lg bg-secondary overflow-hidden">
+                            <img
+                              src={
+                                viewVehicle.image ||
+                                (Array.isArray(viewVehicle.images) &&
+                                  viewVehicle.images[0]) ||
+                                "/placeholder.svg"
+                              }
+                              alt={viewVehicle.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <p className="text-2xl font-bold">
+                              {formatVehiclePrice(viewVehicle.price)}
+                            </p>
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(
+                                viewVehicle.status
+                              )}`}
+                            >
+                              {viewVehicle.status || "Unknown"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {viewVehicle.location ||
+                              viewVehicle.branch ||
+                              "Location not set"}
+                          </p>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Make
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.make || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Model
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.model || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Year
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.year || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Mileage
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.mileage
+                                  ? `${viewVehicle.mileage.toLocaleString()} km`
+                                  : "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Transmission
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.transmission || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Fuel Type
+                              </p>
+                              <p className="font-medium">
+                                {viewVehicle.fuelType || "N/A"}
+                              </p>
+                            </div>
+                          </div>
+                          {viewVehicle.id && (
+                            <Button asChild variant="outline" className="w-full">
+                              <Link href={`/vehicles/${viewVehicle.id}`}>
+                                View Full Page
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2">
+                          Description
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {viewVehicle.description ||
+                            "No description available."}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Select a vehicle to view details.
+                    </p>
+                  )}
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={closeViewVehicleDialog}
+                    >
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={isDeleteVehicleOpen}
+                onOpenChange={(open) => {
+                  setIsDeleteVehicleOpen(open);
+                  if (!open) {
+                    setVehicleToDelete(null);
+                    setDeleteVehicleError("");
+                  }
+                }}
+              >
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Delete Vehicle</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Are you sure you want to delete{" "}
+                      <span className="font-semibold">
+                        {vehicleToDelete?.name || "this vehicle"}
+                      </span>
+                      ? This will remove it from the admin list.
+                    </p>
+                    {deleteVehicleError && (
+                      <p className="text-sm text-destructive">
+                        {deleteVehicleError}
+                      </p>
+                    )}
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={closeDeleteVehicleDialog}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDeleteVehicle}
+                      disabled={isDeletingVehicle}
+                    >
+                      {isDeletingVehicle ? "Deleting..." : "Delete Vehicle"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
 
@@ -927,9 +1511,9 @@ export default function AdminPage() {
               <h2 className="text-2xl font-bold mb-6">Branch-wise Inventory</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {["Nugegoda", "Matara", "Colombo"].map((branch, idx) => (
+                {branchInventory.map((branch) => (
                   <div
-                    key={idx}
+                    key={branch.slug}
                     className="bg-secondary/30 rounded-lg border border-border p-6"
                   >
                     <div className="flex items-center gap-3 mb-4">
@@ -937,7 +1521,7 @@ export default function AdminPage() {
                         <MapPin size={24} className="text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-xl">{branch}</h3>
+                        <h3 className="font-bold text-xl">{branch.name}</h3>
                         <p className="text-sm text-muted-foreground">Branch</p>
                       </div>
                     </div>
@@ -947,16 +1531,14 @@ export default function AdminPage() {
                         <span className="text-sm text-muted-foreground">
                           Total Vehicles
                         </span>
-                        <span className="font-bold text-lg">
-                          {45 + idx * 10}
-                        </span>
+                        <span className="font-bold text-lg">{branch.total}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">
                           Available
                         </span>
                         <span className="font-semibold text-green-600">
-                          {30 + idx * 5}
+                          {branch.available}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -964,7 +1546,7 @@ export default function AdminPage() {
                           Shipped
                         </span>
                         <span className="font-semibold text-orange-600">
-                          {10 + idx * 3}
+                          {branch.shipped}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -972,17 +1554,156 @@ export default function AdminPage() {
                           Reserved
                         </span>
                         <span className="font-semibold text-blue-600">
-                          {5 + idx * 2}
+                          {branch.reserved}
                         </span>
                       </div>
                     </div>
 
-                    <Button className="w-full mt-4" variant="outline">
+                    <Button
+                      className="w-full mt-4"
+                      variant="outline"
+                      onClick={() => handleOpenBranchDetails(branch.slug)}
+                    >
                       View Details
                     </Button>
                   </div>
                 ))}
               </div>
+
+              <Dialog
+                open={isBranchDialogOpen}
+                onOpenChange={(open) => {
+                  setIsBranchDialogOpen(open);
+                  if (!open) {
+                    setSelectedBranchSlug(null);
+                  }
+                }}
+              >
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedBranch
+                        ? `${selectedBranch.name} Branch Inventory`
+                        : "Branch Inventory"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  {selectedBranch ? (
+                    <div className="space-y-6">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={16} className="text-primary" />
+                          <span>{selectedBranch.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Car size={16} className="text-primary" />
+                          <span>{selectedBranch.total} vehicles total</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                          <p className="text-xs text-muted-foreground">Total</p>
+                          <p className="text-lg font-semibold">
+                            {selectedBranch.total}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Available
+                          </p>
+                          <p className="text-lg font-semibold text-green-600">
+                            {selectedBranch.available}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Shipped
+                          </p>
+                          <p className="text-lg font-semibold text-orange-600">
+                            {selectedBranch.shipped}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Reserved
+                          </p>
+                          <p className="text-lg font-semibold text-blue-600">
+                            {selectedBranch.reserved}
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedBranch.other > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Other status vehicles: {selectedBranch.other}
+                        </p>
+                      )}
+
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3">
+                          Recent Vehicles
+                        </h4>
+                        {selectedBranch.vehicles.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            No vehicles available for this branch yet.
+                          </p>
+                        ) : (
+                          <div className="space-y-3">
+                            {selectedBranch.vehicles
+                              .slice(0, 5)
+                              .map((vehicle) => (
+                                <div
+                                  key={vehicle.id}
+                                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-border p-3"
+                                >
+                                  <div>
+                                    <p className="font-medium">
+                                      {vehicle.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {vehicle.make || "Unknown make"}
+                                      {vehicle.model
+                                        ? ` | ${vehicle.model}`
+                                        : ""}
+                                      {vehicle.year
+                                        ? ` | ${vehicle.year}`
+                                        : ""}
+                                    </p>
+                                  </div>
+                                  <div className="text-sm sm:text-right">
+                                    <p className="font-semibold">
+                                      {formatVehiclePrice(vehicle.price)}
+                                    </p>
+                                    <span
+                                      className={`mt-1 inline-flex px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(
+                                        vehicle.status
+                                      )}`}
+                                    >
+                                      {vehicle.status || "Unknown"}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Select a branch to view details.
+                    </p>
+                  )}
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsBranchDialogOpen(false)}
+                    >
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </div>
