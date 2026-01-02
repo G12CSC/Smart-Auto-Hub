@@ -2,18 +2,20 @@ export async function cancelBookings(id){
 
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
-    await fetch(`/api/Consultations/admin/handleBookings/${id}`, {
+    const res=await fetch("/api/Consultations/cancelBookings/", {
         method: "PATCH",
         headers:{
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            status:"CANCELLED"
+            id:id
         })
     })
 
     if (!res.ok) {
         alert("Failed to cancel booking");
     }
+
+    return res.json;
 
 }

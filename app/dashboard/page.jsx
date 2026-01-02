@@ -29,7 +29,6 @@ import {
 import ChatBot from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { localStorageAPI } from "@/lib/storage/localStorage";
-import { count } from "console";
 import {cancelBookings} from "../APITriggers/cancelBookings.js";
 
 const upcomingAppointments = [];
@@ -63,14 +62,24 @@ export default function DashboardPage() {
         const data = await res.json();
 
         // Upcoming = not completed
-        setUpcomingAppointments(
-          data.filter((apt) => apt.status !== "COMPLETED")
-        );
+          setUpcomingAppointments(
+              data.filter(
+                  (apt) =>
+                      apt.status !== "COMPLETED" &&
+                      apt.status !== "CANCELLED"
+              )
+          );
 
-        // History = completed
-        setAppointmentHistory(data.filter((apt) => apt.status === "COMPLETED"));
+          setAppointmentHistory(
+              data.filter(
+                  (apt) =>
+                      apt.status === "COMPLETED" ||
+                      apt.status === "CANCELLED"
+              )
+          );
 
-        setLoading(false);
+
+          setLoading(false);
       } catch (error) {
         console.error("Failed to load appointments", error);
       }
@@ -302,15 +311,34 @@ export default function DashboardPage() {
                               <MessageSquare size={14} className="mr-2" />
                               Contact
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 bg-transparent"
-                              onClick={()=>cancelBookings(apt.id)}
-                            >
-                              <XCircle size={14} className="mr-2" />
-                              Cancel
-                            </Button>
+
+                              <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 bg-transparent"
+                                  onClick={async () => {
+                                      try {
+                                          const cancelled = await cancelBookings(apt.id);
+
+                                          // Remove from upcoming
+                                          setUpcomingAppointments((prev) =>
+                                              prev.filter((a) => a.id !== apt.id)
+                                          );
+
+                                          // Add to history
+                                          setAppointmentHistory((prev) => [
+                                              cancelled,
+                                              ...prev,
+                                          ]);
+                                      } catch (err) {
+                                          alert("Failed to cancel appointment");
+                                      }
+                                  }}
+                              >
+                                  <XCircle size={14} className="mr-2" />
+                                  Cancel
+                              </Button>
+
                           </div>
                         </div>
                       ))}
@@ -361,13 +389,13 @@ export default function DashboardPage() {
                                 {apt.consultationType}
                               </td>
                               <td className="px-6 py-3 text-sm">
-                                {apt.vehicle || "-"}
+                                {apt.vehicleType}
                               </td>
                               <td className="px-6 py-3 text-sm">
-                                {apt.branch}
+                                {""}
                               </td>
                               <td className="px-6 py-3 text-sm text-muted-foreground">
-                                {new Date(apt.date).toLocaleDateString()}
+                                {apt.preferredDate}
                               </td>
                               <td className="px-6 py-3 text-sm">
                                 <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-400 font-medium text-xs">
