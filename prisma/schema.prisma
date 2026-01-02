@@ -74,6 +74,8 @@ model Car {
   bodyType       String?        @default("NULL")
   fuelType       String?
   engineCapacity Int?           @default(0) @db.SmallInt
+  location       String?        @default("NULL")
+  dealer         String?        @default("NULL")
   availability   Availability[]
   createdBy      Admin?         @relation("CreatedBy", fields: [createdById], references: [id])
   updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
