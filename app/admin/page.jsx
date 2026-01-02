@@ -160,8 +160,6 @@ const videoReviews = [
 ];
 
 export default function AdminPage() {
-
-
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [newVideo, setNewVideo] = useState({
@@ -174,16 +172,15 @@ export default function AdminPage() {
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
   const [vehicleFormError, setVehicleFormError] = useState("");
-  
+
   const [recentRequests, setRecentRequests] = useState([]);
-    const [adminVehicles, setAdminVehicles] = useState([]);
+  const [adminVehicles, setAdminVehicles] = useState([]);
 
-
-    const fetchBookings = async () => {
+  const fetchBookings = async () => {
     try {
       const res = await fetch("/api/Consultations/getBooking");
       const data = await res.json();
-      setRecentRequests(Array.isArray(data) ? data :data.data || []);
+      setRecentRequests(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Failed to fetch bookings", error);
     }
@@ -196,7 +193,11 @@ export default function AdminPage() {
     const interval = setInterval(fetchBookings, 5000);
     return () => clearInterval(interval);
   }, []);
-  
+
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
   const loadVehicles = async () => {
     const result = await vehicleAPI.getAllVehicles();
     if (result.success) {
@@ -206,14 +207,14 @@ export default function AdminPage() {
       setAdminVehicles(sortedVehicles);
     }
   };
-  
+
   const handleVehicleFieldChange = (field, value) => {
     setVehicleForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
-  
+
   const handleAddVehicle = async (event) => {
     event.preventDefault();
     setIsSavingVehicle(true);
@@ -473,20 +474,19 @@ export default function AdminPage() {
                         <td>{request.preferredDate}</td>
                         <td>{request.preferredTime}</td>
                         <td className="px-4 py-2">
-                         <span
-                             className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                 request.status === "ACCEPTED"
-                                     ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                                     : request.status === "REJECTED"
-                                         ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
-                                         : request.status === "CANCELLED"
-                                             ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
-                                             : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
-                             }`}
-                         >
-  {request.status}
-</span>
-
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              request.status === "ACCEPTED"
+                                ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
+                                : request.status === "REJECTED"
+                                ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
+                                : request.status === "CANCELLED"
+                                ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
+                                : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                            }`}
+                          >
+                            {request.status}
+                          </span>
                         </td>
                         <td className="px-4 py-2 flex gap-2">
                           {request.status === "PENDING" && (
@@ -534,9 +534,9 @@ export default function AdminPage() {
                 <Dialog
                   open={isAddVehicleOpen}
                   onOpenChange={(open) => {
-                    setIsAddVehicleOpen(open)
+                    setIsAddVehicleOpen(open);
                     if (!open) {
-                      setVehicleFormError("")
+                      setVehicleFormError("");
                     }
                   }}
                 >
@@ -552,79 +552,125 @@ export default function AdminPage() {
                     </DialogHeader>
                     <form onSubmit={handleAddVehicle} className="space-y-4">
                       <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground">Vehicle Details</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground">
+                          Vehicle Details
+                        </h3>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Company Name</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Company Name
+                          </label>
                           <Input
                             value={vehicleForm.companyName}
-                            onChange={(e) => handleVehicleFieldChange("companyName", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "companyName",
+                                e.target.value
+                              )
+                            }
                             placeholder="e.g., Toyota"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Model</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Model
+                          </label>
                           <Input
                             value={vehicleForm.model}
-                            onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("model", e.target.value)
+                            }
                             placeholder="e.g., Prius"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Year</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Year
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.year}
-                            onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("year", e.target.value)
+                            }
                             placeholder="2024"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Type</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Type
+                          </label>
                           <Input
                             value={vehicleForm.type}
-                            onChange={(e) => handleVehicleFieldChange("type", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("type", e.target.value)
+                            }
                             placeholder="Sedan, SUV..."
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Current Mileage (km)</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Current Mileage (km)
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.mileage}
-                            onChange={(e) => handleVehicleFieldChange("mileage", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "mileage",
+                                e.target.value
+                              )
+                            }
                             placeholder="25000"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Transmission Type</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Transmission Type
+                          </label>
                           <Input
                             value={vehicleForm.transmission}
-                            onChange={(e) => handleVehicleFieldChange("transmission", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "transmission",
+                                e.target.value
+                              )
+                            }
                             placeholder="Automatic"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Fuel Type</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Fuel Type
+                          </label>
                           <Input
                             value={vehicleForm.fuelType}
-                            onChange={(e) => handleVehicleFieldChange("fuelType", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "fuelType",
+                                e.target.value
+                              )
+                            }
                             placeholder="Hybrid"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Branch</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Branch
+                          </label>
                           <select
                             value={vehicleForm.branch}
-                            onChange={(e) => handleVehicleFieldChange("branch", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("branch", e.target.value)
+                            }
                             className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                           >
@@ -636,20 +682,28 @@ export default function AdminPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Vehicle Price (LKR)</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Vehicle Price (LKR)
+                          </label>
                           <Input
                             type="number"
                             value={vehicleForm.price}
-                            onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("price", e.target.value)
+                            }
                             placeholder="7500000"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Status</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Status
+                          </label>
                           <select
                             value={vehicleForm.status}
-                            onChange={(e) => handleVehicleFieldChange("status", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("status", e.target.value)
+                            }
                             className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                           >
@@ -661,30 +715,50 @@ export default function AdminPage() {
                           </select>
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">Description</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Description
+                          </label>
                           <Textarea
                             value={vehicleForm.description}
-                            onChange={(e) => handleVehicleFieldChange("description", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange(
+                                "description",
+                                e.target.value
+                              )
+                            }
                             placeholder="Brief description of the vehicle..."
                             rows={4}
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">Images (array)</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Images (array)
+                          </label>
                           <Textarea
                             value={vehicleForm.images}
-                            onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
+                            onChange={(e) =>
+                              handleVehicleFieldChange("images", e.target.value)
+                            }
                             placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
                             rows={3}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Separate multiple image URLs with commas or new lines.
+                            Separate multiple image URLs with commas or new
+                            lines.
                           </p>
                         </div>
                       </div>
-                      {vehicleFormError && <p className="text-sm text-destructive">{vehicleFormError}</p>}
+                      {vehicleFormError && (
+                        <p className="text-sm text-destructive">
+                          {vehicleFormError}
+                        </p>
+                      )}
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setIsAddVehicleOpen(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsAddVehicleOpen(false)}
+                        >
                           Cancel
                         </Button>
                         <Button type="submit" disabled={isSavingVehicle}>
@@ -697,7 +771,9 @@ export default function AdminPage() {
               </div>
 
               {adminVehicles.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">No vehicles available yet.</div>
+                <div className="text-center py-10 text-muted-foreground">
+                  No vehicles available yet.
+                </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {adminVehicles.map((vehicle) => (
@@ -708,13 +784,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-4">
                         <div className="h-16 w-24 bg-secondary rounded flex items-center justify-center overflow-hidden">
                           {vehicle.image ? (
-                            <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-cover" />
+                            <img
+                              src={vehicle.image}
+                              alt={vehicle.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <Car size={32} className="text-muted-foreground" />
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg">{vehicle.name}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {vehicle.name}
+                          </h3>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
                               <MapPin size={14} />
@@ -730,17 +812,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-6">
                         <div className="text-right">
                           <p className="font-bold text-lg">
-                            {typeof vehicle.price === "number" ? `LKR ${vehicle.price.toLocaleString()}` : vehicle.price}
+                            {typeof vehicle.price === "number"
+                              ? `LKR ${vehicle.price.toLocaleString()}`
+                              : vehicle.price}
                           </p>
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${
                               vehicle.status === "Available"
                                 ? "bg-green-500/20 text-green-700"
                                 : vehicle.status === "Shipped"
-                                  ? "bg-orange-500/20 text-orange-700"
-                                  : vehicle.status === "Reserved"
-                                    ? "bg-blue-500/20 text-blue-700"
-                                    : "bg-red-500/20 text-red-700"
+                                ? "bg-orange-500/20 text-orange-700"
+                                : vehicle.status === "Reserved"
+                                ? "bg-blue-500/20 text-blue-700"
+                                : "bg-red-500/20 text-red-700"
                             }`}
                           >
                             {vehicle.status}

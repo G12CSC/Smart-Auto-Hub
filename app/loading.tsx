@@ -1,4 +1,4 @@
-import { Spinner } from "@/components/ui/spinner"
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Loading() {
   return (
@@ -8,27 +8,61 @@ export default function Loading() {
         <div className="flex justify-center">
           <div className="relative">
             <svg
-              className="w-20 h-20 text-primary animate-bounce"
+              className="w-24 h-24 text-primary animate-bounce"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              {/* Car body */}
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
+                strokeWidth={1.5}
+                d="M5 13l1.5-6h11l1.5 6H5z"
               />
+              {/* Car top/cabin */}
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                strokeWidth={1.5}
+                d="M7 13v-4h10v4"
+              />
+              {/* Front wheel */}
+              <circle
+                cx="6.5"
+                cy="17"
+                r="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+              />
+              {/* Back wheel */}
+              <circle
+                cx="17.5"
+                cy="17"
+                r="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+              />
+              {/* Windshield */}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M8 12L8.5 8.5"
+              />
+              {/* Rear window */}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M16 12L15.5 8.5"
               />
             </svg>
-            <div className="absolute inset-0 animate-ping opacity-20">
+            <div className="absolute inset-0 animate-ping opacity-30">
               <svg
-                className="w-20 h-20 text-primary"
+                className="w-24 h-24 text-primary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -36,8 +70,14 @@ export default function Loading() {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
+                  strokeWidth={1.5}
+                  d="M6.5 17a2 2 0 100-4 2 2 0 000 4z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17.5 17a2 2 0 100-4 2 2 0 000 4z"
                 />
               </svg>
             </div>
