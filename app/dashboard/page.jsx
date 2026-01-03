@@ -32,11 +32,6 @@ import { localStorageAPI } from "@/lib/storage/localStorage";
 import {cancelBookings} from "../APITriggers/cancelBookings.js";
 import {rescheduleBooking} from "../APITriggers/rescheduleBooking.js";
 
-const upcomingAppointments = [];
-
-const appointmentHistory = [];
-
-const userReviews = [];
 
 export default function DashboardPage() {
 
@@ -54,51 +49,40 @@ export default function DashboardPage() {
 
 
     useEffect(() => {
-    if (status !== "authenticated") return;
 
-    const loadAppointments = async () => {
-      try {
-        const res = await fetch("/api/Consultations/user");
+        if (status !== "authenticated") return;
 
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("API error:", text);
-          return;
-        }
+        const loadAppointments = async () => {
+            try {
+                const res = await fetch("/api/Consultations/user/");
 
-        const data = await res.json();
+                if (!res.ok) {
+                    console.error("Failed to fetch appointments");
+                    return;
+                }
 
-        // Upcoming = not completed
-          setUpcomingAppointments(
-              data.filter(
-                  (apt) =>
-                      apt.status !== "COMPLETED" &&
-                      apt.status !== "CANCELLED"
-              )
-          );
+                const { upcoming, history } = await res.json();
 
-          setAppointmentHistory(
-              data.filter(
-                  (apt) =>
-                      apt.status === "COMPLETED" ||
-                      apt.status === "CANCELLED"
-              )
-          );
+                setUpcomingAppointments(upcoming);
+                setAppointmentHistory(history);
+
+                setLoading(false);
+
+            } catch (error) {
+                console.error("Failed to load appointments", error);
+            }
+        };
+
+        loadAppointments();
+    }, [status]);
 
 
-          setLoading(false);
-      } catch (error) {
-        console.error("Failed to load appointments", error);
-      }
-    };
-
-    loadAppointments();
-  }, [status]);
-
-  const [notifications, setNotifications] = useState({
+    const [notifications, setNotifications] = useState({
     appointments: 0,
     reviews: 0,
   });
+
+
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
@@ -117,6 +101,8 @@ export default function DashboardPage() {
     const notifs = localStorageAPI.getNotifications();
     setNotifications(notifs.dashboard);
   };
+
+
 
     //const dateForInput = (date) =>
         //new Date(date).toISOString().split("T")[0];
@@ -248,7 +234,7 @@ export default function DashboardPage() {
 
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                    apt.status === "CONFIRMED"
+                                    apt.status === "ACCEPTED"
                                       ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
                                       : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                                   }`}
