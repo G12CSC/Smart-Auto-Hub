@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {prisma} from "../../../../lib/prisma.ts";
 
+
 export async function PATCH(req){
 
     const {id}=await req.json();
