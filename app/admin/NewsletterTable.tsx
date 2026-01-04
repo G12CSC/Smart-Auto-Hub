@@ -3,14 +3,19 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-function NewsletterTable() {
+function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?: (count: number) => void}) {
   const [subscribers, setSubscribers] = useState([]);
 
   // Fetch subscribers
   useEffect(() => {
     fetch("/api/newsletter/listOfSubscriptions")
       .then((res) => res.json())
-      .then((data) => setSubscribers(data));
+      .then((data) => {
+        setSubscribers(data);
+        if (setNewsletterSubscribers) {
+          setNewsletterSubscribers(data.length);
+        }
+      });
   }, []);
 
   return (

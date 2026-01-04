@@ -162,6 +162,7 @@ const videoReviews = [
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
+  const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
   const [newVideo, setNewVideo] = useState({
     title: "",
     description: "",
@@ -345,7 +346,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold mb-2">{stat.value}</p>
+              <p className="text-3xl font-bold mb-2">{stat.label === "Newsletter Subscribers" ? newsletterSubscribers : stat.value}</p>
               <p className="text-xs text-muted-foreground">{stat.change}</p>
             </div>
           ))}
@@ -390,7 +391,7 @@ export default function AdminPage() {
                 key={tab.id}
                 // onClick={() => setActiveTab(tab.id)}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap relative ${
+                className={`flex items-center gap-2 px-4 py-2 hover:text-white rounded font-medium transition whitespace-nowrap relative ${
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -474,7 +475,7 @@ export default function AdminPage() {
                         <td>{request.email}</td>
                         <td>{request.consultationType}</td>
                         <td>{request.vehicleType}</td>
-                        <td>{request.preferredDate}</td>
+                        <td>{request.preferredDate.split("T")[0]}</td>
                         <td>{request.preferredTime}</td>
                         <td className="px-4 py-2">
                           <span
@@ -1008,7 +1009,7 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <NewsletterTable />
+                <NewsletterTable setNewsletterSubscribers={setNewsletterSubscribers} />
               </div>
             </div>
           )}
@@ -1022,7 +1023,7 @@ export default function AdminPage() {
                 {["Nugegoda", "Matara", "Colombo"].map((branch, idx) => (
                   <div
                     key={idx}
-                    className="bg-secondary/30 rounded-lg border border-border p-6"
+                    className="bg-gray-50 dark:bg-gray-950 rounded-lg border border-border p-6"
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-3 bg-primary/10 rounded-lg">
