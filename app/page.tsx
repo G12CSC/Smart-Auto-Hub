@@ -17,6 +17,7 @@ import {
   Car,
   Loader2,
   Newspaper,
+  MessageCircle,
 } from "lucide-react";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { useSession } from "next-auth/react";
@@ -39,6 +40,8 @@ import {
 import ChatBot from "@/components/ChatBot";
 import { useRouter } from "next/navigation";
 import { localStorageAPI } from "@/lib/storage/localStorage.js";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 //testing
 
@@ -388,21 +391,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="bg-linear-to-br from-secondary/10 via-primary/5 to-accent/10 py-20 mb-24">
+      {/* Trust & Credibility Section + How it works     */}
+      <section className="py-24 border-y border-border">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-4xl font-bold mb-4 text-balance">
-              How It Works
+          {/* Section Header */}
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
+              Your Journey to the Perfect Vehicle
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Find your perfect vehicle in three simple steps
+            <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
+              From discovery to ownership, we ensure every step builds trust and
+              confidence
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Process Steps(How It works) - 3 Columns */}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {/* Step 1 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group hover-glow fade-in-up delay-100">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-100">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full shadow-lg text-white font-bold text-xl">
                 1
               </div>
@@ -420,13 +427,13 @@ export default function Home() {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group hover-glow fade-in-up delay-200">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-200">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-emerald-600 dark:bg-emerald-500 rounded-full shadow-lg text-white font-bold text-xl">
                 2
               </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-emerald-500/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <MessageSquare
-                  className="text-green-600 dark:text-emerald-400"
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
+                <MessageCircle
+                  className="text-emerald-600 dark:text-emerald-400"
                   size={40}
                 />
               </div>
@@ -437,15 +444,12 @@ export default function Home() {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-shadow duration-300 relative group hover-glow fade-in-up delay-300">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-purple-600 dark:bg-purple-500 rounded-full shadow-lg text-white font-bold text-xl">
+            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group fade-in-up delay-300">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full shadow-lg text-white font-bold text-xl">
                 3
               </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-100 dark:bg-purple-500/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <Calendar
-                  className="text-purple-500 dark:text-purple-400"
-                  size={40}
-                />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
+                <Calendar className="text-primary" size={40} />
               </div>
               <h3 className="font-bold text-2xl mb-4">Book</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -454,94 +458,131 @@ export default function Home() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* YT Reviews */}
-      <section className="max-w-7xl mx-auto px-4 mb-24">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
-          <div>
-            <h2 className="text-4xl font-bold mb-2">
-              Video Reviews by Sameera Auto Traders
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Watch our detailed car reviews and technical insights
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            asChild
-            size="lg"
-            className="self-start md:self-auto bg-transparent"
-          >
-            <a
-              href="https://www.youtube.com/@SameeraAutoTraders"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2"
-            >
-              <svg className="w-5 h-5 fill-red-600" viewBox="0 0 24 24">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-              </svg>
-              Visit Channel
-            </a>
-          </Button>
-        </div>
+          {/* Trust Metrics - This process leads to trust */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {videoReviews.map((video, index) => (
-            <div
-              key={video.id}
-              className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-red-500/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
-              style={{
-                opacity: 0,
-                animationDelay: `${index * 0.1}s`,
-              }}
-              onClick={() =>
-                window.open(
-                  `https://www.youtube.com/watch?v=${video.videoId}`,
-                  "_blank"
-                )
-              }
-            >
-              <div className="relative h-48 bg-muted overflow-hidden">
-                <img
-                  src={video.thumbnail || "/placeholder.svg"}
-                  alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
-                  <div className="h-16 w-16 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <Play className="text-white fill-current ml-1" size={28} />
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-8 md:p-12 mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+              Trusted by Thousands
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {[
+                {
+                  icon: "🏆",
+                  number: "20+",
+                  label: "Years in Business",
+                  description: "Two decades of excellence",
+                },
+                {
+                  icon: "😊",
+                  number: "500+",
+                  label: "Happy Customers",
+                  description: "Customers trust us annually",
+                },
+                {
+                  icon: "🚗",
+                  number: "100+",
+                  label: "Vehicles Available",
+                  description: "Curated selection",
+                },
+                {
+                  icon: "👨‍🔧",
+                  number: "15+",
+                  label: "Expert Team",
+                  description: "Certified specialists",
+                },
+                {
+                  icon: "⭐",
+                  number: "4.9/5",
+                  label: "Customer Rating",
+                  description: "Based on verified reviews",
+                },
+              ].map((stat, index) => (
+                <div
+                  key={index}
+                  className="text-center hover:scale-105 transition-transform duration-300 fade-in-up"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                  }}
+                >
+                  <div className="text-4xl mb-3">{stat.icon}</div>
+                  <div className="text-3xl font-bold text-primary mb-2">
+                    {stat.number}
                   </div>
+                  <h4 className="font-semibold text-foreground mb-1">
+                    {stat.label}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {stat.description}
+                  </p>
                 </div>
-                <span className="absolute bottom-3 right-3 px-3 py-1 bg-red-600 text-white text-xs rounded-md font-semibold flex items-center gap-1">
-                  <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
-                  YouTube
-                </span>
-              </div>
-
-              <div className="p-5">
-                <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
-                  {video.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
-                  {video.description}
-                </p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                  {video.uploadDate}
-                </p>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Why Choose Us - The benefits */}
+          <div>
+            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+              Why Customers Choose Sameera Auto Traders
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Quality Assured",
+                  description:
+                    "Every vehicle undergoes rigorous inspection and testing",
+                  icon: "✓",
+                },
+                {
+                  title: "Transparent Pricing",
+                  description:
+                    "No hidden charges. What you see is what you pay",
+                  icon: "💰",
+                },
+                {
+                  title: "Expert Consultants",
+                  description:
+                    "Get professional advice from our certified specialists",
+                  icon: "👥",
+                },
+                {
+                  title: "After-Sales Support",
+                  description:
+                    "Comprehensive warranty and maintenance packages available",
+                  icon: "🔧",
+                },
+                {
+                  title: "Easy Finance Options",
+                  description: "Flexible EMI plans and trade-in programs",
+                  icon: "💳",
+                },
+                {
+                  title: "Online Convenience",
+                  description:
+                    "Book appointments and manage everything from your phone",
+                  icon: "📱",
+                },
+              ].map((benefit, index) => (
+                <div
+                  key={index}
+                  className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-300 fade-in-up"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                  }}
+                >
+                  <div className="text-4xl mb-4">{benefit.icon}</div>
+                  <h4 className="font-bold text-xl mb-2">{benefit.title}</h4>
+                  <p className="text-muted-foreground">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Customer Reviews */}
-      <section className="max-w-7xl mx-auto px-4 mb-16">
+      <section className="max-w-7xl mx-auto px-4 mb-24 mt-12">
         <h2 className="text-3xl font-bold mb-12 text-center">
           What Our Customers Say
         </h2>
@@ -657,6 +698,143 @@ export default function Home() {
           <CarouselPrevious className="-left-4" />
           <CarouselNext className="-right-4" />
         </Carousel>
+      </section>
+
+      {/* YT Reviews */}
+      <section className="max-w-7xl mx-auto px-4 mb-24 mt-10">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+          <div>
+            <h2 className="text-4xl font-bold mb-2">
+              Video Reviews by Sameera Auto Traders
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Watch our detailed car reviews and technical insights
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            asChild
+            size="lg"
+            className="self-start md:self-auto bg-transparent"
+          >
+            <a
+              href="https://www.youtube.com/@SameeraAutoTraders"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2"
+            >
+              <svg className="w-5 h-5 fill-primary" viewBox="0 0 24 24">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+              </svg>
+              Visit Channel
+            </a>
+          </Button>
+        </div>
+
+        {/* Featured Video */}
+        <div className="mb-12">
+          <div
+            className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+            onClick={() =>
+              window.open(
+                `https://www.youtube.com/watch?v=${videoReviews[0].videoId}`,
+                "_blank"
+              )
+            }
+          >
+            <Image
+              src={videoReviews[0].thumbnail || "/placeholder.svg"}
+              alt={videoReviews[0].title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+
+            {/* Play button */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-colors flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                <Play className="text-white fill-white ml-2" size={48} />
+              </div>
+            </div>
+
+            {/* Featured badge */}
+            <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
+              Featured Review
+            </Badge>
+
+            {/* Content at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+                {videoReviews[0].title}
+              </h3>
+              <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
+                {videoReviews[0].description}
+              </p>
+              <p className="text-sm text-white/70 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                {videoReviews[0].uploadDate}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Video Grid - Remaining videos */}
+        <div>
+          <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videoReviews.slice(1).map((video, index) => (
+              <div
+                key={video.id}
+                className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
+                style={{
+                  opacity: 0,
+                  animationDelay: `${(index + 1) * 0.1}s`,
+                }}
+                onClick={() =>
+                  window.open(
+                    `https://www.youtube.com/watch?v=${video.videoId}`,
+                    "_blank"
+                  )
+                }
+              >
+                <div className="relative h-48 bg-muted overflow-hidden">
+                  <img
+                    src={video.thumbnail || "/placeholder.svg"}
+                    alt={video.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
+                    <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                      <Play className="text-white fill-white ml-1" size={28} />
+                    </div>
+                  </div>
+                  <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
+                    <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                    YouTube
+                  </Badge>
+                </div>
+
+                <div className="p-5">
+                  <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                    {video.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                    {video.description}
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    {video.uploadDate}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Newsletter */}
