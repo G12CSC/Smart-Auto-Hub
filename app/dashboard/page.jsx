@@ -30,14 +30,11 @@ import ChatBot from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { localStorageAPI } from "@/lib/storage/localStorage";
 import {cancelBookings} from "../APITriggers/cancelBookings.js";
+import {rescheduleBooking} from "../APITriggers/rescheduleBooking.js";
 
-const upcomingAppointments = [];
-
-const appointmentHistory = [];
-
-const userReviews = [];
 
 export default function DashboardPage() {
+
   const [activeTab, setActiveTab] = useState("appointments");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const { data: session, status } = useSession();
@@ -45,53 +42,47 @@ export default function DashboardPage() {
   const [appointmentHistory, setAppointmentHistory] = useState([]);
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (status !== "authenticated") return;
-
-    const loadAppointments = async () => {
-      try {
-        const res = await fetch("/api/Consultations/user");
-
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("API error:", text);
-          return;
-        }
-
-        const data = await res.json();
-
-        // Upcoming = not completed
-          setUpcomingAppointments(
-              data.filter(
-                  (apt) =>
-                      apt.status !== "COMPLETED" &&
-                      apt.status !== "CANCELLED"
-              )
-          );
-
-          setAppointmentHistory(
-              data.filter(
-                  (apt) =>
-                      apt.status === "COMPLETED" ||
-                      apt.status === "CANCELLED"
-              )
-          );
+    const [rescheduleOpen, setRescheduleOpen] = useState(false);
+    const [rescheduleApt, setRescheduleApt] = useState(null);
+    const [newDate, setNewDate] = useState("");
+    const [newTime, setNewTime] = useState("");
 
 
-          setLoading(false);
-      } catch (error) {
-        console.error("Failed to load appointments", error);
-      }
-    };
+    useEffect(() => {
 
-    loadAppointments();
-  }, [status]);
+        if (status !== "authenticated") return;
 
-  const [notifications, setNotifications] = useState({
+        const loadAppointments = async () => {
+            try {
+                const res = await fetch("/api/Consultations/user/");
+
+                if (!res.ok) {
+                    console.error("Failed to fetch appointments");
+                    return;
+                }
+
+                const { upcoming, history } = await res.json();
+
+                setUpcomingAppointments(upcoming);
+                setAppointmentHistory(history);
+
+                setLoading(false);
+
+            } catch (error) {
+                console.error("Failed to load appointments", error);
+            }
+        };
+
+        loadAppointments();
+    }, [status]);
+
+
+    const [notifications, setNotifications] = useState({
     appointments: 0,
     reviews: 0,
   });
+
+
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
@@ -111,7 +102,13 @@ export default function DashboardPage() {
     setNotifications(notifs.dashboard);
   };
 
-  return (
+
+
+    //const dateForInput = (date) =>
+        //new Date(date).toISOString().split("T")[0];
+    //changes the date value of the rescheduling input box into dateTime object since preferredDate is of dateTime
+
+    return (
     <div className="min-h-screen bg-background">
       <Header />
 
@@ -237,7 +234,7 @@ export default function DashboardPage() {
 
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                                    apt.status === "CONFIRMED"
+                                    apt.status === "ACCEPTED"
                                       ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
                                       : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                                   }`}
@@ -303,11 +300,85 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-                            <Button variant="outline" size="sm">
-                              <Edit size={14} className="mr-2" />
-                              Reschedule
-                            </Button>
-                            <Button variant="outline" size="sm">
+
+                              {apt.status === "PENDING" && (
+                                  <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                          setNewDate(apt.preferredDate); // ✅ FIX
+                                          setNewTime(apt.preferredTime);
+                                          setRescheduleApt(apt);
+                                          setRescheduleOpen(true);
+                                      }}
+                                  >
+                                      <Edit size={14} className="mr-2" />
+
+                                      Reschedule
+                                  </Button>
+                              )}
+
+                              {rescheduleOpen && (
+                                  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                                      <div className="bg-card p-6 rounded-lg w-full max-w-sm">
+                                          <h3 className="text-lg font-bold mb-4">
+                                              Reschedule Appointment
+                                          </h3>
+
+                                          <div className="space-y-3">
+                                              <Input
+                                                  type="date"
+                                                  value={newDate}
+                                                  onChange={(e) => setNewDate(e.target.value)}
+                                              />
+                                              <Input
+                                                  type="time"
+                                                  value={newTime}
+                                                  onChange={(e) => setNewTime(e.target.value)}
+                                              />
+                                          </div>
+
+                                          <div className="flex justify-end gap-3 mt-5">
+                                              <Button
+                                                  variant="outline"
+                                                  onClick={() => setRescheduleOpen(false)}
+                                              >
+                                                  Cancel
+                                              </Button>
+
+                                              <Button
+                                                  onClick={async () => {
+
+                                                      try {
+
+                                                          const updated = await rescheduleBooking(
+                                                              rescheduleApt.id,
+                                                              newDate,
+                                                              newTime
+                                                          );
+
+                                                          // 🔥 Update UI instantly
+                                                          setUpcomingAppointments((prev) =>
+                                                              prev.map((a) =>
+                                                                  a.id === updated.id ? updated : a
+                                                              )
+                                                          );
+
+                                                          setRescheduleOpen(false);
+                                                      } catch {
+                                                          alert("Reschedule failed");
+                                                      }
+                                                  }}
+                                              >
+                                                  Save
+                                              </Button>
+                                          </div>
+                                      </div>
+                                  </div>
+                              )}
+
+
+                              <Button variant="outline" size="sm">
                               <MessageSquare size={14} className="mr-2" />
                               Contact
                             </Button>

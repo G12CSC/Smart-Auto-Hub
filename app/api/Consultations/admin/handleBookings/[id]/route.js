@@ -3,6 +3,7 @@ import { authOptions } from "../../../../auth/[...nextauth]/route";
 import { prisma } from "../../../../../../lib/prisma";
 import { NextResponse } from "next/server";
 
+
 export async function PATCH(req, context) {
 
     const session = await getServerSession(authOptions);

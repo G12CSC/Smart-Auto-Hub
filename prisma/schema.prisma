@@ -222,3 +222,12 @@ enum NewsletterStatus {
   ACTIVE
   UNSUBSCRIBED
 }
+
+model CarVector {
+  id        Int                        @id
+  content   String
+  embedding Unsupported("vector(384)")
+  createdAt DateTime                   @default(now())
+
+  @@map("carVectors")
+}

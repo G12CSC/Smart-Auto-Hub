@@ -25,12 +25,14 @@ import { VehicleCompare } from "@/components/VehicleCompare";
 import { VehicleSkeleton } from "@/components/VehicleSkeleton";
 
 export default function VehiclesPage() {
+
   const searchParams = useSearchParams();
 
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const vehiclesPerPage = 6;
+  const [error, setError] = useState(null);
+  const vehiclesPerPage = 4;
 
   const [sortBy, setSortBy] = useState("newest");
   const [filterStatus, setFilterStatus] = useState({
@@ -57,6 +59,8 @@ export default function VehiclesPage() {
 
   const initialSearch = searchParams.get("search") || "";
   const initialLocation = searchParams.get("location") || "all";
+  //get user entering values
+
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [locationFilter, setLocationFilter] = useState(initialLocation);
 
@@ -66,43 +70,48 @@ export default function VehiclesPage() {
 
   useEffect(() => {
     const fetchVehicles = async () => {
+
       setLoading(true);
 
-      const filters = {
-        search: searchQuery,
-        location: locationFilter,
-        status: Object.keys(filterStatus).filter((key) => filterStatus[key]),
-        type: Object.keys(filterType).filter((key) => filterType[key]),
-        transmission: Object.keys(filterTransmission).filter(
-          (key) => filterTransmission[key]
-        ),
-        minPrice,
-        maxPrice,
-        minMileage,
-        maxMileage,
-        sortBy,
-      };
+      try{
 
-      const result = await vehicleAPI.searchVehicles(filters);
-      if (result.success) {
-        setVehicles(result.data);
+          const res=await fetch("/api/vehicles");
+          //getting the response from that api endpoint with all the car details
+
+          const data=await res.json();
+
+          setVehicles(Array.isArray(data) ? data : []);
+
+          const filters = {
+              search: searchQuery,
+              location: locationFilter,
+              status: Object.keys(filterStatus).filter((key) => filterStatus[key]),
+              type: Object.keys(filterType).filter((key) => filterType[key]),
+              transmission: Object.keys(filterTransmission).filter(
+                  (key) => filterTransmission[key]
+              ),
+              minPrice,
+              maxPrice,
+              minMileage,
+              maxMileage,
+              sortBy,
+          };
+
+
       }
-      setLoading(false);
+      catch(err){
+
+          setError(err.message);
+
+      } finally {
+          setLoading(false);
+      }
+
     };
 
-    fetchVehicles();
-  }, [
-    searchQuery,
-    locationFilter,
-    filterStatus,
-    filterType,
-    filterTransmission,
-    minPrice,
-    maxPrice,
-    minMileage,
-    maxMileage,
-    sortBy,
-  ]);
+      fetchVehicles();
+
+  }, []);
 
   useEffect(() => {
     setFavourites(localStorageAPI.getFavourites());
@@ -433,116 +442,107 @@ export default function VehiclesPage() {
               </div>
             </div>
 
-            {/* Loading State */}
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {/* Render 6 skeleton cards while loading */}
-                {[...Array(6)].map((_, index) => (
-                  <VehicleSkeleton key={index} />
-                ))}
-              </div>
-            ) : currentVehicles.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-xl text-muted-foreground mb-4">
-                  No vehicles found matching your criteria
-                </p>
-                <Button onClick={handleResetFilters}>Reset Filters</Button>
-              </div>
-            ) : (
-              <>
-                <div
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                      : "space-y-4"
-                  }
-                >
-                  {currentVehicles.map((vehicle, index) => (
-                    <div
-                      key={vehicle.id}
-                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up delay-${
-                        Math.min(index % 3, 3) * 100
-                      }`}
-                      style={{
-                        opacity: 0,
-                        animation: `fadeInUp 0.6s ease-out ${
-                          index * 0.1
-                        }s forwards`,
-                      }}
-                    >
-                      <Link
-                        key={vehicle.id}
-                        href={`/vehicles/${vehicle.id}`}
-                        className={`block bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group ${
-                          viewMode === "list" ? "flex" : ""
-                        }`}
-                      >
-                        <div
-                          className={`relative bg-muted overflow-hidden ${
-                            viewMode === "grid" ? "h-56" : "w-64 h-48"
-                          }`}
-                        >
-                          <img
-                            src={vehicle.image || "/placeholder.svg"}
-                            alt={vehicle.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                          <span
-                            className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm ${
-                              vehicle.status === "Available"
-                                ? "bg-green-500/90 text-white"
-                                : vehicle.status === "Shipped"
-                                ? "bg-yellow-500/90 text-white"
-                                : "bg-red-500/90 text-white"
-                            }`}
+              {loading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {[...Array(6)].map((_, index) => (
+                          <VehicleSkeleton key={index} />
+                      ))}
+                  </div>
+              ) : currentVehicles.length === 0 ? (
+                  <div className="text-center py-20">
+                      <p className="text-xl text-muted-foreground mb-4">
+                          No vehicles found matching your criteria
+                      </p>
+                      <Button onClick={handleResetFilters}>Reset Filters</Button>
+                  </div>
+              ) : (
+                  <div
+                      className={
+                          viewMode === "grid"
+                              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                              : "space-y-4"
+                      }
+                  >
+                      {currentVehicles.map((vehicle, index) => (
+                          <div
+                              key={vehicle.id}
+                              className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-xl transition-all duration-300"
+                              style={{
+                                  opacity: 0,
+                                  animation: `fadeInUp 0.6s ease-out ${index * 0.1}s forwards`,
+                              }}
                           >
-                            {vehicle.status}
-                          </span>
+                              <Link
+                                  href={`/vehicles/${vehicle.id}`}
+                                  className={`block ${
+                                      viewMode === "list" ? "flex gap-4" : ""
+                                  }`}
+                              >
+                                  {/* IMAGE */}
+                                  <div
+                                      className={`relative bg-muted overflow-hidden ${
+                                          viewMode === "grid" ? "h-56" : "w-64 h-48"
+                                      }`}
+                                  >
+                                      <img
+                                          src={vehicle.images?.[0] || "/placeholder-car.png"}
+                                          alt={`${vehicle.brand} ${vehicle.model}`}
+                                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                      />
 
-                          {/* Favorite Button */}
-                          <button
-                            onClick={(e) => toggleFavourite(e, vehicle.id)}
-                            className="absolute top-4 left-4 p-2 rounded-full bg-white/90 hover:bg-white transition-colors backdrop-blur-sm"
-                          >
-                            <Heart
-                              className={`w-5 h-5 ${
-                                favourites.includes(vehicle.id)
-                                  ? "fill-red-500 text-red-500"
-                                  : "text-gray-600"
-                              }`}
-                            />
-                          </button>
+                                      {/* Favourite */}
+                                      <button
+                                          onClick={(e) => toggleFavourite(e, vehicle.id)}
+                                          className="absolute top-4 left-4 p-2 rounded-full bg-white/90 hover:bg-white"
+                                      >
+                                          <Heart
+                                              className={`w-5 h-5 ${
+                                                  favourites.includes(vehicle.id)
+                                                      ? "fill-red-500 text-red-500"
+                                                      : "text-gray-600"
+                                              }`}
+                                          />
+                                      </button>
 
-                          {/* Compare Button */}
-                          <button
-                            onClick={(e) => handleAddToCompare(e, vehicle)}
-                            className="absolute bottom-4 right-4 p-2 rounded-full bg-primary/90 hover:bg-primary text-white transition-colors backdrop-blur-sm"
-                            title="Add to Compare"
-                          >
-                            <GitCompareArrows className="w-5 h-5" />
-                          </button>
-                        </div>
+                                      {/* Compare */}
+                                      <button
+                                          onClick={(e) => handleAddToCompare(e, vehicle)}
+                                          className="absolute bottom-4 right-4 p-2 rounded-full bg-primary text-white"
+                                          title="Add to Compare"
+                                      >
+                                          <GitCompareArrows className="w-5 h-5" />
+                                      </button>
+                                  </div>
 
-                        <div className="p-5 flex-1">
-                          <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition">
-                            {vehicle.name}
-                          </h3>
-                          <p className="text-primary font-bold text-xl mb-3">
-                            LKR {vehicle.price.toLocaleString()}
-                          </p>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <p>
-                              {vehicle.location} | {vehicle.transmission} |{" "}
-                              {vehicle.mileage.toLocaleString()} km
-                            </p>
+                                  {/* DETAILS */}
+                                  <div className="p-5 flex-1">
+                                      <h3 className="font-bold text-lg mb-1 hover:text-primary transition">
+                                          {vehicle.brand} {vehicle.model}
+                                      </h3>
+
+                                      <p className="text-muted-foreground text-sm mb-2">
+                                          {vehicle.year} • {vehicle.mileage.toLocaleString()} km
+                                      </p>
+
+                                      <p className="text-primary font-bold text-xl mb-3">
+                                          LKR {vehicle.price.toLocaleString()}
+                                      </p>
+
+                                      <div className="text-sm text-muted-foreground space-y-1">
+                                          <p>
+                                              {vehicle.location || "Location N/A"} •{" "}
+                                              {vehicle.transmission || "N/A"} •{" "}
+                                              {vehicle.fuelType || "N/A"}
+                                          </p>
+                                      </div>
+                                  </div>
+                              </Link>
                           </div>
-                        </div>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
+                      ))}
+                  </div>
+              )}
 
-                {/* Pagination */}
+              {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-12">
                     <Button
@@ -577,8 +577,6 @@ export default function VehiclesPage() {
                     </Button>
                   </div>
                 )}
-              </>
-            )}
           </div>
         </div>
       </div>

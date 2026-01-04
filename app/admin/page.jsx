@@ -178,7 +178,7 @@ export default function AdminPage() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch("/api/Consultations/getBooking");
+      const res = await fetch("/api/Consultations/getAllBooking");
       const data = await res.json();
       setRecentRequests(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
@@ -187,6 +187,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+
     fetchBookings();
 
     // ✅ Polling every 5 seconds
@@ -409,6 +410,8 @@ export default function AdminPage() {
 
         {/* Tab Content */}
         <div className="bg-card rounded-b-lg border-x border-b border-border p-6">
+
+
           {/* Customer Requests Tab */}
           {activeTab === "requests" && (
             <div>
