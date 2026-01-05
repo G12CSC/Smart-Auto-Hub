@@ -215,7 +215,7 @@ export default function Home() {
           }}
         ></div> */}
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/60 to-black/30"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
           <div className="max-w-2xl space-y-6">
             <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-balance leading-tight animate-slide-up-1">
@@ -461,7 +461,7 @@ export default function Home() {
 
           {/* Trust Metrics - This process leads to trust */}
 
-          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-8 md:p-12 mb-16">
+          <div className="bg-linear-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-8 md:p-12 mb-16">
             <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center">
               Trusted by Thousands
             </h3>
@@ -678,10 +678,10 @@ export default function Home() {
                           {testimonial.location}
                         </p>
                       </div>
-                      <Quote className="h-8 w-8 text-primary/20 flex-shrink-0" />
+                      <Quote className="h-8 w-8 text-primary/20 shrink-0" />
                     </div>
 
-                    <p className="text-muted-foreground mb-4 flex-grow leading-relaxed">
+                    <p className="text-muted-foreground mb-4 grow leading-relaxed">
                       {testimonial.review}
                     </p>
 
@@ -751,11 +751,11 @@ export default function Home() {
             />
 
             {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
 
             {/* Play button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-colors flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+              <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
                 <Play className="text-white fill-white ml-2" size={48} />
               </div>
             </div>
@@ -839,8 +839,8 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="max-w-5xl mx-auto px-4 mb-24">
-        <div className="bg-gradient-to-br from-primary via-primary to-accent rounded-2xl p-10 md:p-12 text-center text-primary-foreground shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
+        <div className="bg-linear-to-br from-primary via-primary to-accent rounded-2xl p-10 md:p-12 text-center text-primary-foreground shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-linear(circle_at_top_right,var(--tw-linear-stops))] from-white/10 via-transparent to-transparent"></div>
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
               Get Updates on New Stock & Offers

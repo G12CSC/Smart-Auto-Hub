@@ -2,17 +2,26 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { title, message } = await req.json();
+  const { title, subject, content } = await req.json();
 
-  const broadcast = await prisma.newsletterBroadcast.create({
+  const newsletter = await prisma.newsletter.create({
     data: {
       id: crypto.randomUUID(),
       title,
-      message,
+      subject,
+      content,
     },
   });
 
-  return NextResponse.json(broadcast);
+  await prisma.newsletterBroadcast.create({
+    data: {
+      id: crypto.randomUUID(),
+      newsletterId: newsletter.id,
+      status: "PENDING",
+    },
+  });
+
+  return NextResponse.json(newsletter);
 }
 
 export async function GET() {

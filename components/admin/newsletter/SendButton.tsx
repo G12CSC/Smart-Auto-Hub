@@ -6,13 +6,13 @@ export default function SendButton({
   disabled,
 }: {
   id: string;
-  disabled: boolean;
+  disabled?: boolean;
 }) {
   const [isSending, setIsSending] = useState(false);
 
   async function handleSend() {
     setIsSending(true);
-    
+
     if (!confirm("Send this newsletter to all subscribers?")) return;
 
     const res = await fetch(`/api/newsletter/${id}/send`, {
@@ -20,10 +20,9 @@ export default function SendButton({
     });
 
     if (!res.ok) {
-        alert("Failed to send newsletter");
-        return;
+      alert("Failed to send newsletter");
+      return;
     }
-    
 
     window.location.reload();
   }
@@ -31,9 +30,9 @@ export default function SendButton({
   return (
     <button
       onClick={handleSend}
-      disabled={disabled}
-      className={`px-3 py-1 rounded text-white ${
-        disabled ? "bg-gray-400" : "bg-green-600"
+      disabled={isSending || disabled}
+      className={`px-5 py-1 rounded text-white cursor-pointer ${
+        disabled ? "bg-gray-400" : "bg-red-600"
       }`}
     >
       {disabled ? "Sent" : "Send"}
