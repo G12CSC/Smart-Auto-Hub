@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
   const broadcast = await prisma.newsletterBroadcast.findUnique({
     where: { id: broadcastId },
-    include: { newsletter: true },
+    include: { Newsletter: true },
   });
 
   if (!broadcast) {
@@ -32,14 +32,15 @@ export async function POST(req: Request) {
       await resend.emails.send({
         from: "Smart Auto <onboarding@resend.dev>",
         to: sub.email,
-        subject: broadcast.newsletter.subject,
-        html: broadcast.newsletter.content,
+        subject: broadcast.Newsletter.subject,
+        html: broadcast.Newsletter.content,
       });
 
       sent++;
 
       await prisma.newsletterDeliveryLog.create({
         data: {
+          id: Date.now().toString(),
           broadcastId,
           email: sub.email,
           status: "SENT",
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
     } catch (err) {
       await prisma.newsletterDeliveryLog.create({
         data: {
+          id: Date.now().toString(),
           broadcastId,
           email: sub.email,
           status: "FAILED",

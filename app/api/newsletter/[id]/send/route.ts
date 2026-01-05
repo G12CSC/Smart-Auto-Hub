@@ -13,6 +13,7 @@ export async function POST(
 ) {
   const broadcast = await prisma.newsletterBroadcast.create({
     data: {
+      id: Date.now().toString(),
       newsletterId: (await params).id,
       status: "PENDING",
     },
