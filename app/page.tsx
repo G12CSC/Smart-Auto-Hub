@@ -19,7 +19,7 @@ import {
   Newspaper,
   MessageCircle,
 } from "lucide-react";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+//import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { useSession } from "next-auth/react";
 import { handleSubscribe } from "@/app/APITriggers/handleSubscribe";
 import {
