@@ -13,7 +13,7 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DIRECT_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
     steps:
       - name: Checkout repository
@@ -34,8 +34,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-    #   - name: Prisma schema validation
-    #     run: npx prisma validate
+      - name: Prisma schema validation
+        run: npx prisma validate
 
       - name: Run database migrations (dry run)
         run: npx prisma migrate deploy
