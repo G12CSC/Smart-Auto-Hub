@@ -337,7 +337,7 @@ export default function AdminPage() {
           {stats.map((stat, idx) => (
             <div
               key={idx}
-              className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition animate-bounceInScale"
+              className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition animate-pop-in"
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
