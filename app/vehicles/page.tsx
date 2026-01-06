@@ -460,10 +460,9 @@ export default function VehiclesPage() {
                   {currentVehicles.map((vehicle, index) => (
                     <div
                       key={vehicle.id}
-                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up animate-bounce-in-up
+                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up
                       }`}
                       style={{
-                        opacity: 0,
                         animationDelay: `${(index % 3) * 0.1}s`,
                       }}
                     >
