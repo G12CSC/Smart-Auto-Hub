@@ -114,17 +114,17 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* User Welcome Section */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 animate-slide-in-down">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
               JD
             </div>
             <div>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-3xl font-bold animate-text-reveal">
                 Welcome back, {session?.user?.name || "User"}!
               </h1>
 
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground animate-text-reveal stagger-1">
                 Manage your appointments and profile
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 animate-slide-in-left">
             <nav className="bg-card rounded-lg border border-border overflow-hidden sticky top-24">
               <div className="divide-y divide-border">
                 {[
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 animate-slide-in-right delay-200">
             {/* Appointments Tab */}
             {activeTab === "appointments" && (
               <div className="space-y-6">

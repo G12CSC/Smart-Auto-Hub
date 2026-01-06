@@ -9,25 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
-    Search,
-    Filter,
-    MoreVertical,
-    Eye,
-    Edit,
-    Trash2,
-    Users,
-    Car,
-    Calendar,
-    Mail,
-    TrendingUp,
-    MapPin,
-    CheckCircle,
-    XCircle,
-    Clock,
-    FileText,
-    Video,
-    ExternalLink,
-    RefreshCcw
+  Search,
+  Filter,
+  MoreVertical,
+  Eye,
+  Edit,
+  Trash2,
+  Users,
+  Car,
+  Calendar,
+  Mail,
+  TrendingUp,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  Video,
+  ExternalLink,
+  RefreshCcw,
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -181,36 +181,30 @@ export default function AdminPage() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch("/api/Consultations/getAllBooking");
+      const data = await res.json();
+      setRecentRequests(Array.isArray(data) ? data : data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch bookings", error);
+    }
+  };
 
-    const fetchBookings = async () => {
-        try {
-            const res = await fetch("/api/Consultations/getAllBooking");
-            const data = await res.json();
-            setRecentRequests(Array.isArray(data) ? data : data.data || []);
-        } catch (error) {
-            console.error("Failed to fetch bookings", error);
-        }
-    };
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
-    useEffect(()=>{
-
-        fetchBookings();
-
-    },[]);
-
-    const handleRefreshBookings = async () => {
-        try {
-            setIsRefreshing(true);
-            await fetchBookings();
-        } catch (error) {
-            console.error("Failed to refresh bookings", error);
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
-
-
-
+  const handleRefreshBookings = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchBookings();
+    } catch (error) {
+      console.error("Failed to refresh bookings", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     loadVehicles();
@@ -328,13 +322,14 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-4xl font-bold mb-2 animate-text-reveal">
+              Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground animate-text-reveal stagger-1">
               Monitor and manage Smart AutoHub operations
             </p>
           </div>
@@ -354,7 +349,8 @@ export default function AdminPage() {
           {stats.map((stat, idx) => (
             <div
               key={idx}
-              className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition"
+              className="bg-card rounded-lg border border-border p-6 hover:shadow-lg transition animate-bounceInScale"
+              style={{ animationDelay: `${idx * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-lg ${stat.color}`}>
@@ -362,14 +358,18 @@ export default function AdminPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold mb-2">{stat.label === "Newsletter Subscribers" ? newsletterSubscribers : stat.value}</p>
+              <p className="text-3xl font-bold mb-2">
+                {stat.label === "Newsletter Subscribers"
+                  ? newsletterSubscribers
+                  : stat.value}
+              </p>
               <p className="text-xs text-muted-foreground">{stat.change}</p>
             </div>
           ))}
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-card rounded-t-lg border-x border-t border-border">
+        <div className="bg-card rounded-t-lg border-x border-t border-border animate-popIn delay-300">
           <div className="flex items-center gap-2 px-6 py-3 border-b border-border overflow-x-auto">
             {[
               {
@@ -426,53 +426,49 @@ export default function AdminPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-card rounded-b-lg border-x border-b border-border p-6">
-
-
+        <div className="bg-card rounded-b-lg border-x border-b border-border p-6 animate-slideInUp delay-400">
           {/* Customer Requests Tab */}
           {activeTab === "requests" && (
-              <div>
-
+            <div>
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-                  {/* Title + Refresh */}
-                  <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold">Consultation Bookings</h2>
+                {/* Title + Refresh */}
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold">Consultation Bookings</h2>
 
-                      <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={handleRefreshBookings}
-                          disabled={isRefreshing}
-                          title="Refresh bookings"
-                      >
-                          <RefreshCcw
-                              size={18}
-                              className={isRefreshing ? "animate-spin" : ""}
-                          />
-                      </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleRefreshBookings}
+                    disabled={isRefreshing}
+                    title="Refresh bookings"
+                  >
+                    <RefreshCcw
+                      size={18}
+                      className={isRefreshing ? "animate-spin" : ""}
+                    />
+                  </Button>
+                </div>
+
+                {/* Search + Filter */}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-64">
+                    <Search
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      size={18}
+                    />
+                    <Input
+                      placeholder="Search requests..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
 
-                  {/* Search + Filter */}
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                      <div className="relative flex-1 md:w-64">
-                          <Search
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                              size={18}
-                          />
-                          <Input
-                              placeholder="Search requests..."
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="pl-10"
-                          />
-                      </div>
-
-                      <Button variant="outline" size="icon">
-                          <Filter size={18} />
-                      </Button>
-                  </div>
+                  <Button variant="outline" size="icon">
+                    <Filter size={18} />
+                  </Button>
+                </div>
               </div>
-
 
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -560,11 +556,10 @@ export default function AdminPage() {
                           </button>
                         </td>
                       </tr>
-                        ))}
+                    ))}
                   </tbody>
                 </table>
               </div>
-
             </div>
           )}
 
@@ -1036,10 +1031,17 @@ export default function AdminPage() {
                   </p>
                 </div>
                 <div className="flex gap-3 items-center">
-                  <Button variant="outline" onClick={() => window.location.href="/admin/newsletters"}>
-                      View Newsletters
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      (window.location.href = "/admin/newsletters")
+                    }
+                  >
+                    View Newsletters
                   </Button>
-                  <Button onClick={() => window.open("/api/subscribers/export")}>
+                  <Button
+                    onClick={() => window.open("/api/subscribers/export")}
+                  >
                     <FileText size={18} className="mr-2" />
                     Export List
                   </Button>
@@ -1047,7 +1049,9 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <NewsletterTable setNewsletterSubscribers={setNewsletterSubscribers} />
+                <NewsletterTable
+                  setNewsletterSubscribers={setNewsletterSubscribers}
+                />
               </div>
             </div>
           )}
@@ -1115,9 +1119,10 @@ export default function AdminPage() {
                 ))}
               </div>
             </div>
-              )}
+          )}
         </div>
-      </div>)
+      </div>
+      )
       <ChatBot />
       <Footer />
     </div>

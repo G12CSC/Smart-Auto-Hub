@@ -185,7 +185,7 @@ export default function VehiclesPage() {
       <Header />
 
       <section
-        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24"
+        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
           backgroundImage:
             "url(/placeholder.svg?height=384&width=1600&query=modern car showroom inventory luxury vehicles)",
@@ -195,10 +195,10 @@ export default function VehiclesPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-6xl font-bold mb-4 text-balance">
+          <h1 className="text-6xl font-bold mb-4 text-balance animate-text-reveal">
             Find Your Perfect Car
           </h1>
-          <p className="text-xl opacity-90 text-balance max-w-2xl">
+          <p className="text-xl opacity-90 text-balance max-w-2xl animate-text-reveal stagger-1">
             Browse our extensive inventory of quality vehicles. From sedans to
             SUVs, we have something for everyone.
           </p>
@@ -212,7 +212,7 @@ export default function VehiclesPage() {
           {/* Filters Panel */}
           <div className="lg:col-span-1">
             {/* <div className="bg-card rounded-lg p-6 border border-border sticky top-24"> */}
-            <div className="bg-card rounded-lg p-6 border border-border sticky top-24 shadow-sm hover:shadow-md transition">
+            <div className="bg-card rounded-lg p-6 border border-border sticky top-24 shadow-sm hover:shadow-md transition animate-slide-in-left">
               <h2 className="font-bold text-xl mb-6">Filters</h2>
 
               {/* Search Input */}
@@ -402,7 +402,7 @@ export default function VehiclesPage() {
 
           {/* Results */}
           <div className="lg:col-span-3">
-            <div className="flex items-center justify-between mb-8 bg-secondary/10 rounded-lg px-6 py-4">
+            <div className="flex items-center justify-between mb-8 bg-secondary/10 rounded-lg px-6 py-4 animate-text-reveal">
               <p className="text-muted-foreground font-semibold">
                 {loading ? "Loading..." : `Showing ${vehicles.length} vehicles`}
               </p>
@@ -442,35 +442,65 @@ export default function VehiclesPage() {
               </div>
             </div>
 
-              {loading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {[...Array(6)].map((_, index) => (
-                          <VehicleSkeleton key={index} />
-                      ))}
-                  </div>
-              ) : currentVehicles.length === 0 ? (
-                  <div className="text-center py-20">
-                      <p className="text-xl text-muted-foreground mb-4">
-                          No vehicles found matching your criteria
-                      </p>
-                      <Button onClick={handleResetFilters}>Reset Filters</Button>
-                  </div>
-              ) : (
-                  <div
-                      className={
-                          viewMode === "grid"
-                              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                              : "space-y-4"
-                      }
-                  >
-                      {currentVehicles.map((vehicle, index) => (
-                          <div
-                              key={vehicle.id}
-                              className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-xl transition-all duration-300"
-                              style={{
-                                  opacity: 0,
-                                  animation: `fadeInUp 0.6s ease-out ${index * 0.1}s forwards`,
-                              }}
+            {/* Loading State */}
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Render 6 skeleton cards while loading */}
+                {[...Array(6)].map((_, index) => (
+                  <VehicleSkeleton key={index} />
+                ))}
+              </div>
+            ) : currentVehicles.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-xl text-muted-foreground mb-4">
+                  No vehicles found matching your criteria
+                </p>
+                <Button onClick={handleResetFilters}>Reset Filters</Button>
+              </div>
+            ) : (
+              <>
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                      : "space-y-4"
+                  }
+                >
+                  {currentVehicles.map((vehicle, index) => (
+                    <div
+                      key={vehicle.id}
+                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up animate-bounce-in-up
+                      }`}
+                      style={{
+                        opacity: 0,
+                        animationDelay: `${(index % 3) * 0.1}s`,
+                      }}
+                    >
+                      <Link
+                        key={vehicle.id}
+                        href={`/vehicles/${vehicle.id}`}
+                        className={`block bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group ${
+                          viewMode === "list" ? "flex" : ""
+                        }`}
+                      >
+                        <div
+                          className={`relative bg-muted overflow-hidden ${
+                            viewMode === "grid" ? "h-56" : "w-64 h-48"
+                          }`}
+                        >
+                          <img
+                            src={vehicle.image || "/placeholder.svg"}
+                            alt={vehicle.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <span
+                            className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm ${
+                              vehicle.status === "Available"
+                                ? "bg-green-500/90 text-white"
+                                : vehicle.status === "Shipped"
+                                ? "bg-yellow-500/90 text-white"
+                                : "bg-red-500/90 text-white"
+                            }`}
                           >
                               <Link
                                   href={`/vehicles/${vehicle.id}`}
