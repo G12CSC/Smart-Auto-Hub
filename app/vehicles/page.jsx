@@ -467,110 +467,106 @@ export default function VehiclesPage() {
                   }
                 >
                   {currentVehicles.map((vehicle, index) => (
+                <div
+                  key={vehicle.id}
+                  className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up animate-bounce-in-up"
+                  style={{
+                    opacity: 0,
+                    animationDelay: `${(index % 3) * 0.1}s`,
+                  }}
+                >
+                  <Link
+                    href={`/vehicles/${vehicle.id}`}
+                    className={`block bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group ${
+                      viewMode === "list" ? "flex" : ""
+                    }`}
+                  >
                     <div
-                      key={vehicle.id}
-                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up animate-bounce-in-up
+                      className={`relative bg-muted overflow-hidden ${
+                        viewMode === "grid" ? "h-56" : "w-64 h-48 shrink-0"
                       }`}
-                      style={{
-                        opacity: 0,
-                        animationDelay: `${(index % 3) * 0.1}s`,
-                      }}
                     >
-                      <Link
-                        key={vehicle.id}
-                        href={`/vehicles/${vehicle.id}`}
-                        className={`block bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group ${
-                          viewMode === "list" ? "flex" : ""
+                      <img
+                        src={
+                          vehicle.images?.[0] ||
+                          vehicle.image ||
+                          "/placeholder.svg"
+                        }
+                        alt={`${vehicle.brand} ${vehicle.model}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      {/* Status Badge */}
+                      <span
+                        className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm ${
+                          vehicle.status === "Available"
+                            ? "bg-green-500/90 text-white"
+                            : vehicle.status === "Shipped"
+                            ? "bg-yellow-500/90 text-white"
+                            : "bg-red-500/90 text-white"
                         }`}
                       >
-                        <div
-                          className={`relative bg-muted overflow-hidden ${
-                            viewMode === "grid" ? "h-56" : "w-64 h-48"
+                        {vehicle.status}
+                      </span>
+
+                      {/* Favourite */}
+                      <button
+                        onClick={(e) => toggleFavourite(e, vehicle.id)}
+                        className="absolute top-4 left-4 p-2 rounded-full bg-white/90 hover:bg-white z-10"
+                      >
+                        <Heart
+                          className={`w-5 h-5 ${
+                            favourites.includes(vehicle.id)
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-600"
                           }`}
-                        >
-                          <img
-                            src={vehicle.image || "/placeholder.svg"}
-                            alt={vehicle.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                          <span
-                            className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm ${
-                              vehicle.status === "Available"
-                                ? "bg-green-500/90 text-white"
-                                : vehicle.status === "Shipped"
-                                ? "bg-yellow-500/90 text-white"
-                                : "bg-red-500/90 text-white"
-                            }`}
-                          >
-                              <Link
-                                  href={`/vehicles/${vehicle.id}`}
-                                  className={`block ${
-                                      viewMode === "list" ? "flex gap-4" : ""
-                                  }`}
-                              >
-                                  {/* IMAGE */}
-                                  <div
-                                      className={`relative bg-muted overflow-hidden ${
-                                          viewMode === "grid" ? "h-56" : "w-64 h-48"
-                                      }`}
-                                  >
-                                      <img
-                                          src={vehicle.images?.[0] || "/placeholder-car.png"}
-                                          alt={`${vehicle.brand} ${vehicle.model}`}
-                                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                      />
+                        />
+                      </button>
 
-                                      {/* Favourite */}
-                                      <button
-                                          onClick={(e) => toggleFavourite(e, vehicle.id)}
-                                          className="absolute top-4 left-4 p-2 rounded-full bg-white/90 hover:bg-white"
-                                      >
-                                          <Heart
-                                              className={`w-5 h-5 ${
-                                                  favourites.includes(vehicle.id)
-                                                      ? "fill-red-500 text-red-500"
-                                                      : "text-gray-600"
-                                              }`}
-                                          />
-                                      </button>
+                      {/* Compare */}
+                      <button
+                        onClick={(e) => handleAddToCompare(e, vehicle)}
+                        className="absolute bottom-4 right-4 p-2 rounded-full bg-primary text-white z-10"
+                        title="Add to Compare"
+                      >
+                        <GitCompareArrows className="w-5 h-5" />
+                      </button>
+                    </div>
 
-                                      {/* Compare */}
-                                      <button
-                                          onClick={(e) => handleAddToCompare(e, vehicle)}
-                                          className="absolute bottom-4 right-4 p-2 rounded-full bg-primary text-white"
-                                          title="Add to Compare"
-                                      >
-                                          <GitCompareArrows className="w-5 h-5" />
-                                      </button>
-                                  </div>
+                    {/* DETAILS */}
+                    <div className="p-5 flex-1">
+                      <h3 className="font-bold text-lg mb-1 hover:text-primary transition">
+                        {vehicle.brand} {vehicle.model}
+                      </h3>
 
-                                  {/* DETAILS */}
-                                  <div className="p-5 flex-1">
-                                      <h3 className="font-bold text-lg mb-1 hover:text-primary transition">
-                                          {vehicle.brand} {vehicle.model}
-                                      </h3>
+                      <p className="text-muted-foreground text-sm mb-2">
+                        {vehicle.year} •{" "}
+                        {vehicle.mileage
+                          ? vehicle.mileage.toLocaleString()
+                          : 0}{" "}
+                        km
+                      </p>
 
-                                      <p className="text-muted-foreground text-sm mb-2">
-                                          {vehicle.year} • {vehicle.mileage.toLocaleString()} km
-                                      </p>
+                      <p className="text-primary font-bold text-xl mb-3">
+                        LKR{" "}
+                        {vehicle.price
+                          ? vehicle.price.toLocaleString()
+                          : "N/A"}
+                      </p>
 
-                                      <p className="text-primary font-bold text-xl mb-3">
-                                          LKR {vehicle.price.toLocaleString()}
-                                      </p>
-
-                                      <div className="text-sm text-muted-foreground space-y-1">
-                                          <p>
-                                              {vehicle.location || "Location N/A"} •{" "}
-                                              {vehicle.transmission || "N/A"} •{" "}
-                                              {vehicle.fuelType || "N/A"}
-                                          </p>
-                                      </div>
-                                  </div>
-                              </Link>
-                          </div>
-                      ))}
-                  </div>
-              )}
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>
+                          {vehicle.location || "Location N/A"} •{" "}
+                          {vehicle.transmission || "N/A"} •{" "}
+                          {vehicle.fuelType || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
               {/* Pagination */}
                 {totalPages > 1 && (
