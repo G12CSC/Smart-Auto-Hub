@@ -150,7 +150,7 @@ export default function ContactPage() {
 
       {/* Hero Section */}
       <section
-        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24"
+        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
           backgroundImage:
             "url(/placeholder.svg?height=384&width=1600&query=customer service representative contact center professional)",
@@ -160,8 +160,10 @@ export default function ContactPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-6xl font-bold mb-4 text-balance">Contact Us</h1>
-          <p className="text-xl opacity-90 text-balance max-w-2xl">
+          <h1 className="text-6xl font-bold mb-4 text-balance animate-text-reveal">
+            Contact Us
+          </h1>
+          <p className="text-xl opacity-90 text-balance max-w-2xl animate-text-reveal stagger-1">
             Have questions? We're here to help. Reach out to our team anytime.
           </p>
         </div>
@@ -343,8 +345,10 @@ export default function ContactPage() {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <div className="bg-card rounded-lg p-8 border border-border shadow-sm">
-              <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
+            <div className="bg-card rounded-lg p-8 border border-border shadow-sm animate-bounce-in-up">
+              <h2 className="text-2xl font-bold mb-6 animate-text-reveal">
+                Send us a Message
+              </h2>
 
               {submitted && (
                 <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 animate-in fade-in slide-in-from-top-2 duration-300">
