@@ -13,7 +13,7 @@ export const authOptions = {
     providers: [
 
         CredentialsProvider({
-            name: "Credentials",
+            name: "User Credentials",
             credentials: {
                 email: {},
                 password: {},
@@ -34,6 +34,35 @@ export const authOptions = {
                 if (!ok) return null;
 
                 return user;
+            },
+        }),
+
+        CredentialsProvider({
+            id: "admin-credentials",
+            name: "Admin Login",
+            credentials: {
+                email: {},
+                password: {},
+            },
+
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) return null;
+
+                const admin = await prisma.admin.findUnique({
+                    where: { email: credentials.email },
+                });
+
+                if (!admin) return null;
+
+                const ok = await bcrypt.compare(credentials.password, admin.passwordHash);
+                if (!ok) return null;
+
+                return {
+                    id: admin.id,
+                    email: admin.email,
+                    userType: "admin",
+                    adminRole: admin.role,
+                };
             },
         }),
 
@@ -59,18 +88,30 @@ export const authOptions = {
 
     callbacks: {
 
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-            }
 
-            return token;
-        },
+            async jwt({ token, user }) {
 
-        async session({ session, token }) {
-            session.user.id = token.id;
-            //session.user.role = token.role; // ⭐ ADD ROLE
-            return session;
+                //this function creates the jwt token for specific user type(user/admin/advisor)
+
+                if (user) {
+
+                    token.id = user.id;
+                    token.userType = user.userType;
+
+                    if (user.userType === "admin") {
+                        token.adminRole = user.adminRole;
+                    }
+                }
+                return token;
+            },
+
+
+            async session({ session, token }) {
+
+                session.user.id = token.id;
+                session.user.userType = token.userType;
+                session.user.adminRole = token.adminRole;
+                return session;
         },
 
         async redirect({ url,baseUrl }) {
@@ -78,6 +119,7 @@ export const authOptions = {
             return process.env.BASEURL;
         },
     },
+
     debug: true,
 
     secret: process.env.NEXTAUTH_SECRET,
