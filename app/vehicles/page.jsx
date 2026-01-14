@@ -446,26 +446,22 @@ export default function VehiclesPage() {
                 <Button onClick={handleResetFilters}>Reset Filters</Button>
               </div>
             ) : (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                    : "space-y-4"
-                }
-              >
-                {currentVehicles.map((vehicle, index) => (
-                  <div
-                    key={vehicle.id}
-                    className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up"
-                    style={{
-                      animationDelay: `${(index % 3) * 0.1}s`,
-                    }}
-                  >
-                    <Link
-                      href={`/vehicles/${vehicle.id}`}
-                      className={`block ${
-                        viewMode === "list" ? "flex gap-4" : ""
+              <>
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                      : "space-y-4"
+                  }
+                >
+                  {currentVehicles.map((vehicle, index) => (
+                    <div
+                      key={vehicle.id}
+                      className={`bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group hover-glow fade-in-up
                       }`}
+                      style={{
+                        animationDelay: `${(index % 3) * 0.1}s`,
+                      }}
                     >
                       {/* IMAGE */}
                       <div
