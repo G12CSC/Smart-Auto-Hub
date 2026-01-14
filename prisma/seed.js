@@ -4,10 +4,12 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
+
     console.log("🌱 Seeding database...");
 
     // ADMIN
     const adminPassword = await bcrypt.hash("admin123", 10);
+
     const admin = await prisma.admin.create({
         data: {
             name: "Main Admin",

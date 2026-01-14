@@ -64,11 +64,18 @@ model Car {
   year           Int
   mileage        Int
   images         String[]
-  specifications Json
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now())
   createdById    String?
   updatedById    String?
+  condition      String?        @default("NULL")
+  edition        String?        @default("NULL")
+  transmission   String?
+  bodyType       String?        @default("NULL")
+  fuelType       String?
+  engineCapacity Int?           @default(0) @db.SmallInt
+  location       String?        @default("NULL")
+  dealer         String?        @default("NULL")
   availability   Availability[]
   createdBy      Admin?         @relation("CreatedBy", fields: [createdById], references: [id])
   updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
@@ -108,14 +115,16 @@ model Review {
 }
 
 model NewsletterEntry {
-  id        String   @id @default(uuid())
+  id        String           @id @default(uuid())
   userId    String?
-  email     String   @unique
-  message   String?
-  createdAt DateTime @default(now())
-  source    String   @default("GUEST")
-  status    String   @default("ACTIVE")
-  user      User?    @relation(fields: [userId], references: [id])
+  email     String           @unique
+  createdAt DateTime         @default(now())
+  source    NewsletterSource @default(GUEST)
+  status    NewsletterStatus @default(ACTIVE)
+  user      User?            @relation(fields: [userId], references: [id])
+
+  @@index([email])
+  @@index([status])
 }
 
 model ConsultationBooking {
@@ -150,11 +159,38 @@ model Session {
 }
 
 model NewsletterBroadcast {
-  id        String    @id
-  title     String
-  message   String
-  sentAt    DateTime?
-  createdAt DateTime  @default(now())
+  id                    String                  @id
+  newsletterId          String
+  status                BroadcastStatus         @default(PENDING)
+  sentCount             Int                     @default(0)
+  sentAt                DateTime?
+  createdAt             DateTime                @default(now())
+  Newsletter            Newsletter              @relation(fields: [newsletterId], references: [id])
+  NewsletterDeliveryLog NewsletterDeliveryLog[]
+
+  @@index([status])
+}
+
+model Newsletter {
+  id                  String                @id
+  title               String
+  subject             String
+  content             String
+  createdAt           DateTime              @default(now())
+  sentAt             DateTime?
+  NewsletterBroadcast NewsletterBroadcast[]
+}
+
+model NewsletterDeliveryLog {
+  id                  String              @id
+  broadcastId         String
+  email               String
+  status              DeliveryStatus
+  errorMessage        String?
+  sentAt              DateTime            @default(now())
+  NewsletterBroadcast NewsletterBroadcast @relation(fields: [broadcastId], references: [id])
+
+  @@index([email])
 }
 
 enum BookingStatus {
@@ -162,4 +198,37 @@ enum BookingStatus {
   ACCEPTED
   REJECTED
   COMPLETED
+  CANCELLED
+}
+
+enum BroadcastStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DeliveryStatus {
+  SENT
+  FAILED
+}
+
+enum NewsletterSource {
+  GUEST
+  USER
+  ADMIN
+}
+
+enum NewsletterStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model CarVector {
+  id        Int                        @id
+  content   String
+  embedding Unsupported("vector(384)")
+  createdAt DateTime                   @default(now())
+
+  @@map("carVectors")
 }

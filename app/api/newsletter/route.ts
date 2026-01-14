@@ -2,23 +2,26 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { title, message } = await req.json();
+  const { title, subject, content } = await req.json();
 
-  const broadcast = await prisma.newsletterBroadcast.create({
+  const newsletter = await prisma.newsletter.create({
     data: {
       id: crypto.randomUUID(),
       title,
-      message,
+      subject,
+      content,
+      createdAt: new Date(),
     },
   });
 
-  return NextResponse.json(broadcast);
+  return NextResponse.json(newsletter);
 }
 
 export async function GET() {
-  const broadcasts = await prisma.newsletterBroadcast.findMany({
+  const newsletters = await prisma.newsletter.findMany({
     orderBy: { createdAt: "desc" },
   });
 
-    return NextResponse.json(broadcasts);
+
+  return NextResponse.json(newsletters);
 }

@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+
 import ChatBot from "@/components/ChatBot";
 // import { setTimeout } from "timers/promises"
 import { handleConsultationRequests } from "../APITriggers/handleConsultationRequests";
@@ -158,7 +159,7 @@ export default function ConsultationPage() {
   };
 
   const getInputClassName = (fieldName, baseClassName) => {
-    if (errors[fieldName] && touched[fieldName]) {
+    if ((submitted || touched[fieldName]) && errors[fieldName]) {
       return `${baseClassName} border-red-500 focus:ring-red-500`;
     }
     return baseClassName;
@@ -211,7 +212,7 @@ export default function ConsultationPage() {
               </div>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounceInUp delay-300">
+            <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounce-in-up delay-300">
               <div className="flex items-start gap-4">
                 <div className="shrink-0">
                   <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-green-500/10">
@@ -229,7 +230,7 @@ export default function ConsultationPage() {
               </div>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounceInUp delay-500">
+            <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounce-in-up delay-500">
               <div className="flex items-start gap-4">
                 <div className="shrink-0">
                   <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-purple-500/10">
@@ -249,7 +250,7 @@ export default function ConsultationPage() {
 
           {/* Consultation Form */}
           <div className="lg:col-span-2">
-            <div className="bg-card rounded-lg p-8 border border-border shadow-sm animate-popIn delay-300">
+            <div className="bg-card rounded-lg p-8 border border-border shadow-sm animate-pop-in delay-300">
               <h2 className="text-3xl font-bold mb-6 animate-text-reveal">
                 Schedule Your Consultation
               </h2>

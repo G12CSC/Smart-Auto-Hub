@@ -1,0 +1,2 @@
+ALTER TABLE "Newsletter"
+ADD COLUMN "sentAt" TIMESTAMP(3);

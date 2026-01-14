@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env" });
 
 import { PrismaClient } from "@prisma/client";
 
@@ -11,6 +11,9 @@ async function main() {
   console.log("✅ Database connected successfully");
 
 }
+
+
+
 
 main()
   .catch(console.error)

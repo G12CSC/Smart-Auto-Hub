@@ -87,28 +87,6 @@ export function Header() {
             className="object-contain hidden dark:block"
             priority
           />
-
-          {/* WORDMARK */}
-          <div className="flex flex-col sm:flex-row leading-tight sm:items-center">
-            {/* Smart */}
-            <span
-              className="text-3xl font-extrabold tracking-wide
-                                bg-linear-to-r from-red-600 to-orange-500 bg-clip-text text-transparent
-                                transition-all duration-400 hover:brightness-200"
-            >
-              Smart
-            </span>
-
-            {/* AutoHub */}
-            <span className="text-3xl font-extrabold sm:ml-2">
-              <span className="text-foreground hover:text-red-700 dark:text-backgound transition-colors">
-                Auto
-              </span>
-              <span className="text-red-700 dark:text-orange-400 hover:text-orange-500 transition-colors">
-                Hub
-              </span>
-            </span>
-          </div>
         </Link>
 
         {/* DESKTOP NAV */}

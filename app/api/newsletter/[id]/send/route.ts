@@ -1,50 +1,60 @@
-import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/email";
 import { NextResponse } from "next/server";
-import { renderNewsletterTemplate } from "@/lib/renderNewsletter";
-import { sendInBatches } from "@/utils/sendNewsletterInBatches";
+import { prisma } from "@/lib/prisma";
+import { qstash } from "@/lib/qstash";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await params;
-  console.log("Sending newsletter...");
-  console.log("Newsletter ID:", id);
-  const broadcast = await prisma.newsletterBroadcast.findUnique({
-    where: { id },
-  });
 
-  if (!broadcast) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  //console.log("Found broadcast:", broadcast.title);
+  const { id:newsletterId } = await params;
+  console.log("Received request to send newsletter:", newsletterId);
 
-  const subscribers = await prisma.newsletterEntry.findMany({
-    where: { status: "ACTIVE" },
-  });
-  //console.log("Found subscribers:", subscribers.length);
-
-  const html = renderNewsletterTemplate(broadcast.title, broadcast.message);
-  if (!html) {
-    console.log("Failed to render newsletter template");
+  if (!newsletterId) {
     return NextResponse.json(
-
-      { error: "Failed to render newsletter" },
-        { status: 500 }
+      { 
+        error: "Newsletter ID is required" },
+      { status: 400 }
     );
   }
-
-  await sendInBatches(
-    subscribers.map((s) => s.email),
-    broadcast.title,
-    html
-  );
-
-  await prisma.newsletterBroadcast.update({
-    where: { id: params.id },
-    data: { sentAt: new Date() },
+  // Create a new broadcast
+  const broadcast = await prisma.newsletterBroadcast.create({
+    data: {
+      id: crypto.randomUUID(),
+      newsletterId: newsletterId,
+      status: "PENDING",
+      createdAt: new Date(),
+    },
   });
 
-  return NextResponse.json({ success: true });
+  // 1. Mark as PROCESSING immediately
+  await prisma.newsletterBroadcast.update({
+    where: { id: broadcast.id },
+    data: { status: "PROCESSING" },
+  });
+
+  // 2. If QStash disabled → local execution
+  if (!qstash) {
+    await fetch("http://localhost:3000/api/workers/send-newsletter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ broadcastId: broadcast.id }),
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  // 3. Publish job to QStash
+  // await qstash.publishJSON({
+  //   url: `${process.env.BASE_URL}/api/workers/send-newsletter`,
+  //   body: {
+  //     broadcastId: broadcast.id,
+  //   },
+  // });
+
+  return NextResponse.json({
+    mode: "qstash",
+    broadcastId: broadcast.id,
+    success: true,
+  });
+
 }

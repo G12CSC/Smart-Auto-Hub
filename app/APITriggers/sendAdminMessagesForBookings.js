@@ -16,3 +16,5 @@ export async function sendAdminMessagesForBookings(id){
     }),
     })
 }
+
+//this api trigger function calls the backend api endpoint once the user has clicked send admin msg button

@@ -119,8 +119,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="text-center group animate-pop-in delay-100">
-              <div className="relative mb-4 overflow-hidden rounded-2xl">
+            <div className="text-center group animate-pop-in delay-100 ">
+              <div className="relative mb-4 overflow-hidden rounded-2xl ">
                 <img
                   src="/professional-automotive-technical-consultant-femal.jpg"
                   alt="Technical Consultant"
@@ -250,7 +250,7 @@ export default function AboutPage() {
             The principles that guide everything we do
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animation-pop-in">
+            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animate-pop-in">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-amber-400 to-orange-500 rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Award className="text-white" size={36} />
               </div>
