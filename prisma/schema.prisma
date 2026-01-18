@@ -44,16 +44,17 @@ model Account {
 }
 
 model Admin {
-  id           String    @id @default(uuid())
-  name         String?
-  email        String    @unique
-  passwordHash String
-  role         StaffRole @default(admin)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdCars  Car[]     @relation("CreatedBy")
-  updatedCars  Car[]     @relation("UpdatedBy")
-  sessions     Session[]
+  id                  String                @id @default(uuid())
+  name                String?
+  email               String                @unique
+  passwordHash        String
+  role                StaffRole             @default(admin)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdCars         Car[]                 @relation("CreatedBy")
+  updatedCars         Car[]                 @relation("UpdatedBy")
+  sessions            Session[]
+  AdvisorAvailability AdvisorAvailability[]
 }
 
 model Car {
@@ -134,12 +135,13 @@ model ConsultationBooking {
   email            String
   phone            String
   vehicleType      String
+  advisorId        String?
   consultationType String
   preferredDate    DateTime
   preferredTime    String
   message          String?
   status           BookingStatus @default(PENDING)
-  adminMessage     String?
+  advisorMessage   String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   user             User?         @relation(fields: [userId], references: [id])
@@ -193,8 +195,19 @@ model NewsletterDeliveryLog {
   @@index([email])
 }
 
+model AdvisorAvailability {
+  id        String   @id @default(uuid())
+  advisorId String
+  date      DateTime
+  timeSlot  String
+  isBusy    Boolean  @default(false)
+
+  advisor Admin @relation(fields: [advisorId], references: [id])
+}
+
 enum BookingStatus {
   PENDING
+  FORWARDED
   ACCEPTED
   REJECTED
   COMPLETED
