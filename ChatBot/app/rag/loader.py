@@ -5,13 +5,8 @@ def load_cars():
         response = (
             supabase_client.table("Car")
             .select(
-                "id, " \
-                "brand, " \
-                "model, " \
-                "price, " \
-                "year, " \
-                "mileage"
-                )
+                "id, brand, model, price, year, mileage, condition, edition, transmission, bodyType, fuelType, engineCapacity, location, dealer" 
+            )
             .execute()
         )
 
