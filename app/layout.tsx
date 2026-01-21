@@ -6,6 +6,7 @@ import "./globals.css";
 import Providers from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import ChatBot from "@/components/ChatBot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
+              <ChatBot />
             <Toaster />
           </ThemeProvider>
           <Analytics />

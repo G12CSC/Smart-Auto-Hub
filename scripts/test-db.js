@@ -5,16 +5,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function checkDBConnection() {
 
-  await prisma.$queryRaw`SELECT 1`;
-  console.log("✅ Database connected successfully");
+  try{
+      await prisma.$queryRaw`SELECT 1`;
+      return true;
+  }catch(err){
+      throw new Error("Database connection failed");
+  }
 
 }
 
-
-
-
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());

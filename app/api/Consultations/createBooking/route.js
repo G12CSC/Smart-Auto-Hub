@@ -4,7 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from '../../auth/[...nextauth]/route' // adjust path if needed
 
 export async function POST(req) {
+
     try {
+
         const session = await getServerSession(authOptions);
 
         const body = await req.json();
@@ -26,6 +28,7 @@ export async function POST(req) {
         });
 
         return NextResponse.json({ success: true });
+
     } catch (error) {
         console.error(error);
         return NextResponse.json(
