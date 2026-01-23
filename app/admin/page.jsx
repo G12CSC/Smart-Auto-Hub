@@ -27,7 +27,8 @@ import {
     FileText,
     Video,
     ExternalLink,
-    RefreshCcw
+    RefreshCcw,
+    Plus
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -162,6 +163,8 @@ const videoReviews = [
 ];
 
 export default function AdminPage() {
+
+
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
@@ -183,6 +186,7 @@ export default function AdminPage() {
 
 
     const fetchBookings = async () => {
+
         try {
             const res = await fetch("/api/Consultations/getAllBooking");
             const data = await res.json();

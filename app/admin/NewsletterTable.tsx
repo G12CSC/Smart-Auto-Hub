@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?: (count: number) => void}) {
+
   const [subscribers, setSubscribers] = useState([]);
 
   // Fetch subscribers

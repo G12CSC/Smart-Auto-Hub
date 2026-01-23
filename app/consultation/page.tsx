@@ -134,6 +134,7 @@ export default function ConsultationPage() {
             });
 
             setSubmitted(true);
+
         } catch (error) {
             console.error(error);
             alert("Booking failed. Please try again.");

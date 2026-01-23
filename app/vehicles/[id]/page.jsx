@@ -52,15 +52,14 @@ export default function VehicleDetailsPage({ params: paramsPromise }) {
   const [reviewErrors, setReviewErrors] = useState({});
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // Mock images array for gallery - in production, this would come from vehicle data
-  const vehicleImages = [
-    vehicle?.image || "/placeholder.svg",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle front angle",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle side angle",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle interior",
-  ];
 
-  useEffect(() => {
+    const vehicleImages =
+        vehicle?.images && Array.isArray(vehicle.images) && vehicle.images.length > 0
+            ? vehicle.images
+            : ["/placeholder.svg"];
+
+
+    useEffect(() => {
     const fetchVehicle = async () => {
       setLoading(true);
       const result = await vehicleAPI.getVehicleById(params.id);
@@ -117,15 +116,18 @@ export default function VehicleDetailsPage({ params: paramsPromise }) {
     document.body.style.overflow = "unset";
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % vehicleImages.length);
-  };
+    const nextImage = () => {
+        if (vehicleImages.length <= 1) return;
+        setCurrentImageIndex((prev) => (prev + 1) % vehicleImages.length);
+    };
 
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + vehicleImages.length) % vehicleImages.length
-    );
-  };
+    const prevImage = () => {
+        if (vehicleImages.length <= 1) return;
+        setCurrentImageIndex(
+            (prev) => (prev - 1 + vehicleImages.length) % vehicleImages.length
+        );
+    };
+
 
   // Close lightbox on Escape key
   useEffect(() => {
@@ -256,12 +258,13 @@ export default function VehicleDetailsPage({ params: paramsPromise }) {
 
           {/* Current image */}
           <div className="max-w-6xl max-h-[90vh] p-4">
-            <img
-              src={vehicleImages[currentImageIndex] || "/placeholder.svg"}
-              alt={`${vehicle?.name} - Image ${currentImageIndex + 1}`}
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
-            />
-            <p className="text-white text-center mt-4">
+              <img
+                  src={vehicleImages[currentImageIndex]}
+                  alt={`Vehicle image ${currentImageIndex + 1}`}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+
+              <p className="text-white text-center mt-4">
               {currentImageIndex + 1} / {vehicleImages.length}
             </p>
           </div>
@@ -292,13 +295,14 @@ export default function VehicleDetailsPage({ params: paramsPromise }) {
               className="bg-muted rounded-lg overflow-hidden mb-4 h-80 cursor-pointer group relative"
               onClick={() => openLightbox(0)}
             >
-              <img
-                src={vehicle.image || "/placeholder.svg"}
-                alt={vehicle.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              {/* Overlay hint on hover */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                <img
+                    src={vehicleImages[0]}
+                    alt={`${vehicle?.brand} ${vehicle?.model}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+
+
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                 <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-semibold bg-black/50 px-4 py-2 rounded-lg">
                   Click to enlarge
                 </span>
@@ -312,8 +316,8 @@ export default function VehicleDetailsPage({ params: paramsPromise }) {
                   onClick={() => openLightbox(i + 1)}
                 >
                   <img
-                    src={img || "/placeholder.svg"}
-                    alt={`thumbnail ${i + 1}`}
+                      src={img}
+                      alt={`thumbnail ${i + 1}`}
                     className="w-full h-full object-cover rounded"
                   />
                 </div>
