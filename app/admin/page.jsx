@@ -46,6 +46,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -61,7 +63,12 @@ import {
 import { BRANCHES } from "@/lib/branches";
 import { vehicleAPI } from "@/lib/api/vehicles";
 import { toast } from "sonner";
-import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+
+import {
+  getVideoReviews,
+  addVideoReview,
+  deleteVideoReview,
+} from "@/app/actions/videoActions";
 
 const stats = [
   {
@@ -145,35 +152,35 @@ const vehicles = [
 
 const newsletterSubscribers = [];
 
-const videoReviews = [
-  {
-    id: 1,
-    title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-    description:
-      "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "14/11/2025",
-    views: "12.5K",
-  },
-  {
-    id: 2,
-    title: "Honda Civic 2021 - Complete Technical Review",
-    description:
-      "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "10/11/2025",
-    views: "8.3K",
-  },
-  {
-    id: 3,
-    title: "Suzuki Swift 2023 - Best Value for Money?",
-    description:
-      "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "08/11/2025",
-    views: "15.2K",
-  },
-];
+// const videoReviews = [
+//   {
+//     id: 1,
+//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
+//     description:
+//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "14/11/2025",
+//     views: "12.5K",
+//   },
+//   {
+//     id: 2,
+//     title: "Honda Civic 2021 - Complete Technical Review",
+//     description:
+//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "10/11/2025",
+//     views: "8.3K",
+//   },
+//   {
+//     id: 3,
+//     title: "Suzuki Swift 2023 - Best Value for Money?",
+//     description:
+//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "08/11/2025",
+//     views: "15.2K",
+//   },
+// ];
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("requests");
@@ -198,6 +205,8 @@ export default function AdminPage() {
   const [deleteVehicleId, setDeleteVehicleId] = useState(null);
   const [deleteVideoId, setDeleteVideoId] = useState(null);
   const [adminMessage, setAdminMessage] = useState("");
+
+  const [videoReviews, setVideoReviews] = useState([]);
 
   const fetchBookings = async () => {
     try {
@@ -232,9 +241,20 @@ export default function AdminPage() {
     const result = await vehicleAPI.getAllVehicles();
     if (result.success) {
       const sortedVehicles = [...result.data].sort(
-        (a, b) => Number(b.id) - Number(a.id)
+        (a, b) => Number(b.id) - Number(a.id),
       );
       setAdminVehicles(sortedVehicles);
+    }
+  };
+
+  useEffect(() => {
+    loadVideos();
+  }, []);
+
+  const loadVidoes = async () => {
+    const result = await getVideoReviews();
+    if (result.success) {
+      setVideoReviews(result.data);
     }
   };
 
@@ -313,9 +333,35 @@ export default function AdminPage() {
     toast.success("Vehicle Deleted Successfully");
   };
 
-  const handleDeleteVideo = (videoId) => {
+  const handleAddVideo = async () => {
+    //Basic Validation
+    if (!newVideo.title || !newVideo.videoId) {
+      toast.error("Please fill in Title and VideoId");
+      return;
+    }
+
+    //Call the server action
+    const result = await addVideoReview(newVideo);
+
+    if (result.success) {
+      toast.success("Video Review added successfully");
+      setNewVideo({ title: "", description: "", videoId: "" }); //Resets form
+      loadVidoes();
+    } else {
+      toast.error("Failed to add video");
+    }
+  };
+
+  const handleDeleteVideo = async (videoId) => {
+    const result = await deleteVideoReview(videoId);
+
+    if (result.success) {
+      toast.success("Video review removed from homepage");
+      loadVidoes(); //Refreshes the List
+    } else {
+      toast.error("Failed to remove the video");
+    }
     setDeleteVideoId(null);
-    toast.success("Video review removed from hompage");
   };
 
   const [notifications, setNotifications] = useState({
@@ -672,7 +718,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "companyName",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="e.g., Toyota"
@@ -729,7 +775,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "mileage",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="25000"
@@ -745,7 +791,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "transmission",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Automatic"
@@ -761,7 +807,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "fuelType",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Hybrid"
@@ -829,7 +875,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Brief description of the vehicle..."
@@ -1045,7 +1091,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                   <div className="flex items-end">
-                    <Button className="w-full">
+                    <Button className="w-full" onClick={handleAddVideo}>
                       <Plus size={18} className="mr-2" />
                       Add Video
                     </Button>
@@ -1093,7 +1139,7 @@ export default function AdminPage() {
                         onClick={() =>
                           window.open(
                             `https://www.youtube.com/watch?v=${video.videoId}`,
-                            "_blank"
+                            "_blank",
                           )
                         }
                       >

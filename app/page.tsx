@@ -43,7 +43,7 @@ import { localStorageAPI } from "@/lib/storage/localStorage.js";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
-//testing
+import { getVideoReviews } from "@/app/actions/videoActions";
 
 interface Vehicle {
   id: number;
@@ -52,6 +52,14 @@ interface Vehicle {
   status: "Available" | "Shipped" | "Not Available";
   image: string;
   location: string;
+}
+
+interface VideoReview {
+  id: string;
+  title: string;
+  description: string;
+  videoId: string;
+  createdAt: Date;
 }
 
 const featuredVehicles: Vehicle[] = [
@@ -89,44 +97,44 @@ const featuredVehicles: Vehicle[] = [
   },
 ];
 
-const videoReviews = [
-  {
-    id: 1,
-    title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-    description:
-      "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-    videoId: "dQw4w9WgXcQ", // Replace with actual YouTube video ID
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "2 weeks ago",
-  },
-  {
-    id: 2,
-    title: "Honda Civic 2021 - Complete Technical Review",
-    description:
-      "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "1 month ago",
-  },
-  {
-    id: 3,
-    title: "Suzuki Swift 2023 - Best Value for Money?",
-    description:
-      "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "3 weeks ago",
-  },
-  {
-    id: 4,
-    title: "Wagon R 2021 - Family Car Test Drive",
-    description:
-      "Real-world test drive of the Wagon R 2021, perfect for families looking for space and comfort.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "1 week ago",
-  },
-];
+// const videoReviews = [
+//   {
+//     id: 1,
+//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
+//     description:
+//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
+//     videoId: "dQw4w9WgXcQ", // Replace with actual YouTube video ID
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "2 weeks ago",
+//   },
+//   {
+//     id: 2,
+//     title: "Honda Civic 2021 - Complete Technical Review",
+//     description:
+//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "1 month ago",
+//   },
+//   {
+//     id: 3,
+//     title: "Suzuki Swift 2023 - Best Value for Money?",
+//     description:
+//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "3 weeks ago",
+//   },
+//   {
+//     id: 4,
+//     title: "Wagon R 2021 - Family Car Test Drive",
+//     description:
+//       "Real-world test drive of the Wagon R 2021, perfect for families looking for space and comfort.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "1 week ago",
+//   },
+// ];
 
 export default function Home() {
   const router = useRouter();
@@ -138,6 +146,8 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [videoReviews, setVideoReviews] = useState<VideoReview[]>([]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -181,6 +191,17 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const result = await getVideoReviews();
+      if (result.success) {
+        setVideoReviews(result.data as VideoReview[]);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background ">
@@ -739,12 +760,12 @@ export default function Home() {
             onClick={() =>
               window.open(
                 `https://www.youtube.com/watch?v=${videoReviews[0].videoId}`,
-                "_blank"
+                "_blank",
               )
             }
           >
             <Image
-              src={videoReviews[0].thumbnail || "/placeholder.svg"}
+              src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
               alt={videoReviews[0].title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -796,13 +817,13 @@ export default function Home() {
                 onClick={() =>
                   window.open(
                     `https://www.youtube.com/watch?v=${video.videoId}`,
-                    "_blank"
+                    "_blank",
                   )
                 }
               >
                 <div className="relative h-48 bg-muted overflow-hidden">
                   <img
-                    src={video.thumbnail || "/placeholder.svg"}
+                    src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
                     alt={video.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
