@@ -1,18 +1,18 @@
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function checkDBConnection() {
 
-    try {
-        const result = await prisma.$queryRaw`SELECT NOW()`;
-        console.log("Database connected successfully!");
-        console.log("Time:", result);
-    } catch (err) {
-        console.error("❌ Failed to connect:", err);
-    } finally {
-        await prisma.$disconnect();
-    }
+  try{
+      await prisma.$queryRaw`SELECT 1`;
+      return true;
+  }catch(err){
+      throw new Error("Database connection failed");
+  }
+
 }
 
-main();

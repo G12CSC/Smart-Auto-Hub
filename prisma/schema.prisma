@@ -12,12 +12,12 @@ model User {
   id                   String                @id @default(uuid())
   name                 String?
   email                String                @unique
-  emailVerified        DateTime?
   passwordHash         String?
-  image                String?
   phone                String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  emailVerified        DateTime?
+  image                String?
   authProviders        Account[]
   consultationBookings ConsultationBooking[]
   newsletters          NewsletterEntry[]
@@ -30,31 +30,31 @@ model Account {
   userId            String
   type              String
   provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id])
+  access_token      String?
+  expires_at        Int?
+  providerAccountId String
+  refresh_token     String?
+  user              User    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
 
 model Admin {
-  id           String    @id @default(uuid())
-  name         String?
-  email        String    @unique
-  passwordHash String
-  role         String    @default("editor")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdCars  Car[]     @relation("CreatedBy")
-  updatedCars  Car[]     @relation("UpdatedBy")
-  sessions     Session[]
+  id                  String                @id @default(uuid())
+  name                String?
+  email               String                @unique
+  passwordHash        String
+  role                StaffRole             @default(admin)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdCars         Car[]                 @relation("CreatedBy")
+  updatedCars         Car[]                 @relation("UpdatedBy")
+  sessions            Session[]
+  AdvisorAvailability AdvisorAvailability[]
 }
 
 model Car {
@@ -65,11 +65,18 @@ model Car {
   year           Int
   mileage        Int
   images         String[]
-  specifications Json
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now())
   createdById    String?
   updatedById    String?
+  condition      String?        @default("NULL")
+  edition        String?        @default("NULL")
+  transmission   String?
+  bodyType       String?        @default("NULL")
+  fuelType       String?
+  engineCapacity Int?           @default(0) @db.SmallInt
+  location       String?        @default("NULL")
+  dealer         String?        @default("NULL")
   availability   Availability[]
   createdBy      Admin?         @relation("CreatedBy", fields: [createdById], references: [id])
   updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
@@ -109,16 +116,16 @@ model Review {
 }
 
 model NewsletterEntry {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  message   String?
-  status    String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED
-  source    String   @default("GUEST") // USER or GUEST
-  createdAt DateTime @default(now())
+  id        String           @id @default(uuid())
+  userId    String?
+  email     String           @unique
+  createdAt DateTime         @default(now())
+  source    NewsletterSource @default(GUEST)
+  status    NewsletterStatus @default(ACTIVE)
+  user      User?            @relation(fields: [userId], references: [id])
 
-  // Optional link to User table
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  @@index([email])
+  @@index([status])
 }
 
 model ConsultationBooking {
@@ -128,12 +135,13 @@ model ConsultationBooking {
   email            String
   phone            String
   vehicleType      String
+  advisorId        String?
   consultationType String
   preferredDate    DateTime
   preferredTime    String
   message          String?
   status           BookingStatus @default(PENDING)
-  adminMessage     String?
+  advisorMessage   String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   user             User?         @relation(fields: [userId], references: [id])
@@ -152,8 +160,94 @@ model Session {
   user         User?    @relation(fields: [userId], references: [id])
 }
 
+model NewsletterBroadcast {
+  id                    String                  @id
+  newsletterId          String
+  status                BroadcastStatus         @default(PENDING)
+  sentCount             Int                     @default(0)
+  sentAt                DateTime?
+  createdAt             DateTime                @default(now())
+  Newsletter            Newsletter              @relation(fields: [newsletterId], references: [id])
+  NewsletterDeliveryLog NewsletterDeliveryLog[]
+
+  @@index([status])
+}
+
+model Newsletter {
+  id                  String                @id
+  title               String
+  subject             String
+  content             String
+  createdAt           DateTime              @default(now())
+  sentAt              DateTime?
+  NewsletterBroadcast NewsletterBroadcast[]
+}
+
+model NewsletterDeliveryLog {
+  id                  String              @id
+  broadcastId         String
+  email               String
+  status              DeliveryStatus
+  errorMessage        String?
+  sentAt              DateTime            @default(now())
+  NewsletterBroadcast NewsletterBroadcast @relation(fields: [broadcastId], references: [id])
+
+  @@index([email])
+}
+
+model AdvisorAvailability {
+  id        String   @id @default(uuid())
+  advisorId String
+  date      DateTime
+  timeSlot  String
+  isBusy    Boolean  @default(false)
+
+  advisor Admin @relation(fields: [advisorId], references: [id])
+}
+
 enum BookingStatus {
   PENDING
+  FORWARDED
   ACCEPTED
   REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum BroadcastStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DeliveryStatus {
+  SENT
+  FAILED
+}
+
+enum NewsletterSource {
+  GUEST
+  USER
+  ADMIN
+}
+
+enum NewsletterStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model CarVector {
+  id        Int                        @id
+  content   String
+  embedding Unsupported("vector(384)")
+  createdAt DateTime                   @default(now())
+
+  @@map("carVectors")
+}
+
+enum StaffRole {
+  admin
+  advisor
+  superadmin
 }
