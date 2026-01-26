@@ -621,7 +621,7 @@ export default function AdminPage() {
                                 size="sm"
                                 className="text-xs bg-primary hover:bg-primary/90"
                               >
-                                <Info size={14} />
+                                <UserStar size={14} />
                                 Send to an Advisor
                               </Button>
                             </>
