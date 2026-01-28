@@ -1,9 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { vi } from "date-fns/locale";
 import { revalidatePath } from "next/cache";
-import { title } from "process";
 
 //Fetch all videos (Newest first)
 export async function getVideoReviews() {
