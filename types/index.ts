@@ -19,7 +19,7 @@ export interface Vehicle {
 
 export interface Consultation {
   id?: number
-  fullname: string
+  fullName: string
   email: string
   phone: string
   vehicleType: string
