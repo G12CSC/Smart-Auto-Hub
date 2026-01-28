@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 
 export default function consultationForm() {
   const [formData, setFormData] = useState<Consultation>({
-    fullname: "",
+    fullName: "",
     email: "",
     phone: "",
     vehicleType: "",
@@ -52,7 +52,7 @@ export default function consultationForm() {
 
   const validateField = (name: string, value: string) => {
     switch (name) {
-      case "fullname":
+      case "fullName":
         return !value ? "Full name is required" : "";
       case "email":
         return validateEmail(value);
@@ -138,7 +138,7 @@ export default function consultationForm() {
 
     setTimeout(() => {
       setFormData({
-        fullname: "",
+        fullName: "",
         email: "",
         phone: "",
         vehicleType: "",
@@ -183,20 +183,20 @@ export default function consultationForm() {
           </label>
           <input
             type="text"
-            name="fullname"
-            value={formData.fullname}
+            name="fullName"
+            value={formData.fullName}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="John Doe"
             className={getInputClassName(
-              "fullname",
+              "fullName",
               "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition",
             )}
           />
-          {errors.fullname && touched.fullname && (
+          {errors.fullName && touched.fullName && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
               <AlertCircle size={12} />
-              <span>{errors.fullname}</span>
+              <span>{errors.fullName}</span>
             </div>
           )}
         </div>
