@@ -18,10 +18,11 @@ import ChatBot from "@/components/ChatBot";
 // import { setTimeout } from "timers/promises"
 import { handleConsultationRequests } from "../APITriggers/handleConsultationRequests";
 import { toast } from "sonner";
+import { Consultation } from "@/types";
 
 export default function ConsultationPage() {
-  const [formData, setFormData] = useState({
-    fullName: "",
+  const [formData, setFormData] = useState<Consultation>({
+    fullname: "",
     email: "",
     phone: "",
     vehicleType: "",
@@ -32,18 +33,18 @@ export default function ConsultationPage() {
   });
 
   const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateEmail = (email) => {
+  const validateEmail = (email : string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
     if (!emailRegex.test(email)) return "Please enter a valid email address";
     return "";
   };
 
-  const validatePhone = (phone) => {
+  const validatePhone = (phone : string) => {
     if (!phone) return "Phone number is required";
     const phoneRegex = /^0\d{9}$/;
     if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
@@ -52,7 +53,7 @@ export default function ConsultationPage() {
     return "";
   };
 
-  const validateDate = (date) => {
+  const validateDate = (date : Date) => {
     if (!date) return "Preferred date is required";
     const selectedDate = new Date(date);
     const today = new Date();
@@ -63,9 +64,9 @@ export default function ConsultationPage() {
     return "";
   };
 
-  const validateField = (name, value) => {
+  const validateField = (name: string, value: string ) => {
     switch (name) {
-      case "fullName":
+      case "fullname":
         return !value ? "Full name is required" : "";
       case "email":
         return validateEmail(value);
@@ -76,7 +77,7 @@ export default function ConsultationPage() {
       case "consultationType":
         return !value ? "Please select a consultation type" : "";
       case "preferredDate":
-        return validateDate(value);
+        return validateDate(new Date(value));
       case "preferredTime":
         return !value ? "Please select a time slot" : "";
       default:
@@ -84,7 +85,7 @@ export default function ConsultationPage() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -94,20 +95,20 @@ export default function ConsultationPage() {
     }
   };
 
-  const handleBlur = (e) => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const newErrors = {};
+    const newErrors = {} as { [key: string]: string };
     Object.keys(formData).forEach((key) => {
       if (key !== "message") {
-        const error = validateField(key, formData[key]);
+        const error = validateField(key, (formData as any)[key]);
         if (error) newErrors[key] = error;
       }
     });
@@ -143,7 +144,7 @@ export default function ConsultationPage() {
 
     setTimeout(() => {
       setFormData({
-        fullName: "",
+        fullname: "",
         email: "",
         phone: "",
         vehicleType: "",
@@ -158,17 +159,16 @@ export default function ConsultationPage() {
     }, 3000);
   };
 
-  const getInputClassName = (fieldName, baseClassName) => {
+  const getInputClassName = (fieldName: string, baseClassName: string) => {
     if ((submitted || touched[fieldName]) && errors[fieldName]) {
       return `${baseClassName} border-red-500 focus:ring-red-500`;
     }
     return baseClassName;
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-background">
-      <Header />
-
+      <Header/>
       {/* Hero Section */}
       <section
         className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
@@ -193,8 +193,7 @@ export default function ConsultationPage() {
 
       <div className="max-w-7xl mx-auto px-4 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Consultation Benefits */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 flex flex-col gap-4 sticky top-40 self-start">
             <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounce-in-up delay-100">
               <div className="flex items-start gap-4">
                 <div className="shrink-0">
@@ -229,169 +228,24 @@ export default function ConsultationPage() {
                 </div>
               </div>
             </div>
-
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email) return "Email is required";
-        if (!emailRegex.test(email)) return "Please enter a valid email address";
-        return "";
-    };
-
-    const validatePhone = (phone) => {
-        if (!phone) return "Phone number is required";
-        const phoneRegex = /^0\d{9}$/;
-        if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
-            return "Please enter a valid Sri Lankan phone number (10 digits starting with 0)";
-        }
-        return "";
-    };
-
-    const validateDate = (date) => {
-        if (!date) return "Preferred date is required";
-        const selectedDate = new Date(date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (selectedDate < today) {
-            return "Please select a future date";
-        }
-        return "";
-    };
-
-    const validateField = (name, value) => {
-        switch (name) {
-            case "fullName":
-                return !value ? "Full name is required" : "";
-            case "email":
-                return validateEmail(value);
-            case "phone":
-                return validatePhone(value);
-            case "vehicleType":
-                return !value ? "Please select a vehicle type" : "";
-            case "consultationType":
-                return !value ? "Please select a consultation type" : "";
-            case "preferredDate":
-                return validateDate(value);
-            case "preferredTime":
-                return !value ? "Please select a time slot" : "";
-            default:
-                return "";
-        }
-    };
-
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData((prev) => ({...prev, [name]: value}));
-
-        if (touched[name]) {
-            const error = validateField(name, value);
-            setErrors((prev) => ({...prev, [name]: error}));
-        }
-    };
-
-    const handleBlur = (e) => {
-        const {name, value} = e.target;
-        setTouched((prev) => ({...prev, [name]: true}));
-        const error = validateField(name, value);
-        setErrors((prev) => ({...prev, [name]: error}));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const newErrors = {};
-        Object.keys(formData).forEach((key) => {
-            if (key !== "message") {
-                const error = validateField(key, formData[key]);
-                if (error) newErrors[key] = error;
-            }
-        });
-
-        const allTouched = Object.keys(formData).reduce(
-            (acc, key) => ({...acc, [key]: true}),
-            {}
-        );
-        setTouched(allTouched);
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        try {
-            setIsSubmitting(true);
-
-            await handleConsultationRequests(formData); // ✅ THIS IS CORRECT
-
-            toast("Booking submitted successfully!", {
-                duration: 4000,
-                icon: "📅",
-            });
-
-            setSubmitted(true);
-
-        } catch (error) {
-            console.error(error);
-            alert("Booking failed. Please try again.");
-        } finally {
-            setIsSubmitting(false);
-        }
-
-        setTimeout(() => {
-            setFormData({
-                fullName: "",
-                email: "",
-                phone: "",
-                vehicleType: "",
-                consultationType: "",
-                preferredDate: "",
-                preferredTime: "",
-                message: "",
-            });
-            setErrors({});
-            setTouched({});
-            setSubmitted(false);
-        }, 3000);
-    };
-
-
-    const getInputClassName = (fieldName, baseClassName) => {
-        if ((submitted || touched[fieldName]) && errors[fieldName]) {
-            return `${baseClassName} border-red-500 focus:ring-red-500`;
-        }
-        return baseClassName;
-    };
-
-
-    return (
-
-        <div className="min-h-screen bg-background">
-            <Header/>
-
-            {/* Hero Section */}
-            <section
-                className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24"
-                style={{
-                    backgroundImage:
-                        "url(/placeholder.svg?height=384&width=1600&query=professional car consultation advisor customer meeting)",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                }}
-            >
-                <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
-                <div className="relative max-w-7xl mx-auto px-4 w-full">
-                    <h1 className="text-6xl font-bold mb-4 text-balance">
-                        Book an Appointment
-                    </h1>
-                    <p className="text-xl opacity-90 text-balance max-w-2xl">
-                        Connect with our technical experts for personalized vehicle guidance
-                        and advice.
-                    </p>
+            <div className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition animate-bounce-in-up delay-300">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-purple-500/10">
+                    <MapPin className="text-purple-600" size={24} />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg mb-2">
+                    Multiple Locations
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Meet at any of our branches or schedule an online consultation.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Consultation Form */}
           <div className="lg:col-span-2">
             <div className="bg-card rounded-lg p-8 border border-border shadow-sm animate-pop-in delay-300">
               <h2 className="text-3xl font-bold mb-6 animate-text-reveal">
@@ -415,20 +269,20 @@ export default function ConsultationPage() {
                   </label>
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="fullname"
+                    value={formData.fullname}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="John Doe"
                     className={getInputClassName(
-                      "fullName",
+                      "fullname",
                       "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                     )}
                   />
-                  {errors.fullName && touched.fullName && (
+                  {errors.fullname && touched.fullname && (
                     <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
                       <AlertCircle size={12} />
-                      <span>{errors.fullName}</span>
+                      <span>{errors.fullname}</span>
                     </div>
                   )}
                 </div>
@@ -616,7 +470,7 @@ export default function ConsultationPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Tell us more about your needs..."
-                    rows="4"
+                    rows={4}
                     className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none transition"
                   />
                 </div>
@@ -644,12 +498,12 @@ export default function ConsultationPage() {
             </div>
           </div>
         </div>
+        
       </div>
-
       {/* Chatbot Icon */}
       <ChatBot />
 
       <Footer />
-    </div>
+    </div>  
   );
 }
