@@ -472,107 +472,117 @@ export default async function Home() {
         </div>
 
         {/* Featured Video */}
-        {videoReviews.length > 0 && (
-          <div className="mb-12">
-            <a
-              href={`https://www.youtube.com/watch?v=${videoReviews[0].videoId}`}
-              className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                src={`https://img.youtube.com/vi/${videoReviews[0].videoId}/maxresdefault.jpg`}
-                alt={videoReviews[0].title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
+        {videoReviews.length > 0 ? (
+          <>
+            <div className="mb-12">
+              <a
+                href={`https://www.youtube.com/watch?v=${videoReviews[0].videoId}`}
+                className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Image
+                  src={`https://img.youtube.com/vi/${videoReviews[0].videoId}/maxresdefault.jpg`}
+                  alt={videoReviews[0].title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
 
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
 
-              {/* Play button */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                  <Play className="text-white fill-white ml-2" size={48} />
+                {/* Play button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                    <Play className="text-white fill-white ml-2" size={48} />
+                  </div>
+                </div>
+
+                {/* Featured badge */}
+                <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
+                  Featured Review
+                </Badge>
+
+                {/* Content at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+                    {videoReviews[0].title}
+                  </h3>
+                  <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
+                    {videoReviews[0].description}
+                  </p>
+                  <p className="text-sm text-white/70 flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                    {videoReviews[0].uploadDate}
+                  </p>
+                </div>
+              </a>
+            </div>
+
+            {/* Video Grid - Remaining videos */}
+            {videoReviews.length > 1 && (
+              <div>
+                <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {videoReviews.slice(1).map((video, index) => (
+                    <a
+                      key={video.id}
+                      className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
+                      style={{
+                        opacity: 0,
+                        animationDelay: `${(index + 1) * 0.1}s`,
+                      }}
+                      href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div className="relative h-48 bg-muted overflow-hidden">
+                        <img
+                          src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                          alt={video.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
+                          <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                            <Play
+                              className="text-white fill-white ml-1"
+                              size={28}
+                            />
+                          </div>
+                        </div>
+                        <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
+                          <svg
+                            className="w-3 h-3 fill-white"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                          </svg>
+                          YouTube
+                        </Badge>
+                      </div>
+
+                      <div className="p-5">
+                        <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                          {video.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                          {video.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                          {video.uploadDate}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
-
-              {/* Featured badge */}
-              <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
-                Featured Review
-              </Badge>
-
-              {/* Content at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
-                  {videoReviews[0].title}
-                </h3>
-                <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
-                  {videoReviews[0].description}
-                </p>
-                <p className="text-sm text-white/70 flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-                  {videoReviews[0].uploadDate}
-                </p>
-              </div>
-            </a>
-          </div>
-        )}
-
-        {/* Video Grid - Remaining videos */}
-        {videoReviews.length > 1 && (
-          <div>
-            <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videoReviews.slice(1).map((video, index) => (
-                <a
-                  key={video.id}
-                  className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
-                  style={{
-                    opacity: 0,
-                    animationDelay: `${(index + 1) * 0.1}s`,
-                  }}
-                  href={`https://www.youtube.com/watch?v=${video.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="relative h-48 bg-muted overflow-hidden">
-                    <img
-                      src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
-                      <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                        <Play
-                          className="text-white fill-white ml-1"
-                          size={28}
-                        />
-                      </div>
-                    </div>
-                    <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
-                      <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                      </svg>
-                      YouTube
-                    </Badge>
-                  </div>
-
-                  <div className="p-5">
-                    <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
-                      {video.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
-                      {video.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                      {video.uploadDate}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
+            )}
+          </>
+        ) : (
+          /* Fallback if no videos are found */
+          <div className="text-center py-10 text-muted-foreground">
+            No reviews available at the moment.
           </div>
         )}
       </section>
