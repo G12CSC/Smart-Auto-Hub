@@ -43,7 +43,7 @@ import { localStorageAPI } from "@/lib/storage/localStorage.js";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
-//testing
+import { getVideoReviews } from "@/app/actions/videoActions";
 
 interface Vehicle {
   id: number;
@@ -52,6 +52,14 @@ interface Vehicle {
   status: "Available" | "Shipped" | "Not Available";
   image: string;
   location: string;
+}
+
+interface VideoReview {
+  id: string;
+  title: string;
+  description: string;
+  videoId: string;
+  createdAt: Date;
 }
 
 const featuredVehicles: Vehicle[] = [
@@ -89,44 +97,44 @@ const featuredVehicles: Vehicle[] = [
   },
 ];
 
-const videoReviews = [
-  {
-    id: 1,
-    title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-    description:
-      "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-    videoId: "dQw4w9WgXcQ", // Replace with actual YouTube video ID
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "2 weeks ago",
-  },
-  {
-    id: 2,
-    title: "Honda Civic 2021 - Complete Technical Review",
-    description:
-      "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "1 month ago",
-  },
-  {
-    id: 3,
-    title: "Suzuki Swift 2023 - Best Value for Money?",
-    description:
-      "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "3 weeks ago",
-  },
-  {
-    id: 4,
-    title: "Wagon R 2021 - Family Car Test Drive",
-    description:
-      "Real-world test drive of the Wagon R 2021, perfect for families looking for space and comfort.",
-    videoId: "dQw4w9WgXcQ",
-    thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-    uploadDate: "1 week ago",
-  },
-];
+// const videoReviews = [
+//   {
+//     id: 1,
+//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
+//     description:
+//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
+//     videoId: "dQw4w9WgXcQ", // Replace with actual YouTube video ID
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "2 weeks ago",
+//   },
+//   {
+//     id: 2,
+//     title: "Honda Civic 2021 - Complete Technical Review",
+//     description:
+//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "1 month ago",
+//   },
+//   {
+//     id: 3,
+//     title: "Suzuki Swift 2023 - Best Value for Money?",
+//     description:
+//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "3 weeks ago",
+//   },
+//   {
+//     id: 4,
+//     title: "Wagon R 2021 - Family Car Test Drive",
+//     description:
+//       "Real-world test drive of the Wagon R 2021, perfect for families looking for space and comfort.",
+//     videoId: "dQw4w9WgXcQ",
+//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
+//     uploadDate: "1 week ago",
+//   },
+// ];
 
 export default function Home() {
   const router = useRouter();
@@ -138,6 +146,8 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [videoReviews, setVideoReviews] = useState<VideoReview[]>([]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -181,6 +191,17 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const result = await getVideoReviews();
+      if (result.success) {
+        setVideoReviews(result.data as VideoReview[]);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background ">
@@ -733,108 +754,115 @@ export default function Home() {
         </div>
 
         {/* Featured Video */}
-        <div className="mb-12">
-          <div
-            className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
-            onClick={() =>
-              window.open(
-                `https://www.youtube.com/watch?v=${videoReviews[0].videoId}`,
-                "_blank"
-              )
-            }
-          >
-            <Image
-              src={videoReviews[0].thumbnail || "/placeholder.svg"}
-              alt={videoReviews[0].title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+        {videoReviews.length > 0 && (
+          <div className="mb-12">
+            <div
+              className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
+              onClick={() =>
+                window.open(
+                  `https://www.youtube.com/watch?v=${videoReviews[0].videoId}`,
+                  "_blank",
+                )
+              }
+            >
+              <Image
+                src={`https://img.youtube.com/vi/${videoReviews[0].videoId}/maxresdefault.jpg`}
+                alt={videoReviews[0].title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+              />
 
-            {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
 
-            {/* Play button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                <Play className="text-white fill-white ml-2" size={48} />
+              {/* Play button */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                  <Play className="text-white fill-white ml-2" size={48} />
+                </div>
+              </div>
+
+              {/* Featured badge */}
+              <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
+                Featured Review
+              </Badge>
+
+              {/* Content at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+                  {videoReviews[0].title}
+                </h3>
+                <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
+                  {videoReviews[0].description}
+                </p>
+                <p className="text-sm text-white/70 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                  {videoReviews[0].uploadDate}
+                </p>
               </div>
             </div>
-
-            {/* Featured badge */}
-            <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
-              Featured Review
-            </Badge>
-
-            {/* Content at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-              <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
-                {videoReviews[0].title}
-              </h3>
-              <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
-                {videoReviews[0].description}
-              </p>
-              <p className="text-sm text-white/70 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-                {videoReviews[0].uploadDate}
-              </p>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Video Grid - Remaining videos */}
-        <div>
-          <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videoReviews.slice(1).map((video, index) => (
-              <div
-                key={video.id}
-                className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
-                style={{
-                  opacity: 0,
-                  animationDelay: `${(index + 1) * 0.1}s`,
-                }}
-                onClick={() =>
-                  window.open(
-                    `https://www.youtube.com/watch?v=${video.videoId}`,
-                    "_blank"
-                  )
-                }
-              >
-                <div className="relative h-48 bg-muted overflow-hidden">
-                  <img
-                    src={video.thumbnail || "/placeholder.svg"}
-                    alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
-                    <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                      <Play className="text-white fill-white ml-1" size={28} />
+        {videoReviews.length > 1 && (
+          <div>
+            <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {videoReviews.slice(1).map((video, index) => (
+                <div
+                  key={video.id}
+                  className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
+                  style={{
+                    opacity: 0,
+                    animationDelay: `${(index + 1) * 0.1}s`,
+                  }}
+                  onClick={() =>
+                    window.open(
+                      `https://www.youtube.com/watch?v=${video.videoId}`,
+                      "_blank",
+                    )
+                  }
+                >
+                  <div className="relative h-48 bg-muted overflow-hidden">
+                    <img
+                      src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
+                      <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                        <Play
+                          className="text-white fill-white ml-1"
+                          size={28}
+                        />
+                      </div>
                     </div>
+                    <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
+                      <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                      </svg>
+                      YouTube
+                    </Badge>
                   </div>
-                  <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
-                    <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                    YouTube
-                  </Badge>
-                </div>
 
-                <div className="p-5">
-                  <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
-                    {video.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
-                    {video.description}
-                  </p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                    {video.uploadDate}
-                  </p>
+                  <div className="p-5">
+                    <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                      {video.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                      {video.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                      {video.uploadDate}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Newsletter */}
@@ -891,9 +919,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Chatbot Icon */}
-      <ChatBot />
 
       <Footer />
     </div>

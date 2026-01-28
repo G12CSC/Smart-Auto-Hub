@@ -29,6 +29,11 @@ import {
   ExternalLink,
   RefreshCcw,
   Plus,
+  Info,
+  UserX,
+  FileUser,
+  UserCog,
+  Binoculars,
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -46,6 +51,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -61,7 +68,14 @@ import {
 import { BRANCHES } from "@/lib/branches";
 import { vehicleAPI } from "@/lib/api/vehicles";
 import { toast } from "sonner";
-import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+
+import {
+  getVideoReviews,
+  addVideoReview,
+  deleteVideoReview,
+} from "@/app/actions/videoActions";
+
+import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 
 const stats = [
   {
@@ -145,39 +159,37 @@ const vehicles = [
 
 const newsletterSubscribers = [];
 
-const videoReviews = [
-  {
-    id: 1,
-    title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-    description:
-      "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "14/11/2025",
-    views: "12.5K",
-  },
-  {
-    id: 2,
-    title: "Honda Civic 2021 - Complete Technical Review",
-    description:
-      "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "10/11/2025",
-    views: "8.3K",
-  },
-  {
-    id: 3,
-    title: "Suzuki Swift 2023 - Best Value for Money?",
-    description:
-      "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-    videoId: "dQw4w9WgXcQ",
-    uploadDate: "08/11/2025",
-    views: "15.2K",
-  },
-];
+// const videoReviews = [
+//   {
+//     id: 1,
+//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
+//     description:
+//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "14/11/2025",
+//     views: "12.5K",
+//   },
+//   {
+//     id: 2,
+//     title: "Honda Civic 2021 - Complete Technical Review",
+//     description:
+//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "10/11/2025",
+//     views: "8.3K",
+//   },
+//   {
+//     id: 3,
+//     title: "Suzuki Swift 2023 - Best Value for Money?",
+//     description:
+//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
+//     videoId: "dQw4w9WgXcQ",
+//     uploadDate: "08/11/2025",
+//     views: "15.2K",
+//   },
+// ];
 
 export default function AdminPage() {
-
-
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
@@ -186,6 +198,7 @@ export default function AdminPage() {
     description: "",
     videoId: "",
   });
+  const [videoReviews, setVideoReviews] = useState([]);
 
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
@@ -201,34 +214,19 @@ export default function AdminPage() {
   const [deleteVideoId, setDeleteVideoId] = useState(null);
   const [adminMessage, setAdminMessage] = useState("");
 
-    const fetchBookings = async () => {
+  const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
+  const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] =
+    useState(null);
 
-        try {
-            const res = await fetch("/api/Consultations/getAllBooking");
-            const data = await res.json();
-            setRecentRequests(Array.isArray(data) ? data : data.data || []);
-        } catch (error) {
-            console.error("Failed to fetch bookings", error);
-        }
-    };
-
-    useEffect(()=>{
-
-        fetchBookings();
-
-    },[]);
-
-    const handleRefreshBookings = async () => {
-        try {
-            setIsRefreshing(true);
-            await fetchBookings();
-        } catch (error) {
-            console.error("Failed to refresh bookings", error);
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
-
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch("/api/Consultations/getAllBooking");
+      const data = await res.json();
+      setRecentRequests(Array.isArray(data) ? data : data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch bookings", error);
+    }
+  };
 
   useEffect(() => {
     fetchBookings();
@@ -253,9 +251,20 @@ export default function AdminPage() {
     const result = await vehicleAPI.getAllVehicles();
     if (result.success) {
       const sortedVehicles = [...result.data].sort(
-        (a, b) => Number(b.id) - Number(a.id)
+        (a, b) => Number(b.id) - Number(a.id),
       );
       setAdminVehicles(sortedVehicles);
+    }
+  };
+
+  useEffect(() => {
+    loadVideos();
+  }, []);
+
+  const loadVideos = async () => {
+    const result = await getVideoReviews();
+    if (result.success) {
+      setVideoReviews(result.data);
     }
   };
 
@@ -334,9 +343,35 @@ export default function AdminPage() {
     toast.success("Vehicle Deleted Successfully");
   };
 
-  const handleDeleteVideo = (videoId) => {
+  const handleAddVideo = async () => {
+    //Basic Validation
+    if (!newVideo.title || !newVideo.videoId) {
+      toast.error("Please fill in Title and VideoId");
+      return;
+    }
+
+    //Call the server action
+    const result = await addVideoReview(newVideo);
+
+    if (result.success) {
+      toast.success("Video Review added successfully");
+      setNewVideo({ title: "", description: "", videoId: "" }); //Resets form
+      loadVideos();
+    } else {
+      toast.error("Failed to add video");
+    }
+  };
+
+  const handleDeleteVideo = async (videoId) => {
+    const result = await deleteVideoReview(videoId);
+
+    if (result.success) {
+      toast.success("Video review removed from homepage");
+      loadVideos(); //Refreshes the List
+    } else {
+      toast.error("Failed to remove the video");
+    }
     setDeleteVideoId(null);
-    toast.success("Video review removed from hompage");
   };
 
   const [notifications, setNotifications] = useState({
@@ -452,7 +487,7 @@ export default function AdminPage() {
                 count: 0,
               },
             ].map((tab) => (
-              <button
+              <Button
                 key={tab.id}
                 // onClick={() => setActiveTab(tab.id)}
                 onClick={() => handleTabChange(tab.id)}
@@ -469,7 +504,7 @@ export default function AdminPage() {
                     {tab.count > 9 ? "9+" : tab.count}
                   </span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -577,7 +612,7 @@ export default function AdminPage() {
                         <td className="px-4 py-2 flex gap-2">
                           {request.status === "PENDING" && (
                             <>
-                              <button
+                              {/* <button
                                 className="bg-green-600 text-white px-2 py-1 rounded text-xs"
                                 onClick={() =>
                                   approveBookings(request.id, "ACCEPTED")
@@ -592,7 +627,18 @@ export default function AdminPage() {
                                 }
                               >
                                 Decline
-                              </button>
+                              </button> */}
+                              <Button
+                                size="sm"
+                                className="text-xs bg-primary hover:bg-primary/90"
+                                onClick={() => {
+                                  setSelectedRequestForAdvisor(request);
+                                  setIsAdvisorModalOpen(true);
+                                }}
+                              >
+                                <Binoculars size={14} />
+                                Send to an Advisor
+                              </Button>
                             </>
                           )}
 
@@ -636,14 +682,16 @@ export default function AdminPage() {
                               </DialogFooter>
                             </DialogContent>
                           </Dialog> */}
-                          <button
-                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                          <Button
+                            size="sm"
+                            className="bg-blue-600 text-white text-xs hover:bg-blue-900"
                             onClick={() =>
                               sendAdminMessagesForBookings(request.id)
                             }
                           >
+                            <UserCog size={14} />
                             Send Message
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -693,7 +741,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "companyName",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="e.g., Toyota"
@@ -750,7 +798,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "mileage",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="25000"
@@ -766,7 +814,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "transmission",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Automatic"
@@ -782,7 +830,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "fuelType",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Hybrid"
@@ -850,7 +898,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               handleVehicleFieldChange(
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="Brief description of the vehicle..."
@@ -1066,7 +1114,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                   <div className="flex items-end">
-                    <Button className="w-full">
+                    <Button className="w-full" onClick={handleAddVideo}>
                       <Plus size={18} className="mr-2" />
                       Add Video
                     </Button>
@@ -1114,7 +1162,7 @@ export default function AdminPage() {
                         onClick={() =>
                           window.open(
                             `https://www.youtube.com/watch?v=${video.videoId}`,
-                            "_blank"
+                            "_blank",
                           )
                         }
                       >
@@ -1264,6 +1312,16 @@ export default function AdminPage() {
       )
       <ChatBot />
       <Footer />
+      <AdvisorSelectionModal
+        open={isAdvisorModalOpen}
+        onClose={() => setIsAdvisorModalOpen(false)}
+        bookingSlot={selectedRequestForAdvisor?.time || ""}
+        onConfirm={(advisor) => {
+          toast.success(`Booking assigned to ${advisor.name}`);
+          setIsAdvisorModalOpen(false);
+          setSelectedRequestForAdvisor(null);
+        }}
+      />
     </div>
   );
 }
