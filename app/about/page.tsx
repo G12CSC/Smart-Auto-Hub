@@ -29,7 +29,7 @@ export default function AboutPage() {
       </section> */}
 
       <section
-        className="relative h-96 bg-linear-to-br from-primary via-primary/90 to-accent text-primary-foreground flex items-center"
+        className="relative h-96 bg-linear-to-br from-primary via-primary/90 to-accent text-primary-foreground flex items-center animate-slide-in-down"
         style={{
           backgroundImage:
             "url(/placeholder.svg?height=384&width=1920&query=modern automotive dealership building exterior professional facade)",
@@ -39,10 +39,10 @@ export default function AboutPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-balance">
+          <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-balance animate-text-reveal">
             About Sameera Auto Traders
           </h1>
-          <p className="text-xl lg:text-2xl opacity-95 text-balance max-w-2xl">
+          <p className="text-xl lg:text-2xl opacity-95 text-balance max-w-2xl animate-text-reveal stagger-1">
             Your trusted partner in finding the perfect vehicle since we started
             our journey in the automotive industry.
           </p>
@@ -52,30 +52,32 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 py-16 space-y-16">
         {/* Company Overview */}
         <section>
-          <h2 className="text-4xl font-bold mb-8">Our Story</h2>
+          <h2 className="text-4xl font-bold mb-8 animate-text-reveal">
+            Our Story
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed animate-slide-in-left">
                 Sameera Auto Traders has been a leading automotive dealership in
                 Sri Lanka, dedicated to providing quality vehicles and
                 exceptional customer service. With years of experience in the
                 automotive industry, we have built a reputation for reliability
                 and transparency.
               </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed animate-slide-in-left stagger-1">
                 Our journey began with a simple vision: to offer customers a
                 comprehensive selection of vehicles at competitive prices,
                 coupled with professional support and guidance throughout their
                 purchasing journey.
               </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed animate-slide-in-left stagger-2">
                 Today, we've expanded our operations to multiple branches across
                 the country, serving thousands of satisfied customers and
                 continuing our commitment to excellence in the automotive
                 sector.
               </p>
             </div>
-            <div className="relative h-96 bg-muted rounded-2xl overflow-hidden shadow-2xl group">
+            <div className="relative h-96 bg-muted rounded-2xl overflow-hidden shadow-2xl group animate-slide-in-right">
               <img
                 src="/luxury-car-showroom-interior-modern-vehicles-displ.jpg"
                 alt="Showroom Interior"
@@ -89,15 +91,17 @@ export default function AboutPage() {
         {/* Our Team / Happy customer Section */}
         <section>
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Meet Our Expert Team</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 animate-text-reveal">
+              Meet Our Expert Team
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto animate-text-reveal stagger-1">
               Dedicated professionals committed to helping you find your perfect
               vehicle
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div className="text-center group">
+            <div className="text-center group animate-pop-in">
               <div className="relative mb-4 overflow-hidden rounded-2xl">
                 <img
                   src="/professional-automotive-sales-manager-portrait-sri.jpg"
@@ -115,8 +119,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="text-center group">
-              <div className="relative mb-4 overflow-hidden rounded-2xl">
+            <div className="text-center group animate-pop-in delay-100 ">
+              <div className="relative mb-4 overflow-hidden rounded-2xl ">
                 <img
                   src="/professional-automotive-technical-consultant-femal.jpg"
                   alt="Technical Consultant"
@@ -133,7 +137,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="text-center group">
+            <div className="text-center group animate-pop-in delay-200">
               <div className="relative mb-4 overflow-hidden rounded-2xl">
                 <img
                   src="/professional-automotive-sales-executive-male-sri-l.jpg"
@@ -149,7 +153,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="text-center group">
+            <div className="text-center group animate-pop-in delay-300">
               <div className="relative mb-4 overflow-hidden rounded-2xl">
                 <img
                   src="/professional-automotive-service-manager-female-sri.jpg"
@@ -166,33 +170,33 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="bg-linear-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20 rounded-2xl p-10">
+          <div className="bg-linear-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20 rounded-2xl p-10 animate-bounce-in-up">
             <h3 className="text-2xl font-bold mb-6 text-center">
               Happy Customer Moments
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg">
+              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg animate-float">
                 <img
                   src="/happy-customer-receiving-car-keys-from-salesperson.jpg"
                   alt="Customer Handover"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg">
+              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg animate-float delay-100">
                 <img
                   src="/smiling-customer-standing-next-to-new-car-at-deale.jpg"
                   alt="Happy Customer"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg">
+              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg animate-float delay-200">
                 <img
                   src="/family-celebrating-new-car-purchase-at-automotive-.jpg"
                   alt="Family Celebration"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg">
+              <div className="relative h-48 rounded-xl overflow-hidden group shadow-lg animate-float delay-300">
                 <img
                   src="/placeholder.svg?height=192&width=256"
                   alt="Successful Purchase"
@@ -204,9 +208,9 @@ export default function AboutPage() {
         </section>
 
         {/* Mission & Vision */}
-        <section className="bg-linear-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20 rounded-2xl p-12">
+        <section className="bg-linear-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20 rounded-2xl p-12 animate-bounce-in-up">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-4">
+            <div className="space-y-4 animate-slide-in-left">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Target className="text-white" size={28} />
@@ -220,7 +224,7 @@ export default function AboutPage() {
                 accessible and hassle-free.
               </p>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 animate-slide-in-right">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Zap className="text-white" size={28} />
@@ -239,14 +243,14 @@ export default function AboutPage() {
 
         {/* Core Values */}
         <section>
-          <h2 className="text-4xl font-bold mb-4 text-center">
+          <h2 className="text-4xl font-bold mb-4 text-center animate-text-reveal">
             Our Core Values
           </h2>
-          <p className="text-muted-foreground text-lg text-center mb-12 max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg text-center mb-12 max-w-2xl mx-auto animate-text-reveal stagger-1">
             The principles that guide everything we do
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group">
+            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animate-pop-in">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-amber-400 to-orange-500 rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Award className="text-white" size={36} />
               </div>
@@ -257,7 +261,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group">
+            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animation-pop-in delay-100">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-blue-400 to-cyan-500 rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Users className="text-white" size={36} />
               </div>
@@ -268,7 +272,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group">
+            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animation-pop-in delay-200">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-purple-400 to-pink-500 rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Zap className="text-white" size={36} />
               </div>
@@ -279,7 +283,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group">
+            <div className="bg-card rounded-xl p-8 border border-border text-center hover:shadow-xl transition-all duration-300 group animation-pop-in delay-300">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-green-400 to-emerald-500 rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Target className="text-white" size={36} />
               </div>
@@ -294,11 +298,11 @@ export default function AboutPage() {
 
         {/* Why Choose Us */}
         <section>
-          <h2 className="text-3xl font-bold mb-8">
+          <h2 className="text-3xl font-bold mb-8 animate-text-reveal">
             Why Choose Sameera Auto Traders?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up">
               <h3 className="font-bold text-lg mb-3">Wide Selection</h3>
               <p className="text-muted-foreground">
                 Browse from hundreds of quality vehicles across multiple
@@ -306,7 +310,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up delay-100">
               <h3 className="font-bold text-lg mb-3">Expert Support</h3>
               <p className="text-muted-foreground">
                 Our technical consultants are available to answer your questions
@@ -314,7 +318,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up delay-200">
               <h3 className="font-bold text-lg mb-3">Online Convenience</h3>
               <p className="text-muted-foreground">
                 Search, compare, consult, and book appointments entirely online
@@ -322,7 +326,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up delay-300">
               <h3 className="font-bold text-lg mb-3">Competitive Pricing</h3>
               <p className="text-muted-foreground">
                 Get the best value for your money with our transparent and
@@ -330,7 +334,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up delay-400">
               <h3 className="font-bold text-lg mb-3">Flexible Financing</h3>
               <p className="text-muted-foreground">
                 Use our leasing calculator to explore payment options that work
@@ -338,7 +342,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border border-border">
+            <div className="bg-card rounded-lg p-6 border border-border animate-bounce-in-up delay-500">
               <h3 className="font-bold text-lg mb-3">Customer Service</h3>
               <p className="text-muted-foreground">
                 We're committed to providing exceptional support before, during,
@@ -349,11 +353,11 @@ export default function AboutPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-linear-to-r from-primary to-accent rounded-lg p-12 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold mb-4">
+        <section className="bg-linear-to-r from-primary to-accent rounded-lg p-12 text-center text-primary-foreground animate-slide-in-down">
+          <h2 className="text-3xl font-bold mb-4 animate-text-reveal">
             Ready to Find Your Perfect Vehicle?
           </h2>
-          <p className="text-lg mb-8 opacity-90">
+          <p className="text-lg mb-8 opacity-90 animate-text-reveal stagger-1">
             Explore our inventory or schedule a consultation with our experts
             today.
           </p>

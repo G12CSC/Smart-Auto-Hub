@@ -65,7 +65,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
+    <header className="border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
       <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* LOGO + WORDMARK */}
         <Link href="/" className="flex items-center gap-3">

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+
   const { title, subject, content } = await req.json();
 
   const newsletter = await prisma.newsletter.create({
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
+
   const newsletters = await prisma.newsletter.findMany({
     orderBy: { createdAt: "desc" },
   });

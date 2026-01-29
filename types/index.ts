@@ -18,8 +18,8 @@ export interface Vehicle {
 }
 
 export interface Consultation {
-  id: number
-  name: string
+  id?: number
+  fullName: string
   email: string
   phone: string
   vehicleType: string
@@ -27,7 +27,7 @@ export interface Consultation {
   preferredDate: string
   preferredTime: string
   message?: string
-  status: "Pending" | "Confirmed" | "Completed" | "Cancelled"
+  status?: "Pending" | "Confirmed" | "Completed" | "Cancelled"
 }
 
 export interface Appointment {

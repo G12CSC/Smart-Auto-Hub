@@ -29,12 +29,10 @@ import {
 import ChatBot from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { localStorageAPI } from "@/lib/storage/localStorage";
-import {cancelBookings} from "../APITriggers/cancelBookings.js";
-import {rescheduleBooking} from "../APITriggers/rescheduleBooking.js";
-
+import { cancelBookings } from "../APITriggers/cancelBookings.js";
+import { rescheduleBooking } from "../APITriggers/rescheduleBooking.js";
 
 export default function DashboardPage() {
-
   const [activeTab, setActiveTab] = useState("appointments");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const { data: session, status } = useSession();
@@ -42,47 +40,41 @@ export default function DashboardPage() {
   const [appointmentHistory, setAppointmentHistory] = useState([]);
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-    const [rescheduleOpen, setRescheduleOpen] = useState(false);
-    const [rescheduleApt, setRescheduleApt] = useState(null);
-    const [newDate, setNewDate] = useState("");
-    const [newTime, setNewTime] = useState("");
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleApt, setRescheduleApt] = useState(null);
+  const [newDate, setNewDate] = useState("");
+  const [newTime, setNewTime] = useState("");
 
+  useEffect(() => {
+    if (status !== "authenticated") return;
 
-    useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        const res = await fetch("/api/Consultations/user/");
 
-        if (status !== "authenticated") return;
+        if (!res.ok) {
+          console.error("Failed to fetch appointments");
+          return;
+        }
 
-        const loadAppointments = async () => {
-            try {
-                const res = await fetch("/api/Consultations/user/");
+        const { upcoming, history } = await res.json();
 
-                if (!res.ok) {
-                    console.error("Failed to fetch appointments");
-                    return;
-                }
+        setUpcomingAppointments(upcoming);
+        setAppointmentHistory(history);
 
-                const { upcoming, history } = await res.json();
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to load appointments", error);
+      }
+    };
 
-                setUpcomingAppointments(upcoming);
-                setAppointmentHistory(history);
+    loadAppointments();
+  }, [status]);
 
-                setLoading(false);
-
-            } catch (error) {
-                console.error("Failed to load appointments", error);
-            }
-        };
-
-        loadAppointments();
-    }, [status]);
-
-
-    const [notifications, setNotifications] = useState({
+  const [notifications, setNotifications] = useState({
     appointments: 0,
     reviews: 0,
   });
-
-
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
@@ -102,29 +94,27 @@ export default function DashboardPage() {
     setNotifications(notifs.dashboard);
   };
 
+  //const dateForInput = (date) =>
+  //new Date(date).toISOString().split("T")[0];
+  //changes the date value of the rescheduling input box into dateTime object since preferredDate is of dateTime
 
-
-    //const dateForInput = (date) =>
-        //new Date(date).toISOString().split("T")[0];
-    //changes the date value of the rescheduling input box into dateTime object since preferredDate is of dateTime
-
-    return (
+  return (
     <div className="min-h-screen bg-background">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* User Welcome Section */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 animate-slide-in-down">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
               JD
             </div>
             <div>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-3xl font-bold animate-text-reveal">
                 Welcome back, {session?.user?.name || "User"}!
               </h1>
 
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground animate-text-reveal stagger-1">
                 Manage your appointments and profile
               </p>
             </div>
@@ -133,7 +123,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 animate-slide-in-left">
             <nav className="bg-card rounded-lg border border-border overflow-hidden sticky top-24">
               <div className="divide-y divide-border">
                 {[
@@ -149,7 +139,12 @@ export default function DashboardPage() {
                     icon: Star,
                     count: notifications.reviews,
                   },
-                  { label: "My Profile", id: "profile", icon: User, count: 0 },
+                  {
+                    label: "My Profile",
+                    id: "profile",
+                    icon: User,
+                    count: 0,
+                  },
                   {
                     label: "Settings",
                     id: "settings",
@@ -190,7 +185,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 animate-slide-in-right delay-200">
             {/* Appointments Tab */}
             {activeTab === "appointments" && (
               <div className="space-y-6">
@@ -300,116 +295,117 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
+                            {apt.status === "PENDING" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setNewDate(apt.preferredDate); // ✅ FIX
+                                  setNewTime(apt.preferredTime);
+                                  setRescheduleApt(apt);
+                                  setRescheduleOpen(true);
+                                }}
+                              >
+                                <Edit size={14} className="mr-2" />
+                                Reschedule
+                              </Button>
+                            )}
 
-                              {apt.status === "PENDING" && (
-                                  <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                          setNewDate(apt.preferredDate); // ✅ FIX
-                                          setNewTime(apt.preferredTime);
-                                          setRescheduleApt(apt);
-                                          setRescheduleOpen(true);
-                                      }}
-                                  >
-                                      <Edit size={14} className="mr-2" />
+                            {rescheduleOpen && (
+                              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                                <div className="bg-card p-6 rounded-lg w-full max-w-sm">
+                                  <h3 className="text-lg font-bold mb-4">
+                                    Reschedule Appointment
+                                  </h3>
 
-                                      Reschedule
-                                  </Button>
-                              )}
-
-                              {rescheduleOpen && (
-                                  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                                      <div className="bg-card p-6 rounded-lg w-full max-w-sm">
-                                          <h3 className="text-lg font-bold mb-4">
-                                              Reschedule Appointment
-                                          </h3>
-
-                                          <div className="space-y-3">
-                                              <Input
-                                                  type="date"
-                                                  value={newDate}
-                                                  onChange={(e) => setNewDate(e.target.value)}
-                                              />
-                                              <Input
-                                                  type="time"
-                                                  value={newTime}
-                                                  onChange={(e) => setNewTime(e.target.value)}
-                                              />
-                                          </div>
-
-                                          <div className="flex justify-end gap-3 mt-5">
-                                              <Button
-                                                  variant="outline"
-                                                  onClick={() => setRescheduleOpen(false)}
-                                              >
-                                                  Cancel
-                                              </Button>
-
-                                              <Button
-                                                  onClick={async () => {
-
-                                                      try {
-
-                                                          const updated = await rescheduleBooking(
-                                                              rescheduleApt.id,
-                                                              newDate,
-                                                              newTime
-                                                          );
-
-                                                          // 🔥 Update UI instantly
-                                                          setUpcomingAppointments((prev) =>
-                                                              prev.map((a) =>
-                                                                  a.id === updated.id ? updated : a
-                                                              )
-                                                          );
-
-                                                          setRescheduleOpen(false);
-                                                      } catch {
-                                                          alert("Reschedule failed");
-                                                      }
-                                                  }}
-                                              >
-                                                  Save
-                                              </Button>
-                                          </div>
-                                      </div>
+                                  <div className="space-y-3">
+                                    <Input
+                                      type="date"
+                                      value={newDate}
+                                      onChange={(e) =>
+                                        setNewDate(e.target.value)
+                                      }
+                                    />
+                                    <Input
+                                      type="time"
+                                      value={newTime}
+                                      onChange={(e) =>
+                                        setNewTime(e.target.value)
+                                      }
+                                    />
                                   </div>
-                              )}
 
+                                  <div className="flex justify-end gap-3 mt-5">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => setRescheduleOpen(false)}
+                                    >
+                                      Cancel
+                                    </Button>
 
-                              <Button variant="outline" size="sm">
+                                    <Button
+                                      onClick={async () => {
+                                        try {
+                                          const updated =
+                                            await rescheduleBooking(
+                                              rescheduleApt.id,
+                                              newDate,
+                                              newTime
+                                            );
+
+                                          // 🔥 Update UI instantly
+                                          setUpcomingAppointments((prev) =>
+                                            prev.map((a) =>
+                                              a.id === updated.id ? updated : a
+                                            )
+                                          );
+
+                                          setRescheduleOpen(false);
+                                        } catch {
+                                          alert("Reschedule failed");
+                                        }
+                                      }}
+                                    >
+                                      Save
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            <Button variant="outline" size="sm">
                               <MessageSquare size={14} className="mr-2" />
                               Contact
                             </Button>
 
-                              <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 hover:text-red-700 bg-transparent"
-                                  onClick={async () => {
-                                      try {
-                                          const cancelled = await cancelBookings(apt.id);
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 bg-transparent"
+                              onClick={async () => {
+                                try {
+                                  const cancelled = await cancelBookings(
+                                    apt.id
+                                  );
 
-                                          // Remove from upcoming
-                                          setUpcomingAppointments((prev) =>
-                                              prev.filter((a) => a.id !== apt.id)
-                                          );
+                                  // Remove from upcoming
+                                  setUpcomingAppointments((prev) =>
+                                    prev.filter((a) => a.id !== apt.id)
+                                  );
 
-                                          // Add to history
-                                          setAppointmentHistory((prev) => [
-                                              cancelled,
-                                              ...prev,
-                                          ]);
-                                      } catch (err) {
-                                          alert("Failed to cancel appointment");
-                                      }
-                                  }}
-                              >
-                                  <XCircle size={14} className="mr-2" />
-                                  Cancel
-                              </Button>
-
+                                  // Add to history
+                                  setAppointmentHistory((prev) => [
+                                    cancelled,
+                                    ...prev,
+                                  ]);
+                                } catch (err) {
+                                  alert("Failed to cancel appointment");
+                                }
+                              }}
+                            >
+                              <XCircle size={14} className="mr-2" />
+                              Cancel
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -462,9 +458,7 @@ export default function DashboardPage() {
                               <td className="px-6 py-3 text-sm">
                                 {apt.vehicleType}
                               </td>
-                              <td className="px-6 py-3 text-sm">
-                                {""}
-                              </td>
+                              <td className="px-6 py-3 text-sm">{""}</td>
                               <td className="px-6 py-3 text-sm text-muted-foreground">
                                 {apt.preferredDate}
                               </td>
