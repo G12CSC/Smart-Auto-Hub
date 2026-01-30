@@ -1,20 +1,63 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
-import { Header } from "@/components/Header"
-import { Footer } from "@/components/Footer"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Loader2, Heart } from "lucide-react"
-import ChatBot from "@/components/ChatBot"
-import { vehicleAPI } from "../../../lib/api/vehicles"
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Loader2,
+  User,
+  X,
+} from "lucide-react"
 import { localStorageAPI } from "@/lib/storage/localStorage.js"
+import { toast } from "sonner"
+import StarRating from "@/components/StarRating"
 
-export default function VehicleDetailsClient({ vehicleId, initialVehicle, initialError }) {
-  const [vehicle, setVehicle] = useState(initialVehicle || null)
-  const [loading, setLoading] = useState(!initialVehicle)
-  const [error, setError] = useState(initialError || null)
+type Vehicle = {
+  id?: string | number
+  name?: string
+  price?: number
+  image?: string
+  images?: string[]
+  status?: string
+  location?: string
+  make?: string
+  model?: string
+  year?: number
+  type?: string
+  mileage?: number
+  transmission?: string
+  fuelType?: string
+  description?: string
+}
 
+type ReviewForm = {
+  name: string
+  email: string
+  rating: number
+  comment: string
+}
+
+type Review = ReviewForm & {
+  id: string
+  timestamp: string
+}
+
+type ReviewErrors = Partial<Record<keyof ReviewForm, string>>
+
+type VehicleDetailsClientProps = {
+  vehicle?: Vehicle | null
+  vehicleId?: string
+}
+
+export default function VehicleDetailsClient({
+  vehicle: initialVehicle,
+  vehicleId,
+}: VehicleDetailsClientProps) {
+  const [vehicle, setVehicle] = useState<Vehicle | null>(initialVehicle || null)
   const [monthlyPayment, setMonthlyPayment] = useState(0)
   const [loanAmount, setLoanAmount] = useState(initialVehicle?.price || 0)
   const [downPayment, setDownPayment] = useState(0)
@@ -22,40 +65,42 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
 
   const [isFavourite, setIsFavourite] = useState(false)
 
-  useEffect(() => {
-    if (!vehicleId) return
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-    if (initialVehicle) {
-      localStorageAPI.addRecentlyViewed(vehicleId)
-      setIsFavourite(localStorageAPI.isFavourite(vehicleId))
-      return
-    }
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewForm, setReviewForm] = useState<ReviewForm>({
+    name: "",
+    email: "",
+    rating: 0,
+    comment: "",
+  })
+  const [reviewErrors, setReviewErrors] = useState<ReviewErrors>({})
+  const [submittingReview, setSubmittingReview] = useState(false)
 
-    const fetchVehicle = async () => {
-      setLoading(true)
-      setError(null)
-      const result = await vehicleAPI.getVehicleById(vehicleId)
+  const resolvedVehicleId =
+    vehicleId ?? (vehicle?.id !== undefined && vehicle?.id !== null ? String(vehicle.id) : null)
 
-      if (result.success) {
-        setVehicle(result.data)
-        setLoanAmount(result.data.price)
-        localStorageAPI.addRecentlyViewed(vehicleId)
-        setIsFavourite(localStorageAPI.isFavourite(vehicleId))
-      } else {
-        setError(result.error)
-      }
-      setLoading(false)
-    }
-
-    fetchVehicle()
-  }, [vehicleId, initialVehicle])
+  // Mock images array for gallery - in production, this would come from vehicle data
+  const vehicleImages: string[] = [
+    vehicle?.image || "/placeholder.svg",
+    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle front angle",
+    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle side angle",
+    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle interior",
+  ]
 
   useEffect(() => {
-    if (initialVehicle) {
-      setVehicle(initialVehicle)
-      setLoanAmount(initialVehicle.price)
-    }
+    if (!initialVehicle) return
+    setVehicle(initialVehicle)
+    setLoanAmount(initialVehicle.price || 0)
   }, [initialVehicle])
+
+  useEffect(() => {
+    if (!resolvedVehicleId) return
+    localStorageAPI.addRecentlyViewed(resolvedVehicleId)
+    setIsFavourite(localStorageAPI.isFavourite(resolvedVehicleId))
+    setReviews(localStorageAPI.getReviews(resolvedVehicleId))
+  }, [resolvedVehicleId])
 
   const calculatePayment = () => {
     const principal = loanAmount - downPayment
@@ -68,60 +113,178 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
   }
 
   const toggleFavourite = () => {
+    if (!resolvedVehicleId) return
+
     if (isFavourite) {
-      localStorageAPI.removeFavourite(vehicleId)
+      localStorageAPI.removeFavourite(resolvedVehicleId)
       setIsFavourite(false)
     } else {
-      localStorageAPI.addFavourite(vehicleId)
+      localStorageAPI.addFavourite(resolvedVehicleId)
       setIsFavourite(true)
     }
   }
 
-  if (loading) {
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index)
+    setLightboxOpen(true)
+    document.body.style.overflow = "hidden"
+  }
+
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+    document.body.style.overflow = "unset"
+  }
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % vehicleImages.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + vehicleImages.length) % vehicleImages.length)
+  }
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && lightboxOpen) {
+        closeLightbox()
+      }
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [lightboxOpen])
+
+  const validateReviewForm = () => {
+    const errors: ReviewErrors = {}
+
+    if (!reviewForm.name.trim()) {
+      errors.name = "Name is required"
+    }
+
+    if (!reviewForm.email.trim()) {
+      errors.email = "Email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reviewForm.email)) {
+      errors.email = "Please enter a valid email address"
+    }
+
+    if (reviewForm.rating === 0) {
+      errors.rating = "Please select a rating"
+    }
+
+    if (!reviewForm.comment.trim()) {
+      errors.comment = "Review comment is required"
+    } else if (reviewForm.comment.trim().length < 10) {
+      errors.comment = "Review must be at least 10 characters"
+    }
+
+    setReviewErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleReviewSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    if (!validateReviewForm()) {
+      toast.error("Please fix the errors in the form")
+      return
+    }
+
+    setSubmittingReview(true)
+
+    // Simulate API call delay
+    setTimeout(() => {
+      if (!resolvedVehicleId) {
+        setSubmittingReview(false)
+        return
+      }
+
+      const newReview = localStorageAPI.addReview(resolvedVehicleId, {
+        name: reviewForm.name,
+        email: reviewForm.email,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment,
+      })
+
+      setReviews([newReview, ...reviews])
+
+      // Reset form
+      setReviewForm({
+        name: "",
+        email: "",
+        rating: 0,
+        comment: "",
+      })
+      setReviewErrors({})
+      setSubmittingReview(false)
+
+      toast.success("Thank you for your review!")
+    }, 1000)
+  }
+
+  if (!vehicle) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-16 h-16 animate-spin text-primary" />
-        </div>
-        <Footer />
+      <div className="max-w-7xl mx-auto px-4 py-32 text-center">
+        <h1 className="text-3xl font-bold mb-4">Vehicle Not Found</h1>
+        <p className="text-muted-foreground mb-8">
+          The vehicle you're looking for doesn't exist or has been removed.
+        </p>
+        <Button asChild>
+          <Link href="/vehicles">Back to Vehicle Listing</Link>
+        </Button>
       </div>
     )
   }
 
-  if (error || !vehicle) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-3xl font-bold mb-4">Vehicle Not Found</h1>
-          <p className="text-muted-foreground mb-8">
-            The vehicle you're looking for doesn't exist or has been removed.
-          </p>
-          <Button asChild>
-            <Link href="/vehicles">Back to Vehicle Listing</Link>
-          </Button>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
-
-  const primaryImage =
-    vehicle.image || (Array.isArray(vehicle.images) && vehicle.images[0]) || "/placeholder.svg"
-  const galleryImages =
-    Array.isArray(vehicle.images) && vehicle.images.length > 0
-      ? vehicle.images.slice(0, 3)
-      : [1, 2, 3].map((i) => `/vehicle-angle-.jpg?height=100&width=100&query=vehicle angle ${i}`)
+  const averageRatingLabel = resolvedVehicleId
+    ? localStorageAPI.getAverageRating(resolvedVehicleId)
+    : "0.0"
+  const averageRatingValue = Number.parseFloat(averageRatingLabel) || 0
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="w-full">
+      {lightboxOpen && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition p-2 rounded-full bg-black/50 hover:bg-black/70"
+            aria-label="Close lightbox"
+          >
+            <X size={32} />
+          </button>
+
+          <button
+            onClick={prevImage}
+            className="absolute left-4 text-white hover:text-gray-300 transition p-3 rounded-full bg-black/50 hover:bg-black/70"
+            aria-label="Previous image"
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          <div className="max-w-6xl max-h-[90vh] p-4">
+            <img
+              src={vehicleImages[currentImageIndex] || "/placeholder.svg"}
+              alt={`${vehicle?.name || "Vehicle"} - Image ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+            <p className="text-white text-center mt-4">
+              {currentImageIndex + 1} / {vehicleImages.length}
+            </p>
+          </div>
+
+          <button
+            onClick={nextImage}
+            className="absolute right-4 text-white hover:text-gray-300 transition p-3 rounded-full bg-black/50 hover:bg-black/70"
+            aria-label="Next image"
+          >
+            <ChevronRight size={32} />
+          </button>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Button variant="ghost" asChild className="mb-6">
           <Link href="/vehicles">
-            <ChevronLeft size={18} className="mr-2" />
+            <ArrowLeft size={18} className="mr-2" />
             Back to Search
           </Link>
         </Button>
@@ -129,20 +292,32 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Left Column - Images */}
           <div className="lg:col-span-1">
-            <div className="bg-muted rounded-lg overflow-hidden mb-4 h-80">
+            <div
+              className="bg-muted rounded-lg overflow-hidden mb-4 h-80 cursor-pointer group relative"
+              onClick={() => openLightbox(0)}
+            >
               <img
-                src={primaryImage}
-                alt={vehicle.name}
-                className="w-full h-full object-cover"
+                src={vehicle.image || "/placeholder.svg"}
+                alt={vehicle?.name || "Vehicle"}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-semibold bg-black/50 px-4 py-2 rounded-lg">
+                  Click to enlarge
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {galleryImages.map((image, index) => (
-                <div key={`${image}-${index}`} className="bg-muted rounded h-20">
+              {vehicleImages.slice(1, 4).map((img, i) => (
+                <div
+                  key={`${img}-${i}`}
+                  className="bg-muted rounded h-20 cursor-pointer hover:ring-2 hover:ring-primary transition"
+                  onClick={() => openLightbox(i + 1)}
+                >
                   <img
-                    src={image}
-                    alt="thumbnail"
-                    className="w-full h-full object-cover rounded cursor-pointer hover:opacity-75 transition"
+                    src={img || "/placeholder.svg"}
+                    alt={`thumbnail ${i + 1}`}
+                    className="w-full h-full object-cover rounded"
                   />
                 </div>
               ))}
@@ -175,9 +350,7 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
                       ? "bg-green-500/20 text-green-700"
                       : vehicle?.status === "Shipped"
                         ? "bg-yellow-500/20 text-yellow-700"
-                        : vehicle?.status === "Reserved"
-                          ? "bg-blue-500/20 text-blue-700"
-                          : "bg-red-500/20 text-red-700"
+                        : "bg-red-500/20 text-red-700"
                   }`}
                 >
                   {vehicle?.status || "Unknown"}
@@ -208,7 +381,9 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mileage</p>
-                  <p className="font-semibold">{vehicle?.mileage ? vehicle.mileage.toLocaleString() : "N/A"} km</p>
+                  <p className="font-semibold">
+                    {vehicle?.mileage ? vehicle.mileage.toLocaleString() : "N/A"} km
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Transmission</p>
@@ -236,7 +411,9 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
         {/* Description */}
         <div className="bg-card rounded-lg border border-border p-6 mb-12">
           <h3 className="font-bold text-xl mb-4">Description</h3>
-          <p className="text-foreground leading-relaxed">{vehicle?.description || "No description available"}</p>
+          <p className="text-foreground leading-relaxed">
+            {vehicle?.description || "No description available"}
+          </p>
         </div>
 
         {/* Leasing Calculator */}
@@ -293,9 +470,156 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
                 LKR {monthlyPayment.toLocaleString("en-US", { maximumFractionDigits: 0 })}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                Based on 6% annual interset rate.
-                Actual rates may vary.
+                Based on 6% annual interset rate. Actual rates may vary.
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Reviews Section */}
+        <div className="bg-card rounded-lg border border-border p-8 mb-12">
+          <div className="mb-8">
+            <h3 className="font-bold text-2xl mb-2">Customer Reviews</h3>
+            {reviews.length > 0 && (
+              <div className="flex items-center gap-3">
+                <StarRating rating={averageRatingValue} readOnly size={20} />
+                <span className="text-lg font-semibold">{averageRatingLabel} out of 5</span>
+                <span className="text-muted-foreground">
+                  ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Review Form */}
+          <div className="bg-muted/50 rounded-lg p-6 mb-8">
+            <h4 className="font-semibold text-lg mb-4">Write a Review</h4>
+            <form onSubmit={handleReviewSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Your Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={reviewForm.name}
+                    onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                    className={`w-full px-4 py-2 rounded bg-background border ${
+                      reviewErrors.name ? "border-red-500" : "border-border"
+                    } focus:outline-none focus:ring-2 focus:ring-primary`}
+                    placeholder="John Doe"
+                  />
+                  {reviewErrors.name && (
+                    <p className="text-red-500 text-sm mt-1">{reviewErrors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Your Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={reviewForm.email}
+                    onChange={(e) => setReviewForm({ ...reviewForm, email: e.target.value })}
+                    className={`w-full px-4 py-2 rounded bg-background border ${
+                      reviewErrors.email ? "border-red-500" : "border-border"
+                    } focus:outline-none focus:ring-2 focus:ring-primary`}
+                    placeholder="john@example.com"
+                  />
+                  {reviewErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{reviewErrors.email}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Rating <span className="text-red-500">*</span>
+                </label>
+                <StarRating
+                  rating={reviewForm.rating}
+                  onRatingChange={(rating) => setReviewForm({ ...reviewForm, rating })}
+                  size={32}
+                />
+                {reviewErrors.rating && (
+                  <p className="text-red-500 text-sm mt-1">{reviewErrors.rating}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Your Review <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  rows={4}
+                  className={`w-full px-4 py-2 rounded bg-background border ${
+                    reviewErrors.comment ? "border-red-500" : "border-border"
+                  } focus:outline-none focus:ring-2 focus:ring-primary resize-none`}
+                  placeholder="Share your experience with this vehicle..."
+                />
+                <div className="flex justify-between mt-1">
+                  {reviewErrors.comment ? (
+                    <p className="text-red-500 text-sm">{reviewErrors.comment}</p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Minimum 10 characters</p>
+                  )}
+                  <p className="text-muted-foreground text-sm">
+                    {reviewForm.comment.length} characters
+                  </p>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={submittingReview} className="w-full md:w-auto">
+                {submittingReview ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Review"
+                )}
+              </Button>
+            </form>
+          </div>
+
+          {/* Reviews List */}
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No reviews yet. Be the first to review this vehicle!</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="border-b border-border pb-6 last:border-b-0 last:pb-0"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 rounded-full p-3">
+                      <User className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h5 className="font-semibold">{review.name}</h5>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(review.timestamp).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                        <StarRating rating={review.rating} readOnly size={18} />
+                      </div>
+                      <p className="text-foreground leading-relaxed">{review.comment}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -314,11 +638,6 @@ export default function VehicleDetailsClient({ vehicleId, initialVehicle, initia
           </div>
         </div>
       </div>
-
-      {/* Chatbot Icon */}
-      <ChatBot />
-
-      <Footer />
     </div>
   )
 }

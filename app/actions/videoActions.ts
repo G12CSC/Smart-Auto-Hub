@@ -13,7 +13,6 @@ export async function getVideoReviews() {
     });
     return { success: true, data: videos };
   } catch (error) {
-    console.error("Error fetching video reviews:", error);
     return { success: false, error: "Failed to fetch video reviews" };
   }
 }
@@ -39,7 +38,6 @@ export async function addVideoReview(formData: {
 
     return { success: true };
   } catch (error) {
-    console.error("Error adding video review:", error);
     return { success: false, error: "Failed to add video review" };
   }
 }
@@ -56,7 +54,6 @@ export async function deleteVideoReview(id: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting video review:", error);
     return { success: false, error: "Failed to delete video review" };
   }
 }

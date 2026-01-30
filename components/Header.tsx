@@ -231,7 +231,7 @@ export function Header() {
                         const notifications =
                           localStorageAPI.getNotifications();
                         const dashCount = Object.values(
-                          notifications.dashboard
+                          notifications.dashboard,
                         ).reduce((a: number, b: number) => a + b, 0);
                         return dashCount > 0 ? (
                           <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -251,7 +251,7 @@ export function Header() {
                           const notifications =
                             localStorageAPI.getNotifications();
                           const adminCount = Object.values(
-                            notifications.admin
+                            notifications.admin,
                           ).reduce((a: number, b: number) => a + b, 0);
                           return adminCount > 0 ? (
                             <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -370,7 +370,7 @@ export function Header() {
                   {(() => {
                     const notifications = localStorageAPI.getNotifications();
                     const dashCount = Object.values(
-                      notifications.dashboard
+                      notifications.dashboard,
                     ).reduce((a: number, b: number) => a + b, 0);
                     return dashCount > 0 ? (
                       <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -390,7 +390,7 @@ export function Header() {
                     {(() => {
                       const notifications = localStorageAPI.getNotifications();
                       const adminCount = Object.values(
-                        notifications.admin
+                        notifications.admin,
                       ).reduce((a: number, b: number) => a + b, 0);
                       return adminCount > 0 ? (
                         <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
