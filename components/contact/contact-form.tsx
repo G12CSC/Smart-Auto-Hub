@@ -3,7 +3,6 @@
 import { AlertCircle, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Select } from "../ui/select";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
