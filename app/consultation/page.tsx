@@ -10,7 +10,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-import ChatBot from "@/components/ChatBot";
 // import { setTimeout } from "timers/promises"
 import ConsultationForm from "@/components/consultation/consultation-form";
 
