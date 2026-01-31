@@ -2,23 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import {
-  GitCompareArrows,
-  GitCompareArrowsIcon,
-  GitCompareIcon,
-  Grid3x3,
-  Heart,
-  List,
-  Loader2,
-  MessageSquare,
-} from "lucide-react";
+import { GitCompareArrows, Grid3x3, Heart, List } from "lucide-react";
 import ChatBot from "@/components/ChatBot";
 import { addToCompare } from "@/components/VehicleCompare";
-import { vehicleAPI } from "../../lib/api/vehicles";
 import { localStorageAPI } from "@/lib/storage/localStorage.js";
 import { toast } from "sonner";
 import { VehicleCompare } from "@/components/VehicleCompare";
@@ -85,7 +74,7 @@ export default function VehiclesPage() {
           status: Object.keys(filterStatus).filter((key) => filterStatus[key]),
           type: Object.keys(filterType).filter((key) => filterType[key]),
           transmission: Object.keys(filterTransmission).filter(
-            (key) => filterTransmission[key]
+            (key) => filterTransmission[key],
           ),
           minPrice,
           maxPrice,
@@ -521,9 +510,9 @@ export default function VehiclesPage() {
                           </p>
                         </div>
                       </div>
-                  </div>
-                ))}
-              </div>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 

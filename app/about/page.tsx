@@ -372,9 +372,6 @@ export default function AboutPage() {
         </section>
       </div>
 
-      {/* Chatbot Icon */}
-      <ChatBot />
-
       <Footer />
     </div>
   );
