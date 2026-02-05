@@ -1,0 +1,29 @@
+name: Label Pull Request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+    
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add 'needs review' label to PR
+        uses: actions-ecosystem/action-add-labels@v1
+        if: github.event_name == 'pull_request'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: needs review 
+
+      - name: Add 'ready for merge' label to PR
+        uses: actions-ecosystem/action-add-labels@v1
+        if: github.event_name == 'push'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: ready for merge
