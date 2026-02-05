@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import StarRating from "@/components/StarRating"
 
 type Vehicle = {
+
   id?: string | number
   name?: string
   price?: number

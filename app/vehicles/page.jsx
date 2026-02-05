@@ -2,24 +2,24 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import VehicleBrowser from "@/components/vehicles/vehicle-browser";
-import { vehicleAPI } from "@/lib/api/vehicles";
+import {prisma} from "../../lib/prisma.ts"
 
 export default async function VehiclesPage() {
+
   let vehicles = [];
   let error = null;
 
   try {
-    const result = await vehicleAPI.getAllVehicles();
 
-    if (result?.success && Array.isArray(result.data)) {
-      vehicles = result.data;
-    } else {
-      error = result?.error || "Failed to load vehicles.";
-    }
-  } catch (err) {
-    error = err?.message || "Failed to load vehicles.";
+      vehicles=await prisma.car.findMany({
+          orderBy: {
+              createdAt: "desc",
+          },
+      })
+
+  }catch(error) {
+      error = error.message;
   }
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
