@@ -491,11 +491,10 @@ export default function AdminPage() {
                 key={tab.id}
                 // onClick={() => setActiveTab(tab.id)}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 hover:text-white rounded font-medium transition whitespace-nowrap relative ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-2 hover:text-white rounded font-medium transition whitespace-nowrap relative ${activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                  }`}
               >
                 <tab.icon size={18} />
                 {tab.label}
@@ -596,15 +595,14 @@ export default function AdminPage() {
                         <td>{request.preferredTime}</td>
                         <td className="px-4 py-2">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              request.status === "ACCEPTED"
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${request.status === "ACCEPTED"
                                 ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
                                 : request.status === "REJECTED"
                                   ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
                                   : request.status === "CANCELLED"
                                     ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
                                     : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
-                            }`}
+                              }`}
                           >
                             {request.status}
                           </span>
@@ -992,15 +990,14 @@ export default function AdminPage() {
                               : vehicle.price}
                           </p>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              vehicle.status === "Available"
+                            className={`px-2 py-1 rounded text-xs font-medium ${vehicle.status === "Available"
                                 ? "bg-green-500/20 text-green-700"
                                 : vehicle.status === "Shipped"
                                   ? "bg-orange-500/20 text-orange-700"
                                   : vehicle.status === "Reserved"
                                     ? "bg-blue-500/20 text-blue-700"
                                     : "bg-red-500/20 text-red-700"
-                            }`}
+                              }`}
                           >
                             {vehicle.status}
                           </span>
@@ -1315,7 +1312,8 @@ export default function AdminPage() {
       <AdvisorSelectionModal
         open={isAdvisorModalOpen}
         onClose={() => setIsAdvisorModalOpen(false)}
-        bookingSlot={selectedRequestForAdvisor?.time || ""}
+        bookingSlot={selectedRequestForAdvisor?.preferredTime || ""}
+        date={selectedRequestForAdvisor?.preferredDate || new Date().toISOString()} // Pass date
         onConfirm={(advisor) => {
           toast.success(`Booking assigned to ${advisor.name}`);
           setIsAdvisorModalOpen(false);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -9,7 +9,8 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { AlertCircle, Calendar, CheckCircle, Mail, Phone } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle, Mail, Phone, Loader2 } from "lucide-react";
+import { getAvailableAdvisors } from "@/app/advisor-dashboard/actions";
 
 interface Advisor {
   id: string;
@@ -28,59 +29,40 @@ interface AdvisorSelectionModalProps {
   open: boolean;
   onClose: () => void;
   bookingSlot: string;
+  date: string | Date; // Added date prop
   onConfirm: (advisor: Advisor) => void;
 }
-
-const mockAdvisors: Advisor[] = [
-  {
-    id: "1",
-    name: "Ahmed Hassan",
-    image: "/images/professional-automotive-sales-manager-portrait-sri.jpg",
-    rating: 4.9,
-    experience: "12 years",
-    specialization: "Luxury Vehicles",
-    email: "ahmed.hassan@smartautohub.com",
-    phone: "+94 701 234 567",
-    isAvailable: true,
-    availableTimes: ["10:00 AM", "2:00 PM", "4:30 PM"],
-  },
-  {
-    id: "2",
-    name: "Priya Sharma",
-    image: "/images/professional-automotive-technical-consultant-femal.jpg",
-    rating: 4.8,
-    experience: "8 years",
-    specialization: "Budget & Practical Cars",
-    email: "priya.sharma@smartautohub.com",
-    phone: "+94 702 234 567",
-    isAvailable: false,
-    availableTimes: ["11:00 AM Tomorrow", "3:00 PM Tomorrow"],
-  },
-  {
-    id: "3",
-    name: "Rajesh Kumar",
-    image: "/images/professional-automotive-sales-executive-male-sri-l.jpg",
-    rating: 4.7,
-    experience: "10 years",
-    specialization: "SUVs & Family Vehicles",
-    email: "rajesh.kumar@smartautohub.com",
-    phone: "+94 703 234 567",
-    isAvailable: true,
-    availableTimes: ["11:30 AM", "3:30 PM"],
-  },
-];
 
 export default function AdvisorSelectionModal({
   open,
   onClose,
   bookingSlot,
+  date,
   onConfirm,
 }: AdvisorSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [advisors, setAdvisors] = useState<Advisor[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredAdvisors = mockAdvisors.filter((advisor) =>
+  useEffect(() => {
+    if (open && date && bookingSlot) {
+      const fetchAdvisors = async () => {
+        setLoading(true);
+        const res = await getAvailableAdvisors(date, bookingSlot);
+        if (res.success && res.data) {
+          setAdvisors(res.data);
+        } else {
+          setAdvisors([]);
+        }
+        setLoading(false);
+      };
+      fetchAdvisors();
+    }
+  }, [open, date, bookingSlot]);
+
+  const filteredAdvisors = advisors.filter((advisor) =>
     advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -117,7 +99,7 @@ export default function AdvisorSelectionModal({
                 Select an Advisor
               </DialogTitle>
               <DialogDescription>
-                Choose an available advisor for the booking
+                Choose an available advisor for {bookingSlot} on {new Date(date).toLocaleDateString()}
               </DialogDescription>
             </DialogHeader>
 
@@ -145,7 +127,11 @@ export default function AdvisorSelectionModal({
                   Available Advisors
                 </h3>
 
-                {filteredAdvisors.length > 0 ? (
+                {loading ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                  </div>
+                ) : filteredAdvisors.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {filteredAdvisors.map((advisor, index) => (
                       <div
@@ -157,17 +143,22 @@ export default function AdvisorSelectionModal({
                         onClick={() => handleSelectAdvisor(advisor)}
                       >
                         <div
-                          className={`relative p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
-                            advisor.isAvailable
+                          className={`relative p-4 rounded-lg border-2 transition-all hover:shadow-lg ${advisor.isAvailable
                               ? "border-primary/20 hover:border-primary bg-card"
                               : "border-destructive/20 bg-destructive/5"
-                          }`}
+                            }`}
                         >
-                          <img
-                            src={advisor.image || "/placeholder.svg"}
-                            alt={advisor.name}
-                            className="w-full h-40 object-cover rounded mb-3"
-                          />
+                          <div className="h-40 w-full mb-3 bg-secondary rounded overflow-hidden flex items-center justify-center">
+                            {advisor.image ? (
+                              <img
+                                src={advisor.image}
+                                alt={advisor.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <CheckCircle className="h-12 w-12 text-muted-foreground opacity-20" />
+                            )}
+                          </div>
                           <h4 className="font-semibold text-sm">
                             {advisor.name}
                           </h4>
@@ -206,7 +197,7 @@ export default function AdvisorSelectionModal({
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-8">
-                    No advisors found matching your search
+                    No advisors available for this time slot.
                   </p>
                 )}
               </div>
@@ -228,11 +219,17 @@ export default function AdvisorSelectionModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Image and Name */}
                 <div className="space-y-4">
-                  <img
-                    src={selectedAdvisor.image || "/placeholder.svg"}
-                    alt={selectedAdvisor.name}
-                    className="w-full h-64 object-cover rounded-lg border-2 border-primary/20"
-                  />
+                  <div className="w-full h-64 bg-secondary rounded-lg border-2 border-primary/20 flex items-center justify-center overflow-hidden">
+                    {selectedAdvisor.image ? (
+                      <img
+                        src={selectedAdvisor.image}
+                        alt={selectedAdvisor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <CheckCircle className="h-20 w-20 text-muted-foreground opacity-20" />
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-muted-foreground">
                       Rating
@@ -247,18 +244,15 @@ export default function AdvisorSelectionModal({
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground mb-3">
-                      Available Times
+                      Selected Slot
                     </p>
                     <div className="space-y-2">
-                      {selectedAdvisor.availableTimes.map((time, index) => (
-                        <div
-                          key={index}
-                          className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2"
-                        >
-                          <Calendar className="w-4 h-4 text-primary" />
-                          <span className="text-sm">{time}</span>
-                        </div>
-                      ))}
+                      <div
+                        className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2"
+                      >
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span className="text-sm">{bookingSlot}</span>
+                      </div>
                     </div>
                   </div>
 

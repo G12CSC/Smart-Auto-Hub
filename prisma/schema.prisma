@@ -49,6 +49,9 @@ model Admin {
   email               String                @unique
   passwordHash        String
   role                StaffRole             @default(admin)
+  position            String?
+  phoneNumber         String?
+  image               String?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   createdCars         Car[]                 @relation("CreatedBy")
@@ -199,11 +202,11 @@ model NewsletterDeliveryLog {
 }
 
 model AdvisorAvailability {
-  id        String   @id @default(uuid())
-  advisorId String
-  date      DateTime
-  timeSlot  String
-  isBusy    Boolean  @default(false)
+  id          String   @id @default(uuid())
+  advisorId   String
+  date        DateTime
+  timeSlot    String
+  isAvailable Boolean  @default(true)
 
   advisor Admin @relation(fields: [advisorId], references: [id])
 }

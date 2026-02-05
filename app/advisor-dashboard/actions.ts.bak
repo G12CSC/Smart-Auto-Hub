@@ -1,0 +1,182 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+
+export type BookingFilter = "today" | "all" | "pending" | "confirmed";
+
+export async function getAdvisorBookings(advisorId: string, filter: BookingFilter = "all", date?: Date) {
+    try {
+        const whereClause: any = {
+            advisorId: advisorId,
+        };
+
+        if (filter === "pending") {
+            whereClause.status = "PENDING";
+        } else if (filter === "confirmed") {
+            whereClause.status = "ACCEPTED"; // Assuming 'ACCEPTED' maps to Confirmed based on schema enum
+        } else if (filter === "today") {
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+            whereClause.preferredDate = {
+                gte: start,
+                lte: end,
+            };
+        }
+
+        if (date) {
+            const start = new Date(date);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(date);
+            end.setHours(23, 59, 59, 999);
+            whereClause.preferredDate = {
+                gte: start,
+                lte: end
+            };
+        }
+
+        const bookings = await prisma.consultationBooking.findMany({
+            where: whereClause,
+            orderBy: {
+                preferredDate: "asc",
+            },
+        });
+
+        return { success: true, data: bookings };
+    } catch (error) {
+        console.error("Error fetching bookings:", error);
+        return { success: false, error: "Failed to fetch bookings" };
+    }
+}
+
+export async function getAdvisorAvailability(advisorId: string, date: Date) {
+    try {
+        // Determine start and end of the day
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const availability = await prisma.advisorAvailability.findMany({
+            where: {
+                advisorId,
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay,
+                },
+                isAvailable: true,
+            },
+        });
+
+        return { success: true, data: availability.map(a => a.timeSlot) };
+    } catch (error) {
+        console.error("Error fetching availability:", error);
+        return { success: false, error: "Failed to fetch availability" };
+    }
+}
+
+export async function saveAdvisorAvailability(advisorId: string, date: Date, slots: string[]) {
+    try {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // Transaction: Delete existing slots for the day, then create new ones
+        await prisma.$transaction(async (tx) => {
+            // 1. Delete all availability for this advisor on this date
+            await tx.advisorAvailability.deleteMany({
+                where: {
+                    advisorId,
+                    date: {
+                        gte: startOfDay,
+                        lte: endOfDay,
+                    },
+                },
+            });
+
+            // 2. Create new slots
+            if (slots.length > 0) {
+                await tx.advisorAvailability.createMany({
+                    data: slots.map((slot) => ({
+                        advisorId,
+                        date: startOfDay, // Store as the date (ignoring time component in DB date field if desired, usually preferredDate is DateTime)
+                        timeSlot: slot,
+                        isAvailable: true,
+                    })),
+                });
+            }
+        });
+
+        revalidatePath("/advisor-dashboard");
+        return { success: true };
+    } catch (error) {
+        console.error("Error saving availability:", error);
+        return { success: false, error: "Failed to save availability" };
+    }
+}
+
+export async function getAdvisorProfile(advisorId: string) {
+    try {
+        const advisor = await prisma.admin.findUnique({
+            where: { id: advisorId },
+        });
+
+        // Note: consultationBookings relation doesn't strictly exist on Admin in the schema provided earlier?
+        // Wait, schema says: `consultationBookings ConsultationBooking[]` on User, but on Admin?
+        // Schema check: Admin has `sessions`, `createdCars`, `updatedCars`, `AdvisorAvailability`.
+        // ConsultationBooking has `advisorId` field but NO relation defined back to Admin in the provided schema...
+        // Wait, `advisorId String?` in ConsultationBooking. 
+        // Relation: `advisor Admin @relation` MISSING in ConsultationBooking?
+        // Let me check schema again.
+        // Line 141: `advisorId String?`
+        // No `@relation` to Admin.
+        // Use manual lookup or fix schema? 
+        // "Safety: Do not delete existing booking data. Ensure database migrations are additive where possible."
+        // I won't change schema relation for booking -> advisor right now to avoid breaking changes if not requested, 
+        // but I can't include `consultationBookings` in `findUnique` if relation doesn't exist.
+        // I'll do a separate count query.
+
+        if (!advisor) return { success: false, error: "Advisor not found" };
+
+        const bookingCount = await prisma.consultationBooking.count({
+            where: { advisorId: advisorId }
+        });
+
+        // Calculate rating? Schema has Review for Car, but not for Advisor explicitly?
+        // User requirements say "Advisor Info... rating: 4.8".
+        // Where is rating stored?
+        // `Advisor` model I just updated: `position`, `phoneNumber`, `image`. No rating.
+        // `Review` model is for Car.
+        // I'll return a mock rating or 0 for now as it's not in schema.
+
+        return {
+            success: true,
+            data: {
+                ...advisor,
+                totalBookings: bookingCount,
+                rating: 5.0 // Placeholder
+            }
+        };
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        return { success: false, error: "Failed to fetch profile" };
+    }
+}
+
+export async function updateAdvisorProfile(advisorId: string, data: { name?: string; position?: string; phoneNumber?: string; image?: string; }) {
+    try {
+        await prisma.admin.update({
+            where: { id: advisorId },
+            data: data
+        });
+        revalidatePath("/advisor-dashboard");
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return { success: false, error: "Failed to update profile" };
+    }
+}
