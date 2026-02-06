@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
-import { sendAdminMessagesForBookings } from "@/app/admin/APITriggers/sendAdminMessagesForBookings.js";
+import { sendAdminMessagesForBookings } from "@/app/APITriggers/sendAdminMessagesForBookings.js";
 import { assignBookingToAdvisor } from "@/app/advisor-dashboard/actions";
 
 export default function ConsultationsPage() {
@@ -109,12 +109,12 @@ export default function ConsultationsPage() {
                                     <td className="px-4 py-3">
                                         <span
                                             className={`px-2 py-1 rounded-full text-xs font-medium ${request.status === "ACCEPTED"
-                                                    ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                                                    : request.status === "REJECTED"
-                                                        ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
-                                                        : request.status === "CANCELLED"
-                                                            ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
-                                                            : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                                                ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
+                                                : request.status === "REJECTED"
+                                                    ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
+                                                    : request.status === "CANCELLED"
+                                                        ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
+                                                        : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                                                 }`}
                                         >
                                             {request.status}
@@ -165,14 +165,14 @@ export default function ConsultationsPage() {
             </div>
 
             <AdvisorSelectionModal
-                isOpen={isAdvisorModalOpen}
+                open={isAdvisorModalOpen}
                 onClose={() => setIsAdvisorModalOpen(false)}
                 bookingId={selectedRequestForAdvisor?.id}
                 date={selectedRequestForAdvisor?.preferredDate}
-                timeSlot={selectedRequestForAdvisor?.preferredTime}
-                onAssign={async (advisorId) => {
-                    if (!selectedRequestForAdvisor) return;
-                    const res = await assignBookingToAdvisor(selectedRequestForAdvisor.id, advisorId);
+                bookingSlot={selectedRequestForAdvisor?.preferredTime}
+                onConfirm={async (advisor: any) => {
+                    if (!selectedRequestForAdvisor || !advisor?.id) return;
+                    const res = await assignBookingToAdvisor(selectedRequestForAdvisor.id, advisor.id);
                     if (res.success) {
                         toast.success("Advisor assigned successfully");
                         setIsAdvisorModalOpen(false);
