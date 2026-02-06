@@ -20,16 +20,7 @@ jobs:
         with:
           script: |
             const baseBranch = context.payload.pull_request.base.ref;
-            let reviewers = [];
-
-            if (baseBranch === "master") {
-                reviewers = ["erangamadhushan", "nandul2424"];
-            }
-
-            if (baseBranch === "Development") {
-                reviewers = ["erangamadhushan", "nandul2424", "shammy911"];
-            }
-
+            let reviewers = ["Erangamadhushan"];
 
             await github.rest.pulls.requestReviewers({
               owner: context.repo.owner,
