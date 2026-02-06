@@ -125,38 +125,112 @@ export default async function Home() {
       <UserWelcome />
 
       {/* Hero Section */}
-      <section
-        className="relative h-144 bg-linear-to-br from-primary via-primary/90 to-accent text-primary-foreground flex items-center"
-        style={{
-          backgroundImage:
-            "url(/placeholder.svg?height=576&width=1920&query=professional luxury car dealership showroom exterior with modern glass building)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/60 to-black/30"></div>
-        <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <div className="max-w-2xl space-y-6">
-            <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-balance leading-tight animate-slide-up-1">
-              Find Your Next Vehicle at Sameera Auto Traders
-            </h1>
-            <p className="text-xl lg:text-2xl mb-8 opacity-95 text-balance leading-relaxed animate-slide-up-2">
-              Browse, book, and consult online—our entire inventory at your
-              fingertips.
-            </p>
-            <Button
-              asChild
-              size="lg"
-              className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg animate-slide-up-3"
-            >
-              <Link href="/vehicles">Explore Vehicles</Link>
-            </Button>
+      <section className="relative min-h-screen bg-gradient-to-br from-background via-background to-card overflow-hidden flex items-center">
+        {/* Animated gradient orbs background */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float opacity-30" />
+        <div
+          className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl animate-float opacity-30"
+          style={{ animationDelay: "2s" }}
+        />
+        <div
+          className="absolute top-1/2 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float opacity-20"
+          style={{ animationDelay: "4s" }}
+        />
+
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-50" />
+        <div className="relative max-w-7xl mx-auto px-4 w-full py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Content */}
+            <div className="space-y-8 animate-slide-in-left">
+              <div className="space-y-4">
+                {/* Decorative accent line */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-1 bg-gradient-to-r from-primary to-transparent rounded-full" />
+                  <span className="text-sm font-semibold text-primary uppercase tracking-widest">
+                    Welcome to Excellence
+                  </span>
+                </div>
+                <h1 className="text-6xl lg:text-7xl font-bold text-foreground leading-tight text-balance">
+                  Find Your Perfect Drive
+                </h1>
+              </div>
+              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+                Discover our curated selection of premium vehicles. Expert
+                guidance, transparent pricing, and seamless booking all in one
+                place.
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg rounded-lg"
+                >
+                  <Link href="/vehicles">Explore Vehicles</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="border-primary/40 text-primary hover:bg-primary/10 font-semibold px-8 py-6 text-lg rounded-lg bg-transparent"
+                >
+                  <Link href="/consultation">Book Consultation</Link>
+                </Button>
+              </div>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border/40">
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-primary">500+</p>
+                  <p className="text-sm text-muted-foreground">
+                    Vehicles Available
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-primary">98%</p>
+                  <p className="text-sm text-muted-foreground">
+                    Customer Satisfaction
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-primary">24/7</p>
+                  <p className="text-sm text-muted-foreground">
+                    Expert Support
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Showroom Image */}
+            <div className="relative h-[500px] animate-slide-in-right">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-primary/20 rounded-2xl blur-3xl opacity-60" />
+              <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xl">
+                <Image
+                  src="/showroom-exterior1.jpeg"
+                  alt="Premium Auto Showroom"
+                  fill
+                  className="object-cover"
+                />
+                {/* Overlay gradient for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                {/* Content overlay */}
+                <div className="absolute inset-0 flex flex-col justify-end p-8">
+                  <h3 className="text-3xl font-bold text-white mb-2">
+                    Premium Selection
+                  </h3>
+                  <p className="text-white/90">
+                    Handpicked vehicles inspected for quality
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Quick Search Bar */}
-      <section className="max-w-7xl mx-auto px-4 -mt-12 relative z-10 mb-16">
+      <section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">
         <HomeSearchbar />
       </section>
 

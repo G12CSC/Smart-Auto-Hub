@@ -1,15 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 export default function UserWelcome() {
   const { data: session } = useSession();
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    if (!session) return;
+    setVisible(true);
+    const timeout = setTimeout(() => setVisible(false), 30_000);
+    return () => clearTimeout(timeout);
+  }, [session]);
 
   return (
     <>
-      {session ? (
-        <div className="text-center py-4 bg-green-100 text-green-700">
-          Welcome, <b>{session.user?.name || session.user?.email}</b> 👋
+      {session && visible ? (
+        <div className="w-full border-b bg-card text-card-foreground">
+          <div className="max-w-7xl mx-auto px-4 py-3 text-center text-sm">
+            Welcome, <b>{session.user?.name || session.user?.email}</b> 👋
+          </div>
         </div>
       ) : null}
     </>
