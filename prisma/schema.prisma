@@ -58,6 +58,7 @@ model Admin {
   updatedCars         Car[]                 @relation("UpdatedBy")
   sessions            Session[]
   AdvisorAvailability AdvisorAvailability[]
+  rejections          BookingRejection[]
 }
 
 model Car {
@@ -151,6 +152,7 @@ model ConsultationBooking {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   user             User?         @relation(fields: [userId], references: [id])
+  rejections       BookingRejection[]
 }
 
 model Session {
@@ -249,6 +251,7 @@ enum StaffRole {
   superadmin
 }
 
+
 model CarVector {
   id String @id @default(uuid()) @db.Uuid
 
@@ -264,3 +267,15 @@ model CarVector {
   @@index([car_id])
   @@map("car_vector")
 }
+
+model BookingRejection {
+  id        String   @id @default(uuid())
+  bookingId String
+  advisorId String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  booking ConsultationBooking @relation(fields: [bookingId], references: [id])
+  advisor Admin               @relation(fields: [advisorId], references: [id])
+}
+

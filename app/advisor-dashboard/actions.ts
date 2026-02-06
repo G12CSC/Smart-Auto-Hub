@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export type BookingFilter = "today" | "all" | "pending" | "confirmed";
+export type BookingFilter = "today" | "all" | "pending" | "confirmed" | "requests";
 
 export async function getAdvisorBookings(advisorId: string, filter: BookingFilter = "all", date?: Date) {
     try {
@@ -11,7 +11,9 @@ export async function getAdvisorBookings(advisorId: string, filter: BookingFilte
             advisorId: advisorId,
         };
 
-        if (filter === "pending") {
+        if (filter === "requests") {
+            whereClause.status = "FORWARDED";
+        } else if (filter === "pending") {
             whereClause.status = "PENDING";
         } else if (filter === "confirmed") {
             whereClause.status = "ACCEPTED";
@@ -201,3 +203,73 @@ export async function getAvailableAdvisors(date: Date | string, timeSlot: string
         return { success: false, error: "Failed to fetch advisors" };
     }
 }
+
+export async function getBookingRejections(bookingId: string) {
+    try {
+        const rejections = await prisma.bookingRejection.findMany({
+            where: { bookingId },
+            include: { advisor: true },
+            orderBy: { createdAt: "desc" }
+        });
+        return { success: true, data: rejections };
+    } catch (error) {
+        console.error("Error fetching booking rejections:", error);
+        return { success: false, data: [] }; // Return empty array on error to be safe
+    }
+}
+
+export async function respondToBooking(bookingId: string, advisorId: string, action: "confirm" | "reject", reason?: string) {
+    try {
+        if (action === "confirm") {
+            await prisma.consultationBooking.update({
+                where: { id: bookingId },
+                data: { status: "ACCEPTED" }
+            });
+            // Optional: Notify Admin
+        } else if (action === "reject") {
+            await prisma.$transaction(async (tx) => {
+                await tx.consultationBooking.update({
+                    where: { id: bookingId },
+                    data: { status: "REJECTED" }
+                });
+
+                await tx.bookingRejection.create({
+                    data: {
+                        bookingId,
+                        advisorId,
+                        reason: reason || "Advisor rejected the booking"
+                    }
+                });
+            });
+        }
+
+        revalidatePath("/advisor-dashboard");
+        revalidatePath("/admin");
+
+        return { success: true };
+    } catch (error) {
+        console.error(`Error ${action}ing booking:`, error);
+        return { success: false, error: `Failed to ${action} booking` };
+    }
+}
+
+export async function assignBookingToAdvisor(bookingId: string, advisorId: string) {
+    try {
+        await prisma.consultationBooking.update({
+            where: { id: bookingId },
+            data: {
+                advisorId: advisorId,
+                status: "FORWARDED"
+            }
+        });
+
+        revalidatePath("/admin");
+        revalidatePath("/advisor-dashboard");
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error assigning booking:", error);
+        return { success: false, error: "Failed to assign booking" };
+    }
+}
+

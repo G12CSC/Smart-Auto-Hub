@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAdvisorBookings, BookingFilter } from "@/app/advisor-dashboard/actions";
+
+import { toast } from "sonner";
+import { getAdvisorBookings, BookingFilter, respondToBooking } from "@/app/advisor-dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Clock, Mail, MessageCircle, Phone, Search } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Mail, MessageCircle, Phone, Search, Check, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -15,24 +17,38 @@ interface AdvisorBookingsProps {
 }
 
 export function AdvisorBookings({ advisorId }: AdvisorBookingsProps) {
-    const [filter, setFilter] = useState<BookingFilter>("all");
+    const [filter, setFilter] = useState<BookingFilter>("requests"); // Default to requests
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [processingId, setProcessingId] = useState<string | null>(null);
+
+    const fetchBookings = async () => {
+        setLoading(true);
+        const res = await getAdvisorBookings(advisorId, filter, date);
+        if (res.success && res.data) {
+            setBookings(res.data);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchBookings = async () => {
-            setLoading(true);
-            const res = await getAdvisorBookings(advisorId, filter, date);
-            if (res.success && res.data) {
-                setBookings(res.data);
-            }
-            setLoading(false);
-        };
-
         fetchBookings();
     }, [advisorId, filter, date]);
+
+    const handleResponse = async (bookingId: string, action: "confirm" | "reject") => {
+        setProcessingId(bookingId);
+        const res = await respondToBooking(bookingId, advisorId, action);
+
+        if (res.success) {
+            toast.success(`Booking ${action}ed successfully`);
+            fetchBookings(); // Refresh list
+        } else {
+            toast.error(res.error || `Failed to ${action} booking`);
+        }
+        setProcessingId(null);
+    };
 
     const filteredBookings = bookings.filter((booking) =>
         (booking.fullName?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
@@ -81,7 +97,7 @@ export function AdvisorBookings({ advisorId }: AdvisorBookingsProps) {
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-2">
-                {(["all", "today", "pending", "confirmed"] as const).map((f) => (
+                {(["requests", "today", "all", "pending", "confirmed"] as const).map((f) => (
                     <Button
                         key={f}
                         variant={filter === f ? "default" : "outline"}
@@ -91,7 +107,7 @@ export function AdvisorBookings({ advisorId }: AdvisorBookingsProps) {
                         }}
                         className="capitalize whitespace-nowrap"
                     >
-                        {f}
+                        {f === "requests" ? "Incoming Requests" : f}
                     </Button>
                 ))}
             </div>
@@ -145,19 +161,44 @@ export function AdvisorBookings({ advisorId }: AdvisorBookingsProps) {
                                 <span
                                     className={cn(
                                         "px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1",
-                                        booking.status === "ACCEPTED" // Schema uses ACCEPTED, UI says Confirmed
+                                        booking.status === "ACCEPTED"
                                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                            : booking.status === "FORWARDED"
+                                                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                                     )}
                                 >
                                     <Clock size={12} />
                                     {booking.status === "ACCEPTED" ? "Confirmed" : booking.status}
                                 </span>
 
-                                <Button size="sm" variant="outline">
-                                    <MessageCircle size={14} className="mr-2" />
-                                    Contact Customer
-                                </Button>
+                                {booking.status === "FORWARDED" ? (
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            disabled={processingId === booking.id}
+                                            onClick={() => handleResponse(booking.id, "reject")}
+                                        >
+                                            <X size={14} className="mr-2" />
+                                            Reject
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                            disabled={processingId === booking.id}
+                                            onClick={() => handleResponse(booking.id, "confirm")}
+                                        >
+                                            <Check size={14} className="mr-2" />
+                                            Confirm
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Button size="sm" variant="outline">
+                                        <MessageCircle size={14} className="mr-2" />
+                                        Contact Customer
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     ))}

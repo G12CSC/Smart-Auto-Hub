@@ -30,14 +30,18 @@ interface AdvisorSelectionModalProps {
   onClose: () => void;
   bookingSlot: string;
   date: string | Date; // Added date prop
+  bookingId?: string; // Added bookingId
   onConfirm: (advisor: Advisor) => void;
 }
+
+import { getBookingRejections } from "@/app/advisor-dashboard/actions"; // Import server action
 
 export default function AdvisorSelectionModal({
   open,
   onClose,
   bookingSlot,
   date,
+  bookingId,
   onConfirm,
 }: AdvisorSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +49,7 @@ export default function AdvisorSelectionModal({
   const [showDetail, setShowDetail] = useState(false);
   const [advisors, setAdvisors] = useState<Advisor[]>([]);
   const [loading, setLoading] = useState(false);
+  const [rejections, setRejections] = useState<any[]>([]);
 
   useEffect(() => {
     if (open && date && bookingSlot) {
@@ -56,11 +61,19 @@ export default function AdvisorSelectionModal({
         } else {
           setAdvisors([]);
         }
+
+        if (bookingId) {
+          const rejectionRes = await getBookingRejections(bookingId);
+          if (rejectionRes.success) {
+            setRejections(rejectionRes.data);
+          }
+        }
+
         setLoading(false);
       };
       fetchAdvisors();
     }
-  }, [open, date, bookingSlot]);
+  }, [open, date, bookingSlot, bookingId]);
 
   const filteredAdvisors = advisors.filter((advisor) =>
     advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -81,13 +94,10 @@ export default function AdvisorSelectionModal({
     }
   };
 
-  const handleReportIssue = () => {
-    if (selectedAdvisor) {
-      toast.info("Issue reported", {
-        description: `Email sent to ${selectedAdvisor.name} about availability`,
-      });
-    }
-  };
+
+
+  const hasRejected = selectedAdvisor && rejections.some(r => r.advisorId === selectedAdvisor.id);
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -144,8 +154,8 @@ export default function AdvisorSelectionModal({
                       >
                         <div
                           className={`relative p-4 rounded-lg border-2 transition-all hover:shadow-lg ${advisor.isAvailable
-                              ? "border-primary/20 hover:border-primary bg-card"
-                              : "border-destructive/20 bg-destructive/5"
+                            ? "border-primary/20 hover:border-primary bg-card"
+                            : "border-destructive/20 bg-destructive/5"
                             }`}
                         >
                           <div className="h-40 w-full mb-3 bg-secondary rounded overflow-hidden flex items-center justify-center">
@@ -215,6 +225,14 @@ export default function AdvisorSelectionModal({
             </DialogHeader>
 
             <div className="space-y-6 animate-pop-in">
+              {hasRejected && (
+                <div className="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 flex gap-2 items-center text-orange-800 dark:text-orange-200">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <p className="font-medium text-sm">
+                    Warning: {selectedAdvisor.name} previously rejected this booking.
+                  </p>
+                </div>
+              )}
               {/* Advisor Info and Availability */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Image and Name */}
@@ -296,13 +314,7 @@ export default function AdvisorSelectionModal({
 
               {/* Action Buttons */}
               <div className="flex gap-3 justify-between pt-4">
-                <Button
-                  variant="destructive"
-                  onClick={handleReportIssue}
-                  className="animate-slide-in-left"
-                >
-                  Report Issue
-                </Button>
+
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
