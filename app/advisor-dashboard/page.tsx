@@ -80,14 +80,28 @@ const advisorInfo = {
 export default function AdvisorPage() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"All" | "Pending" | "Confirmed" | "Today">("All");
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [contactMethod, setContactMethod] = useState("email");
 
-  const filteredBookings = advisorBookings.filter(
-    (booking) =>
+  const filteredBookings = advisorBookings.filter((booking) => {
+    const matchesSearch =
       booking.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+      booking.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (filterStatus === "All") return matchesSearch;
+    if (filterStatus === "Pending") return matchesSearch && booking.status === "Pending";
+    if (filterStatus === "Confirmed") return matchesSearch && booking.status === "Confirmed";
+    if (filterStatus === "Today") {
+      // Parse DD/MM/YYYY date format
+      const [day, month, year] = booking.date.split("/");
+      // Note: Month is 0-indexed in JS Date
+      const bookingDateStr = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toDateString();
+      const todayStr = new Date().toDateString();
+      return matchesSearch && bookingDateStr === todayStr;
+    }
+    return matchesSearch;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -177,8 +191,8 @@ export default function AdvisorPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
               >
                 <tab.icon size={18} />
@@ -202,6 +216,21 @@ export default function AdvisorPage() {
                     className="pl-4"
                   />
                 </div>
+              </div>
+
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {(["All", "Pending", "Confirmed", "Today"] as const).map((status) => (
+                  <Button
+                    key={status}
+                    variant={filterStatus === status ? "default" : "outline"}
+                    onClick={() => setFilterStatus(status)}
+                    className="rounded-full"
+                    size="sm"
+                  >
+                    {status}
+                  </Button>
+                ))}
               </div>
 
               <div className="space-y-4">
@@ -249,8 +278,8 @@ export default function AdvisorPage() {
                       <div className="flex items-center gap-2">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${booking.status === "Confirmed"
-                              ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                              : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                            ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
+                            : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                             }`}
                         >
                           <Clock size={12} />
