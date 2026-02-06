@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AdvisorEditProfileModal } from "@/components/AdvisorEditProfileModal";
 import { AdvisorHeader } from "@/components/AdvisorHeader";
 import { Footer } from "@/components/Footer";
 import {
@@ -28,16 +29,7 @@ import {
 } from "lucide-react";
 
 
-const advisorInfo = {
-  name: "Sarah Anderson",
-  email: "sarah.anderson@smartautohub.lk",
-  phone: "+94 701234567",
-  specialization: "Technical & Sales Consultation",
-  experience: "5 years",
-  rating: 4.8,
-  totalBookings: 45,
-  avatar: "SA",
-};
+
 
 interface Booking {
   id: string | number;
@@ -53,6 +45,17 @@ interface Booking {
 }
 
 export default function AdvisorPage() {
+
+  const [advisorData, setAdvisorData] = useState({
+    name: "Sarah Anderson",
+    email: "sarah.anderson@smartautohub.lk",
+    phone: "+94 701234567",
+    specialization: "Technical & Sales Consultation",
+    experience: "5 years",
+    rating: 4.8,
+    totalBookings: 45,
+    avatar: "SA",
+  });
 
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,10 +120,18 @@ export default function AdvisorPage() {
           <div className="flex items-center gap-3 animate-slideInRight delay-300">
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Advisor</p>
-              <p className="font-semibold">{advisorInfo.name}</p>
+              <p className="font-semibold">{advisorData.name}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-              {advisorInfo.avatar}
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold overflow-hidden">
+              {advisorData.avatar?.includes("/") ? (
+                <img
+                  src={advisorData.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                advisorData.avatar
+              )}
             </div>
           </div>
         </div>
@@ -137,7 +148,7 @@ export default function AdvisorPage() {
                   Total Bookings
                 </p>
                 <p className="text-3xl font-bold">
-                  {advisorInfo.totalBookings}
+                  {advisorData.totalBookings}
                 </p>
               </div>
               <BookOpen className="text-primary" size={32} />
@@ -169,7 +180,7 @@ export default function AdvisorPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Rating</p>
-                <p className="text-3xl font-bold">{advisorInfo.rating}</p>
+                <p className="text-3xl font-bold">{advisorData.rating}</p>
               </div>
               <User className="text-primary" size={32} />
             </div>
@@ -301,12 +312,20 @@ export default function AdvisorPage() {
             <div className="max-w-2xl">
               <div className="flex flex-col md:flex-row gap-8 mb-8">
                 <div className="flex flex-col items-center">
-                  <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl mb-4">
-                    {advisorInfo.avatar}
+                  <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl mb-4 overflow-hidden">
+                    {advisorData.avatar?.includes("/") ? (
+                      <img
+                        src={advisorData.avatar}
+                        alt="Avatar"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      advisorData.avatar
+                    )}
                   </div>
-                  <h2 className="text-2xl font-bold">{advisorInfo.name}</h2>
+                  <h2 className="text-2xl font-bold">{advisorData.name}</h2>
                   <p className="text-muted-foreground">
-                    {advisorInfo.specialization}
+                    {advisorData.specialization}
                   </p>
                 </div>
                 <div className="flex-1">
@@ -316,7 +335,7 @@ export default function AdvisorPage() {
                         Experience
                       </p>
                       <p className="text-xl font-bold">
-                        {advisorInfo.experience}
+                        {advisorData.experience}
                       </p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-4">
@@ -324,7 +343,7 @@ export default function AdvisorPage() {
                         Rating
                       </p>
                       <p className="text-xl font-bold">
-                        ⭐ {advisorInfo.rating}/5.0
+                        ⭐ {advisorData.rating}/5.0
                       </p>
                     </div>
                   </div>
@@ -333,23 +352,20 @@ export default function AdvisorPage() {
                       <p className="text-sm text-muted-foreground mb-1">
                         Email
                       </p>
-                      <p className="font-medium">{advisorInfo.email}</p>
+                      <p className="font-medium">{advisorData.email}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">
                         Phone
                       </p>
-                      <p className="font-medium">{advisorInfo.phone}</p>
+                      <p className="font-medium">{advisorData.phone}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Button variant="outline" className="w-full bg-transparent">
-                  <Settings size={16} className="mr-2" />
-                  Edit Profile
-                </Button>
+                <AdvisorEditProfileModal advisor={advisorData} onSave={setAdvisorData} />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full">
