@@ -39,14 +39,27 @@ const advisorInfo = {
   avatar: "SA",
 };
 
+interface Booking {
+  id: string | number;
+  customer: string;
+  email: string;
+  phone: string;
+  type: string;
+  vehicle: string;
+  date: string;
+  time: string;
+  notes: string;
+  status: string;
+}
+
 export default function AdvisorPage() {
 
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState < "All" | "Pending" | "Confirmed" | "Today" > ("All");
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [filterStatus, setFilterStatus] = useState<"All" | "Pending" | "Confirmed" | "Today">("All");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [contactMethod, setContactMethod] = useState("email");
-  const [advisorBookings, setAdvisorBookings] = useState([]);
+  const [advisorBookings, setAdvisorBookings] = useState<Booking[]>([]);
 
 
   useEffect(() => {
