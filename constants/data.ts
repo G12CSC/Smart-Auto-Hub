@@ -16,4 +16,10 @@ export const headerMenuData = [
     { title: "About Us", href: "/about" },
     { title: "Contact", href: "/contact" },
 
+
+];
+
+export const advisorHeaderMenuData = [
+    { title: "Bookings", href: "/advisor-dashboard" }, // Links to the main dashboard tab
+    { title: "Availability", href: "/advisor-dashboard/availability" }, // Placeholder as requested
 ];

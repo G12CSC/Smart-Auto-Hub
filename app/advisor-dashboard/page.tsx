@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Header } from "@/components/Header";
+import { AdvisorHeader } from "@/components/AdvisorHeader";
 import { Footer } from "@/components/Footer";
 import {
   Calendar,
@@ -91,7 +91,7 @@ export default function AdvisorPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      <AdvisorHeader />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
         {/* Header Section */}
@@ -176,11 +176,10 @@ export default function AdvisorPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                  }`}
               >
                 <tab.icon size={18} />
                 {tab.label}
@@ -249,11 +248,10 @@ export default function AdvisorPage() {
                       </p>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                            booking.status === "Confirmed"
+                          className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${booking.status === "Confirmed"
                               ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
                               : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
-                          }`}
+                            }`}
                         >
                           <Clock size={12} />
                           {booking.status}
