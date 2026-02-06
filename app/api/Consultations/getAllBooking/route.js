@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     // 2️⃣ Enforce ADMIN-only access
-    requireAdmin(session);
+
 
     const allBookings = await prisma.consultationBooking.findMany({
         orderBy: { createdAt: "desc" },
