@@ -464,64 +464,11 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-card rounded-t-lg border-x border-t border-border animate-pop-in delay-300">
-          <div className="flex items-center gap-2 px-6 py-3 border-b border-border overflow-x-auto">
-            {[
-              {
-                id: "requests",
-                label: "Consultation Bookings",
-                icon: Users,
-                count: notifications.requests,
-              },
-              {
-                id: "vehicles",
-                label: "Vehicle Management",
-                icon: Car,
-                count: notifications.vehicles,
-              },
-              {
-                id: "videos",
-                label: "Video Reviews",
-                icon: Video,
-                count: notifications.videos,
-              },
-              {
-                id: "newsletter",
-                label: "Newsletter",
-                icon: Mail,
-                count: notifications.newsletter,
-              },
-              {
-                id: "branches",
-                label: "Branch Inventory",
-                icon: MapPin,
-                count: 0,
-              },
-            ].map((tab) => (
-              <Button
-                key={tab.id}
-                // onClick={() => setActiveTab(tab.id)}
-                onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 hover:text-white rounded font-medium transition whitespace-nowrap relative ${activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-              >
-                <tab.icon size={18} />
-                {tab.label}
-                {tab.count > 0 && (
-                  <span className="h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center animate-pulse">
-                    {tab.count > 9 ? "9+" : tab.count}
-                  </span>
-                )}
-              </Button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Tab Content */}
-        <div className="bg-card rounded-b-lg border-x border-b border-border p-6 slide-in-down delay-400">
+        {/* Tab Content */}
+        <div className="bg-card rounded-lg border border-border p-6 slide-in-down delay-400">
           {/* Customer Requests Tab */}
           {activeTab === "requests" && (
             <div>
@@ -608,12 +555,12 @@ export default function AdminPage() {
                         <td className="px-4 py-2">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${request.status === "ACCEPTED"
-                                ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                                : request.status === "REJECTED"
-                                  ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
-                                  : request.status === "CANCELLED"
-                                    ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
-                                    : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                              ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
+                              : request.status === "REJECTED"
+                                ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
+                                : request.status === "CANCELLED"
+                                  ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
+                                  : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                               }`}
                           >
                             {request.status}
@@ -1003,12 +950,12 @@ export default function AdminPage() {
                           </p>
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${vehicle.status === "Available"
-                                ? "bg-green-500/20 text-green-700"
-                                : vehicle.status === "Shipped"
-                                  ? "bg-orange-500/20 text-orange-700"
-                                  : vehicle.status === "Reserved"
-                                    ? "bg-blue-500/20 text-blue-700"
-                                    : "bg-red-500/20 text-red-700"
+                              ? "bg-green-500/20 text-green-700"
+                              : vehicle.status === "Shipped"
+                                ? "bg-orange-500/20 text-orange-700"
+                                : vehicle.status === "Reserved"
+                                  ? "bg-blue-500/20 text-blue-700"
+                                  : "bg-red-500/20 text-red-700"
                               }`}
                           >
                             {vehicle.status}
