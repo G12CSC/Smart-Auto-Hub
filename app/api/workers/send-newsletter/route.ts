@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resend } from "@/lib/resend";
+import { getResendClient } from "@/lib/resend";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const { broadcastId } = await req.json();
@@ -16,6 +18,8 @@ export async function POST(req: Request) {
   if (!broadcast || broadcast.status !== "PROCESSING") {
     return NextResponse.json({ ignored: true });
   }
+
+  const resend = getResendClient();
 
   // 2. Load subscribers
   const subscribers = await prisma.newsletterEntry.findMany();

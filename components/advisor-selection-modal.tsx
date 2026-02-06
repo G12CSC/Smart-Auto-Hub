@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -31,58 +31,21 @@ interface AdvisorSelectionModalProps {
   onConfirm: (advisor: Advisor) => void;
 }
 
-const mockAdvisors: Advisor[] = [
-  {
-    id: "1",
-    name: "Ahmed Hassan",
-    image: "/images/professional-automotive-sales-manager-portrait-sri.jpg",
-    rating: 4.9,
-    experience: "12 years",
-    specialization: "Luxury Vehicles",
-    email: "ahmed.hassan@smartautohub.com",
-    phone: "+94 701 234 567",
-    isAvailable: true,
-    availableTimes: ["10:00 AM", "2:00 PM", "4:30 PM"],
-  },
-  {
-    id: "2",
-    name: "Priya Sharma",
-    image: "/images/professional-automotive-technical-consultant-femal.jpg",
-    rating: 4.8,
-    experience: "8 years",
-    specialization: "Budget & Practical Cars",
-    email: "priya.sharma@smartautohub.com",
-    phone: "+94 702 234 567",
-    isAvailable: false,
-    availableTimes: ["11:00 AM Tomorrow", "3:00 PM Tomorrow"],
-  },
-  {
-    id: "3",
-    name: "Rajesh Kumar",
-    image: "/images/professional-automotive-sales-executive-male-sri-l.jpg",
-    rating: 4.7,
-    experience: "10 years",
-    specialization: "SUVs & Family Vehicles",
-    email: "rajesh.kumar@smartautohub.com",
-    phone: "+94 703 234 567",
-    isAvailable: true,
-    availableTimes: ["11:30 AM", "3:30 PM"],
-  },
-];
-
 export default function AdvisorSelectionModal({
   open,
   onClose,
   bookingSlot,
   onConfirm,
 }: AdvisorSelectionModalProps) {
+
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [advisors, setAdvisors] = useState<Advisor[]>([])
+    const [loading, setLoading] = useState(true)
 
-  const filteredAdvisors = mockAdvisors.filter((advisor) =>
-    advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+
 
   const handleSelectAdvisor = (advisor: Advisor) => {
     setSelectedAdvisor(advisor);
@@ -90,6 +53,7 @@ export default function AdvisorSelectionModal({
   };
 
   const handleConfirm = () => {
+
     if (selectedAdvisor) {
       onConfirm(selectedAdvisor);
       toast.success(`Booking sent to ${selectedAdvisor.name}`);
@@ -106,6 +70,21 @@ export default function AdvisorSelectionModal({
       });
     }
   };
+
+    useEffect(() => {
+        const fetchAdvisors = async () => {
+            const res = await fetch("/api/Advisors")
+            const data = await res.json()
+            setAdvisors(data)
+            setLoading(false)
+        }
+
+        fetchAdvisors()
+    }, [])
+
+    const filteredAdvisors = advisors.filter((advisor) =>
+        advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -250,15 +229,16 @@ export default function AdvisorSelectionModal({
                       Available Times
                     </p>
                     <div className="space-y-2">
-                      {selectedAdvisor.availableTimes.map((time, index) => (
-                        <div
-                          key={index}
-                          className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2"
-                        >
-                          <Calendar className="w-4 h-4 text-primary" />
-                          <span className="text-sm">{time}</span>
-                        </div>
-                      ))}
+                        {selectedAdvisor?.availableTimes?.length ? (
+                            selectedAdvisor.availableTimes.map((time, index) => (
+                                <div key={index}>{time}</div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                No available times configured
+                            </p>
+                        )}
+
                     </div>
                   </div>
 
@@ -319,7 +299,6 @@ export default function AdvisorSelectionModal({
                   </Button>
                   <Button
                     onClick={handleConfirm}
-                    disabled={!selectedAdvisor.isAvailable}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground animate-slide-in-right"
                   >
                     Send to Advisor

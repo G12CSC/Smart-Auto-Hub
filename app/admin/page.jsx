@@ -7,7 +7,6 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Search,
   Filter,
@@ -1316,10 +1315,21 @@ export default function AdminPage() {
         open={isAdvisorModalOpen}
         onClose={() => setIsAdvisorModalOpen(false)}
         bookingSlot={selectedRequestForAdvisor?.time || ""}
-        onConfirm={(advisor) => {
-          toast.success(`Booking assigned to ${advisor.name}`);
-          setIsAdvisorModalOpen(false);
-          setSelectedRequestForAdvisor(null);
+        onConfirm={async (advisor) => {
+            await fetch("/api/Consultations/assignAdvisor", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    bookingId: selectedRequestForAdvisor.id,
+                    advisorId: advisor.id,
+                }),
+            });
+
+            toast.success(`Booking assigned to ${advisor.name}`);
+
+            await fetchBookings(); // refresh admin table
+            setIsAdvisorModalOpen(false);
+            setSelectedRequestForAdvisor(null);
         }}
       />
     </div>

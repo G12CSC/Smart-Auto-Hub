@@ -55,6 +55,18 @@ model Admin {
   updatedCars         Car[]                 @relation("UpdatedBy")
   sessions            Session[]
   AdvisorAvailability AdvisorAvailability[]
+  advisor             Advisor?
+}
+
+model Advisor {
+  advisorId String @id @default(uuid())
+
+  adminId String @unique
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
 }
 
 model Car {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,45 +26,8 @@ import {
   BookOpen,
   Settings,
 } from "lucide-react";
+import {toast} from "sonner";
 
-const advisorBookings = [
-  {
-    id: 1,
-    customer: "Ahmed Hassan",
-    email: "ahmed@email.com",
-    phone: "+94 771234567",
-    type: "Vehicle Inspection",
-    vehicle: "Toyota Corolla",
-    date: "18/11/2025",
-    time: "10:00 AM",
-    status: "Confirmed",
-    notes: "Customer wants detailed inspection before purchase",
-  },
-  {
-    id: 2,
-    customer: "Samantha Lee",
-    email: "samantha@email.com",
-    phone: "+94 772345678",
-    type: "Technical Consultation",
-    vehicle: "Honda Civic",
-    date: "18/11/2025",
-    time: "2:30 PM",
-    status: "Confirmed",
-    notes: "Questions about hybrid technology",
-  },
-  {
-    id: 3,
-    customer: "Roshan Kumar",
-    email: "roshan@email.com",
-    phone: "+94 773456789",
-    type: "Trade-in Evaluation",
-    vehicle: "Suzuki Swift",
-    date: "19/11/2025",
-    time: "11:00 AM",
-    status: "Pending",
-    notes: "Evaluating current vehicle for trade-in",
-  },
-];
 
 const advisorInfo = {
   name: "Sarah Anderson",
@@ -78,18 +41,71 @@ const advisorInfo = {
 };
 
 export default function AdvisorPage() {
+
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [contactMethod, setContactMethod] = useState("email");
+  const [advisorBookings,setAdvisorBookings] = useState([]);
 
-  const filteredBookings = advisorBookings.filter(
-    (booking) =>
-      booking.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
-  return (
+    const fetchAdvisorBookings = async () => {
+        try {
+            const res = await fetch("/api/Consultations/advisorBookings");
+
+            if (!res.ok) {
+                console.error("API error:", res.status);
+                setAdvisorBookings([]);
+                return;
+            }
+
+            const data = await res.json();
+            setAdvisorBookings(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Fetch failed:", err);
+            setAdvisorBookings([]);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchAdvisorBookings();
+    }, []);
+
+
+
+    const filteredBookings = advisorBookings.filter(
+        (booking) =>
+            booking.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+
+    const handleDecision = async (bookingId, decision) => {
+        const res=await fetch("/api/Consultations/advisorDecisions", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bookingId, decision }),
+        });
+
+        if (!res.ok) {
+            toast.error("Failed to update booking");
+            return;
+        }
+
+        // ✅ UPDATE LOCAL STATE (this is what you were missing)
+        setAdvisorBookings((prev) =>
+            prev.map((b) =>
+                b.id === bookingId ? { ...b, status: decision } : b
+            )
+        );
+
+        toast.success(`Booking ${decision.toLowerCase()}`);
+    };
+
+
+
+    return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
@@ -218,7 +234,7 @@ export default function AdvisorPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                           <p className="font-semibold text-lg">
-                            {booking.customer}
+                            {booking.fullName}
                           </p>
                           <div className="text-sm text-muted-foreground mt-1">
                             <p className="flex items-center gap-2">
@@ -232,7 +248,7 @@ export default function AdvisorPage() {
                         <div>
                           <p className="text-sm">
                             <span className="font-medium">Type:</span>{" "}
-                            {booking.type}
+                            {booking.vehicleType}
                           </p>
                           <p className="text-sm">
                             <span className="font-medium">Vehicle:</span>{" "}
@@ -240,25 +256,49 @@ export default function AdvisorPage() {
                           </p>
                           <p className="text-sm">
                             <span className="font-medium">Date & Time:</span>{" "}
-                            {booking.date} at {booking.time}
+                            {booking.preferredDate} at {booking.preferredTime}
                           </p>
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">
-                        {booking.notes}
+                        {booking.message}
                       </p>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                            booking.status === "Confirmed"
-                              ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                              : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
-                          }`}
-                        >
-                          <Clock size={12} />
-                          {booking.status}
-                        </span>
-                        <Button size="sm" variant="outline">
+                          <div className="flex items-center gap-2 mt-3">
+                              {booking.status === "FORWARDED" && (
+                                  <>
+                                      <Button
+                                          size="sm"
+                                          className="bg-emerald-600 hover:bg-emerald-700"
+                                          onClick={() => handleDecision(booking.id, "ACCEPTED")}
+                                      >
+                                          Accept
+                                      </Button>
+
+                                      <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => handleDecision(booking.id, "REJECTED")}
+                                      >
+                                          Reject
+                                      </Button>
+                                  </>
+                              )}
+                          </div>
+
+                          <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  booking.status === "ACCEPTED"
+                                      ? "bg-emerald-500/20 text-emerald-700"
+                                      : booking.status === "REJECTED"
+                                          ? "bg-rose-500/20 text-rose-700"
+                                          : "bg-amber-500/20 text-amber-700"
+                              }`}
+                          >
+  {booking.status}
+</span>
+
+                          <Button size="sm" variant="outline">
                           <MessageCircle size={14} className="mr-1" />
                           Contact Customer
                         </Button>
