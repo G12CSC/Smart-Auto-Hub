@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 # Load raw data from the database
 #-------------------------------------------
 
-def load_cars():
+def load_cars() -> List[dict]:
     try:
         response = (
             supabase_client.table("Car")
@@ -60,18 +60,18 @@ def ingest_cars(cars: List[dict]) -> None:
     
     row = []
     
-    for car in len(cars):
+    for car in cars:
         meaningful_car_text = raw_car_data_to_text(car) 
         chunks = chunk_text(meaningful_car_text)
         
         if not chunks:
             continue
         
-        embedding = embed_texts(chunks)
+        embedding = embed_texts(chunks) 
 
-        for idx, chunk, embed in enumerate(zip(chunks, embedding)):
+        for idx, (chunk, embed) in enumerate(zip(chunks, embedding)):
             row.append({
-                "car_id" : cars[id],
+                "car_id" : car['id'],
                 "chunk_index" : idx,
                 "content" : chunk,
                 "embedding" : embed   
@@ -79,12 +79,17 @@ def ingest_cars(cars: List[dict]) -> None:
             
     try:
         (
-            supabase_client.table('carVectors')
+            supabase_client.table('car_vector')
             .upsert(row)
             .execute()
         )
-        logger.info(f"Successfully upsert {len(row)} to the data to the [carVectors] table")
+        logger.info(f"Successfully upsert {len(row)} to the data to the [car_vector] table")
         
     except Exception as e:
         logger.exception("Failed to upsert car vectors")
         raise
+    
+
+cars = load_cars()
+ingest_cars(cars)
+        

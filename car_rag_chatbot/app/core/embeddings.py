@@ -10,7 +10,7 @@ _embedder: SentenceTransformer | None = None
 
 def load_embedded_model(model_name:str = EMBED_MODEL_NAME) -> SentenceTransformer:
     try:
-        global _embedder
+        global _embedder 
         if _embedder is None:
             logger.info(f"Loading embedding model: {model_name}")
             _embedder = SentenceTransformer(model_name)
