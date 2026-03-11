@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 export default function HomeSearchbar() {
   const router = useRouter();
@@ -53,11 +54,11 @@ export default function HomeSearchbar() {
   }, []);
 
   return (
-    <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
+    <div className="bg-card rounded-xl shadow-2xl p-6 md:p-8 border border-border">
       <div className="flex flex-col md:flex-row gap-4 relative">
         <div className="flex-1 relative">
           <div className="relative">
-            <input
+            <Input
               type="text"
               placeholder="Search by Make, Model..."
               value={searchQuery}
@@ -113,7 +114,7 @@ export default function HomeSearchbar() {
         <Button
           onClick={handleSearch}
           size="lg"
-          className="px-8 h-13 font-semibold shadow-lg"
+          className="px-8 font-semibold shadow-2xl"
         >
           <Search size={18} className="mr-2" />
           Search
