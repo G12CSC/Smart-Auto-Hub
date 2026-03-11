@@ -5,14 +5,25 @@ import { useSession } from "next-auth/react";
 
 export default function UserWelcome() {
   const { data: session } = useSession();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!session) return;
+    const userEmail = session?.user?.email;
+    if (!userEmail) return;
+    if (typeof window === "undefined") return;
+
+    const storageKey = `userWelcomeShown:${userEmail}`;
+    const alreadyShown = sessionStorage.getItem(storageKey);
+    if (alreadyShown === "true") {
+      return;
+    }
+
     setVisible(true);
+    sessionStorage.setItem(storageKey, "true");
+
     const timeout = setTimeout(() => setVisible(false), 30_000);
     return () => clearTimeout(timeout);
-  }, [session]);
+  }, [session?.user?.email]);
 
   return (
     <>
