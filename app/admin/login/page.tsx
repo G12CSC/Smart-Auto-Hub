@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
         }
 
         // NextAuth gives url when ok
-        window.location.href = res.url ?? "/admin/dashboard";
+        window.location.href = res.url ? "/admin" : "/admin/login";
     };
 
     return (

@@ -7,7 +7,7 @@ import Providers from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import ChatBot from "@/components/ChatBot";
-
+import FeedbackPopup from "@/components/feedback/FeedbackPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,7 +49,8 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
-              <ChatBot />
+            <ChatBot />
+            <FeedbackPopup />
             <Toaster />
           </ThemeProvider>
           <Analytics />

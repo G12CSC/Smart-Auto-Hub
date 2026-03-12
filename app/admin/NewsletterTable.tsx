@@ -24,6 +24,26 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
       });
   }, []);
 
+  const handleNewsletterDelete = (id: string) => async () => {
+    if (!confirm("Are you sure you want to delete this subscriber?")) return;
+
+    const res = await fetch(`/api/newsletter/deleteSubscription/${id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSubscribers(data.newSubscribersList);
+      if (setNewsletterSubscribers) {
+        setNewsletterSubscribers(data.remainingSubscribers);
+      }
+    } else {
+      alert("Failed to delete subscriber.");
+    }
+
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -67,7 +87,7 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
               </td>
 
               <td className="px-4 py-4">
-                <Button size="sm" variant="ghost">
+                <Button size="sm" variant="ghost" onClick={handleNewsletterDelete(s.id)}>
                   <Trash2 size={14} />
                 </Button>
               </td>

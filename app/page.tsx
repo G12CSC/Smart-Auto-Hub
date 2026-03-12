@@ -19,7 +19,6 @@ import UserWelcome from "@/components/home/user-welcome";
 import HomeSearchbar from "@/components/home/home-searchbar";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
-import FeedbackPopup from "@/components/feedback/FeedbackPopup";
 
 interface Vehicle {
   id: number;
@@ -126,7 +125,7 @@ export default async function Home() {
       <UserWelcome />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen bg-gradient-to-br from-background via-background to-card overflow-hidden flex items-center">
+      <section className="relative min-h-screen bg-linear-to-br from-background via-background to-card overflow-hidden flex items-center">
         {/* Animated gradient orbs background */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float opacity-30" />
         <div
@@ -147,7 +146,7 @@ export default async function Home() {
               <div className="space-y-4">
                 {/* Decorative accent line */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-1 bg-gradient-to-r from-primary to-transparent rounded-full" />
+                  <div className="w-12 h-1 bg-linear-to-r from-primary to-transparent rounded-full" />
                   <span className="text-sm font-semibold text-primary uppercase tracking-widest">
                     Welcome to Excellence
                   </span>
@@ -205,7 +204,7 @@ export default async function Home() {
 
             {/* Right side - Showroom Image */}
             <div className="relative h-[500px] animate-slide-in-right">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-primary/20 rounded-2xl blur-3xl opacity-60" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/40 to-primary/20 rounded-2xl blur-3xl opacity-60" />
               <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xl">
                 <Image
                   src="/showroom-exterior1.jpeg"
@@ -215,7 +214,7 @@ export default async function Home() {
                   priority
                 />
                 {/* Overlay gradient for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                 {/* Content overlay */}
                 <div className="absolute inset-0 flex flex-col justify-end p-8">
                   <h3 className="text-3xl font-bold text-white mb-2">
@@ -553,7 +552,7 @@ export default async function Home() {
             <div className="mb-12">
               <a
                 href={`https://www.youtube.com/watch?v=${videoReviews[0].videoId}`}
-                className="relative h-80 md:h-96 lg:h-[28rem] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
+                className="relative h-80 md:h-96 lg:h-[112] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -569,7 +568,7 @@ export default async function Home() {
 
                 {/* Play button */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                  <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110">
                     <Play className="text-white fill-white ml-2" size={48} />
                   </div>
                 </div>
@@ -589,7 +588,7 @@ export default async function Home() {
                   </p>
                   <p className="text-sm text-white/70 flex items-center gap-2">
                     <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-                    {videoReviews[0].uploadDate}
+                    {videoReviews[0]?.uploadDate}
                   </p>
                 </div>
               </a>
@@ -679,8 +678,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      <FeedbackPopup />
       <Footer />
     </div>
   );

@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { Header } from "@/components/Header";
+import { useSession, signOut } from "next-auth/react";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,37 +9,29 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Search,
   Filter,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
   Users,
   Car,
-  Calendar,
   Mail,
-  TrendingUp,
   MapPin,
-  CheckCircle,
-  XCircle,
   Clock,
   FileText,
   Video,
   ExternalLink,
   RefreshCcw,
   Plus,
-  Info,
-  UserX,
-  FileUser,
   UserCog,
   Binoculars,
+  LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
-import {
-  approveBookings,
-  updateBookings,
-} from "../APITriggers/approveBookingsByAdmins.js";
+import { useTheme } from "next-themes";
 import { sendAdminMessagesForBookings } from "../APITriggers/sendAdminMessagesForBookings.js";
 import { localStorageAPI } from "@/lib/storage/localStorage";
 import {
@@ -51,8 +41,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -60,12 +48,10 @@ import {
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogFooter,
   AlertDialogDescription,
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { BRANCHES } from "@/lib/branches";
 import { vehicleAPI } from "@/lib/api/vehicles";
 import { toast } from "sonner";
 
@@ -76,13 +62,12 @@ import {
 } from "@/app/actions/videoActions";
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
-import { set } from "date-fns/set";
 
 const stats = [
   {
     label: "Total Vehicles",
     value: "150",
-    change: "+12 this month",
+    change: "+5 this month",
     color:
       "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-300",
     icon: Car,
@@ -98,7 +83,7 @@ const stats = [
   {
     label: "Newsletter Subscribers",
     value: "1,247",
-    change: "+89 this week",
+    change: "+9 this week",
     color:
       "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
     icon: Mail,
@@ -123,37 +108,13 @@ const vehicleFormDefaults = {
   status: "Available",
 };
 
-const vehicles = [
-  {
-    id: 1,
-    name: "Toyota Prius 2022",
-    branch: "Nugegoda",
-    status: "Available",
-    price: "LKR 7,500,000",
-    views: 234,
-  },
-  {
-    id: 2,
-    name: "Honda Vezel 2021",
-    branch: "Matara",
-    status: "Shipped",
-    price: "LKR 8,200,000",
-    views: 189,
-  },
-  {
-    id: 3,
-    name: "Suzuki Swift 2023",
-    branch: "Colombo",
-    status: "Available",
-    price: "LKR 4,900,000",
-    views: 312,
-  },
-];
+
 
 const newsletterSubscribers = [];
 
 export default function AdminPage() {
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
@@ -296,8 +257,21 @@ export default function AdminPage() {
   };
 
   const handleDeleteVehicle = (vehicleId) => {
-    setDeleteVehicleId(null);
-    toast.success("Vehicle Deleted Successfully");
+    try {
+      const res = fetch(`/api/vehicle/deleteVehicle/${vehicleId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }).then((res) => res.json()).then((data) => {
+        if (data.success) {
+          toast.success("Vehicle deleted successfully");
+          loadVehicles();
+        } else {
+          toast.error("Failed to delete vehicle");
+        }
+      })
+    } catch (error) {
+      toast.error("Failed to delete vehicle");
+    }
   };
 
   const handleAddVideo = async () => {
@@ -389,6 +363,10 @@ export default function AdminPage() {
     setNotifications(notifs.admin);
   };
 
+  const viewVehicleDetails = (vehicle) => {
+
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -403,6 +381,22 @@ export default function AdminPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <div>
+              <button
+                className="flex items-center gap-2 text-foreground hover:text-primary py-2 w-full text-left border rounded-md p-3 cursor-pointer transition-all"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Logged in as</p>
               <p className="font-semibold">
@@ -411,6 +405,15 @@ export default function AdminPage() {
             </div>
             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
               {session?.user?.email ? session?.user?.email.charAt(0).toUpperCase() : "A"}
+            </div>
+            <div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-2 text-white/80 py-2 cursor-pointer bg-red-600 p-2 rounded-md hover:text-white pl-2 w-full text-left"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -479,8 +482,8 @@ export default function AdminPage() {
                 // onClick={() => setActiveTab(tab.id)}
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 hover:text-white hover:bg-black rounded font-medium cursor-pointer transition whitespace-nowrap relative ${activeTab === tab.id
-                    ? "bg-black text-white dark:bg-white dark:text-black"
-                    : ""
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : ""
                   }`}
               >
                 <tab.icon size={18} />
@@ -553,9 +556,9 @@ export default function AdminPage() {
                       <th className="px-4 py-3 text-left font-semibold text-sm">
                         Booking Type
                       </th>
-                      <th className="px-4 py-3 text-left font-semibold text-sm">
+                      {/* <th className="px-4 py-3 text-left font-semibold text-sm">
                         Vehicle Details
-                      </th>
+                      </th> */}
                       <th className="px-4 py-3 text-left font-semibold text-sm">
                         Date
                       </th>
@@ -577,18 +580,18 @@ export default function AdminPage() {
                         <td>{request.fullName}</td>
                         <td>{request.email}</td>
                         <td>{request.consultationType}</td>
-                        <td>{request.vehicleType}</td>
+                        {/* <td>{request.vehicleType}</td> */}
                         <td>{request.preferredDate.split("T")[0]}</td>
                         <td>{request.preferredTime}</td>
                         <td className="px-4 py-2">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${request.status === "ACCEPTED"
-                                ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
-                                : request.status === "REJECTED"
-                                  ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
-                                  : request.status === "CANCELLED"
-                                    ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
-                                    : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                              ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
+                              : request.status === "REJECTED"
+                                ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
+                                : request.status === "CANCELLED"
+                                  ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
+                                  : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                               }`}
                           >
                             {request.status}
@@ -978,24 +981,33 @@ export default function AdminPage() {
                           </p>
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${vehicle.status === "Available"
-                                ? "bg-green-500/20 text-green-700"
-                                : vehicle.status === "Shipped"
-                                  ? "bg-orange-500/20 text-orange-700"
-                                  : vehicle.status === "Reserved"
-                                    ? "bg-blue-500/20 text-blue-700"
-                                    : "bg-red-500/20 text-red-700"
+                              ? "bg-green-500/20 text-green-700"
+                              : vehicle.status === "Shipped"
+                                ? "bg-orange-500/20 text-orange-700"
+                                : vehicle.status === "Reserved"
+                                  ? "bg-blue-500/20 text-blue-700"
+                                  : "bg-red-500/20 text-red-700"
                               }`}
                           >
                             {vehicle.status}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="ghost">
+                          {/* <Button size="sm" variant="ghost">
                             <Eye size={16} />
-                          </Button>
-                          <Button size="sm" variant="ghost">
+                          </Button> */}
+                          <Button size="sm" variant="ghost" onClick={}>
                             <Edit size={16} />
                           </Button>
+                          {
+                            isViewVehicleDetailsOpen && selectedVehicleForDetails?.id === vehicle.id ? (
+                              <VehicleDetailsModal
+                                vehicle={selectedVehicleForDetails}
+                                isOpen={isViewVehicleDetailsOpen}
+                                onOpenChange={setIsViewVehicleDetailsOpen}
+                              />
+                            ) : null
+                          }
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="ghost">
@@ -1293,7 +1305,6 @@ export default function AdminPage() {
           )}
         </div>
       </div>
-      )
       <ChatBot />
       <Footer />
       <AdvisorSelectionModal
