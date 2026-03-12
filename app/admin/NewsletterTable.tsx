@@ -3,9 +3,17 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
+interface Subscriber {
+  id: string;
+  email: string;
+  createdAt: string;
+  source: string;
+  status: string;
+}
+
 function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?: (count: number) => void}) {
 
-  const [subscribers, setSubscribers] = useState([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
   // Fetch subscribers
   useEffect(() => {
@@ -13,9 +21,6 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
       .then((res) => res.json())
       .then((data) => {
         setSubscribers(data);
-        if (setNewsletterSubscribers) {
-          setNewsletterSubscribers(data.length);
-        }
       });
   }, []);
 
@@ -41,12 +46,12 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
         <tbody>
           {subscribers.map((s) => (
             <tr
-              key={s.id}
+              key={s.id || s.email}
               className="border-b border-border hover:bg-secondary/30 transition"
             >
               <td className="px-4 py-4">{s.email}</td>
               <td className="px-4 py-4 text-sm text-muted-foreground">
-                {new Date(s.createdAt).toLocaleDateString()}
+                {new Date(s?.createdAt).toLocaleDateString()}
               </td>
 
               <td className="px-4 py-4">

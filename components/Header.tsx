@@ -73,8 +73,8 @@ export function Header() {
           <Image
             src="/images/LogoBG_Removed-light.png"
             alt="Smart AutoHub Logo"
-            width={120}
-            height={60}
+            width={80}
+            height={50}
             className="object-contain block dark:hidden"
             priority
           />
@@ -82,8 +82,8 @@ export function Header() {
           <Image
             src="/images/LogoBG_Removed-dark1.png"
             alt="Smart AutoHub Logo"
-            width={120}
-            height={60}
+            width={80}
+            height={50}
             className="object-contain hidden dark:block"
             priority
           />

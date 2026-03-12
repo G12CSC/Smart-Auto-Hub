@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ import {
 } from "@/app/actions/videoActions";
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
+import { set } from "date-fns/set";
 
 const stats = [
   {
@@ -100,15 +102,7 @@ const stats = [
     color:
       "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
     icon: Mail,
-  },
-  {
-    label: "Active Branches",
-    value: "3",
-    change: "Nugegoda, Matara, Colombo",
-    color:
-      "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
-    icon: MapPin,
-  },
+  }
 ];
 
 const branchOptions = ["Colombo", "Matara", "Nugegoda"];
@@ -158,40 +152,13 @@ const vehicles = [
 
 const newsletterSubscribers = [];
 
-// const videoReviews = [
-//   {
-//     id: 1,
-//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-//     description:
-//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-//     videoId: "dQw4w9WgXcQ",
-//     uploadDate: "14/11/2025",
-//     views: "12.5K",
-//   },
-//   {
-//     id: 2,
-//     title: "Honda Civic 2021 - Complete Technical Review",
-//     description:
-//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-//     videoId: "dQw4w9WgXcQ",
-//     uploadDate: "10/11/2025",
-//     views: "8.3K",
-//   },
-//   {
-//     id: 3,
-//     title: "Suzuki Swift 2023 - Best Value for Money?",
-//     description:
-//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-//     videoId: "dQw4w9WgXcQ",
-//     uploadDate: "08/11/2025",
-//     views: "15.2K",
-//   },
-// ];
-
 export default function AdminPage() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
+  const [totalVehicles, setTotalVehicles] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
   const [newVideo, setNewVideo] = useState({
     title: "",
     description: "",
@@ -227,10 +194,6 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
   const handleRefreshBookings = async () => {
     try {
       setIsRefreshing(true);
@@ -242,9 +205,7 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    loadVehicles();
-  }, []);
+
 
   const loadVehicles = async () => {
     const result = await vehicleAPI.getAllVehicles();
@@ -256,9 +217,6 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    loadVideos();
-  }, []);
 
   const loadVideos = async () => {
     const result = await getVideoReviews();
@@ -361,6 +319,30 @@ export default function AdminPage() {
     }
   };
 
+  const handleAdminRequest = () => {
+    fetch("/api/newsletter/listOfSubscriptions")
+      .then((res) => res.json())
+      .then((data) => {
+        setNewsletterSubscribers(data.length);
+      });
+
+    fetch("/api/vehicles/getVehicles").
+      then((res) => res.json())
+      .then((data) => {
+        setTotalVehicles(data);
+      });
+
+    fetch("/api/Consultations/getAllBooking").
+      then((res) => res.json())
+      .then((data) => {
+        const pending = Array.isArray(data)
+          ? data.filter((req) => req.status === "PENDING").length
+          : (data.data || []).filter((req) => req.status === "PENDING").length;
+        setPendingRequests(pending);
+      });
+
+  }
+
   const handleDeleteVideo = async (videoId) => {
     const result = await deleteVideoReview(videoId);
 
@@ -383,7 +365,12 @@ export default function AdminPage() {
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
     setNotifications(notifs.admin);
+    fetchBookings();
+    loadVehicles();
+    loadVideos();
+    handleAdminRequest();
   }, []);
+
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -404,7 +391,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
@@ -419,16 +405,18 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Logged in as</p>
-              <p className="font-semibold">admin@smartautohub.lk</p>
+              <p className="font-semibold">
+                {session?.user?.name || session?.user?.email || "Admin User"}
+              </p>
             </div>
             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-              A
+              {session?.user?.email ? session?.user?.email.charAt(0).toUpperCase() : "A"}
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {stats.map((stat, idx) => (
             <div
               key={idx}
@@ -444,7 +432,7 @@ export default function AdminPage() {
               <p className="text-3xl font-bold mb-2">
                 {stat.label === "Newsletter Subscribers"
                   ? newsletterSubscribers
-                  : stat.value}
+                  : stat.label === "Pending Requests" ? pendingRequests : stat.label === "Total Vehicles" ? totalVehicles : stat.value}
               </p>
               <p className="text-xs text-muted-foreground">{stat.change}</p>
             </div>
@@ -490,11 +478,10 @@ export default function AdminPage() {
                 key={tab.id}
                 // onClick={() => setActiveTab(tab.id)}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 hover:text-white rounded font-medium transition whitespace-nowrap relative ${
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 hover:text-white hover:bg-black rounded font-medium cursor-pointer transition whitespace-nowrap relative ${activeTab === tab.id
+                    ? "bg-black text-white dark:bg-white dark:text-black"
+                    : ""
+                  }`}
               >
                 <tab.icon size={18} />
                 {tab.label}
@@ -595,15 +582,14 @@ export default function AdminPage() {
                         <td>{request.preferredTime}</td>
                         <td className="px-4 py-2">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              request.status === "ACCEPTED"
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${request.status === "ACCEPTED"
                                 ? "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-300"
                                 : request.status === "REJECTED"
                                   ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
                                   : request.status === "CANCELLED"
                                     ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
                                     : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
-                            }`}
+                              }`}
                           >
                             {request.status}
                           </span>
@@ -991,15 +977,14 @@ export default function AdminPage() {
                               : vehicle.price}
                           </p>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              vehicle.status === "Available"
+                            className={`px-2 py-1 rounded text-xs font-medium ${vehicle.status === "Available"
                                 ? "bg-green-500/20 text-green-700"
                                 : vehicle.status === "Shipped"
                                   ? "bg-orange-500/20 text-orange-700"
                                   : vehicle.status === "Reserved"
                                     ? "bg-blue-500/20 text-blue-700"
                                     : "bg-red-500/20 text-red-700"
-                            }`}
+                              }`}
                           >
                             {vehicle.status}
                           </span>
@@ -1131,7 +1116,7 @@ export default function AdminPage() {
                     key={video.id}
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
                   >
-                    <div className="relative h-24 w-40 flex-shrink-0 bg-secondary rounded overflow-hidden group">
+                    <div className="relative h-24 w-40 shrink-0 bg-secondary rounded overflow-hidden group">
                       <img
                         src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
                         alt={video.title}
@@ -1141,7 +1126,7 @@ export default function AdminPage() {
                         <Video size={24} className="text-white" />
                       </div>
                     </div>
-                    <div className="flex-grow">
+                    <div className="grow">
                       <h4 className="font-semibold text-base mb-1">
                         {video.title}
                       </h4>
@@ -1316,20 +1301,20 @@ export default function AdminPage() {
         onClose={() => setIsAdvisorModalOpen(false)}
         bookingSlot={selectedRequestForAdvisor?.time || ""}
         onConfirm={async (advisor) => {
-            await fetch("/api/Consultations/assignAdvisor", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    bookingId: selectedRequestForAdvisor.id,
-                    advisorId: advisor.id,
-                }),
-            });
+          await fetch("/api/Consultations/assignAdvisor", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingId: selectedRequestForAdvisor.id,
+              advisorId: advisor.id,
+            }),
+          });
 
-            toast.success(`Booking assigned to ${advisor.name}`);
+          toast.success(`Booking assigned to ${advisor.name}`);
 
-            await fetchBookings(); // refresh admin table
-            setIsAdvisorModalOpen(false);
-            setSelectedRequestForAdvisor(null);
+          await fetchBookings(); // refresh admin table
+          setIsAdvisorModalOpen(false);
+          setSelectedRequestForAdvisor(null);
         }}
       />
     </div>

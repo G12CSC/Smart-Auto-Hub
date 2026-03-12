@@ -19,6 +19,7 @@ import UserWelcome from "@/components/home/user-welcome";
 import HomeSearchbar from "@/components/home/home-searchbar";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
+import FeedbackPopup from "@/components/feedback/FeedbackPopup";
 
 interface Vehicle {
   id: number;
@@ -679,6 +680,7 @@ export default async function Home() {
         </div>
       </section>
 
+      <FeedbackPopup />
       <Footer />
     </div>
   );
