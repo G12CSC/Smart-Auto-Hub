@@ -7,142 +7,136 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 export const authOptions = {
+  adapter: PrismaAdapter(prisma),
 
-    adapter: PrismaAdapter(prisma),
+  providers: [
+    CredentialsProvider({
+      id: "user-credentials",
+      name: "User Credentials",
+      credentials: {
+        email: {},
+        password: {},
+      },
 
-    providers: [
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
 
-        CredentialsProvider({
-            id:"user-credentials",
-            name: "User Credentials",
-            credentials: {
-                email: {},
-                password: {},
-            },
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
 
-            async authorize(credentials) {
+        if (!user) return null;
 
-                if (!credentials?.email || !credentials?.password) return null;
+        const ok = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash,
+        );
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                });
+        if (!ok) return null;
 
-                if (!user) return null;
+        return {
+          id: user.id,
+          email: user.email,
+          userType: "user",
+        };
+      },
+    }),
 
-                const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+    CredentialsProvider({
+      id: "admin-credentials",
+      name: "Admin Login",
+      credentials: {
+        email: {},
+        password: {},
+      },
 
-                if (!ok) return null;
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
 
-                return {
-                    id: user.id,
-                    email: user.email,
-                    userType: "user",
-                };
-            },
-        }),
+        const admin = await prisma.admin.findUnique({
+          where: { email: credentials.email },
+        });
 
-        CredentialsProvider({
-            id: "admin-credentials",
-            name: "Admin Login",
-            credentials: {
-                email: {},
-                password: {},
-            },
+        if (!admin) return null;
 
-            async authorize(credentials) {
+        const ok = await bcrypt.compare(
+          credentials.password,
+          admin.passwordHash,
+        );
+        if (!ok) return null;
 
-                if (!credentials?.email || !credentials?.password) return null;
+        return {
+          id: admin.id,
+          email: admin.email,
+          userType: admin.role === "advisor" ? "advisor" : "admin",
+          adminRole: admin.role,
+        };
+      },
+    }),
 
-                const admin = await prisma.admin.findUnique({
-                    where: { email: credentials.email },
-                });
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
 
-                if (!admin) return null;
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
+  ],
 
-                const ok = await bcrypt.compare(credentials.password, admin.passwordHash);
-                if (!ok) return null;
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 60,
+  },
 
-                return {
-                    id: admin.id,
-                    email: admin.email,
-                    userType: "admin",
-                    adminRole: admin.role,
-                };
-            },
-        }),
+  jwt: {
+    maxAge: 30 * 60, // 30 minutes
+  },
 
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        }),
+  callbacks: {
+    async jwt({ token, user }) {
+      //this function creates the jwt token for specific user type(user/admin/advisor)
+      if (user) {
+        token.id = user.id;
 
-        GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID!,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-        }),
-    ],
+        // If admin credentials login, userType/adminRole will exist
+        if (user.userType === "admin") {
+          token.userType = "admin";
+          token.adminRole = user.adminRole;
+        } else {
+          // Any other login method => USER
+          token.userType = "user";
+          token.adminRole = undefined;
+        }
+      }
 
-    session: {
-        strategy: "jwt",
-        maxAge: 30 * 60,
+      // IMPORTANT: OAuth logins may not provide userType later
+      // Ensure default always exists:
+      if (!token.userType) token.userType = "user";
+
+      return token;
     },
 
-    jwt: {
-        maxAge: 30 * 60, // 30 minutes
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.userType = token.userType;
+      session.user.adminRole = token.adminRole;
+      return session;
     },
 
-    callbacks: {
-
-
-            async jwt({ token, user }) {
-
-                //this function creates the jwt token for specific user type(user/admin/advisor)
-                if (user) {
-
-                    token.id = user.id;
-
-                    // If admin credentials login, userType/adminRole will exist
-                    if (user.userType === "admin") {
-                        token.userType = "admin";
-                        token.adminRole = user.adminRole;
-                    } else {
-                        // Any other login method => USER
-                        token.userType = "user";
-                        token.adminRole = undefined;
-                    }
-                }
-
-                // IMPORTANT: OAuth logins may not provide userType later
-                // Ensure default always exists:
-                if (!token.userType) token.userType = "user";
-
-                return token;
-
-
-            },
-
-
-            async session({ session, token }) {
-
-                session.user.id = token.id;
-                session.user.userType = token.userType;
-                session.user.adminRole = token.adminRole;
-                return session;
-        },
-
-        async redirect({ url,baseUrl }) {
-            // Always redirect to root after login
-            return process.env.BASEURL;
-        },
+    async redirect({ url, baseUrl }) {
+      // Always redirect to root after login
+      return process.env.BASEURL;
     },
+  },
 
-    debug: true,
+  debug: true,
 
-    secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

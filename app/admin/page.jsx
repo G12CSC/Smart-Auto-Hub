@@ -996,18 +996,9 @@ export default function AdminPage() {
                           {/* <Button size="sm" variant="ghost">
                             <Eye size={16} />
                           </Button> */}
-                          <Button size="sm" variant="ghost" onClick={}>
+                          <Button size="sm" variant="ghost">
                             <Edit size={16} />
                           </Button>
-                          {
-                            isViewVehicleDetailsOpen && selectedVehicleForDetails?.id === vehicle.id ? (
-                              <VehicleDetailsModal
-                                vehicle={selectedVehicleForDetails}
-                                isOpen={isViewVehicleDetailsOpen}
-                                onOpenChange={setIsViewVehicleDetailsOpen}
-                              />
-                            ) : null
-                          }
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="ghost">
