@@ -4,7 +4,6 @@ import {getServerSession} from "next-auth";
 import {NextResponse} from "next/server";
 
 
-
 export async function GET() {
 
     const session = await getServerSession(authOptions);
@@ -14,14 +13,22 @@ export async function GET() {
 
     const advisor = await prisma.admin.findUnique({
         where: {
-            email: session.user.email
+            id: session.user.id
         },
         include: {
             advisorProfile: true
         }
     });
 
-    return Response.json(advisor);
+    return Response.json({
+        name: advisor.name,
+        email: advisor.email,
+        phone: advisor.advisorProfile?.phone,
+        specialization: advisor.advisorProfile?.specialization,
+        experience: advisor.advisorProfile?.experience,
+        rating: advisor.advisorProfile?.rating,
+        avatar: advisor.advisorProfile?.avatar
+    });
 }
 
 export async function PATCH(req) {
@@ -38,7 +45,8 @@ export async function PATCH(req) {
             phone: body.phone,
             specialization: body.specialization,
             experience: body.experience,
-            avatar: body.avatar
+            avatar: body.avatar,
+            rating:body.rating
         },
 
         create: {
@@ -46,7 +54,8 @@ export async function PATCH(req) {
             phone: body.phone,
             specialization: body.specialization,
             experience: body.experience,
-            avatar: body.avatar
+            avatar: body.avatar,
+            rating:body.rating
         }
     })
 
