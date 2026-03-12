@@ -56,6 +56,7 @@ model Admin {
   sessions            Session[]
   AdvisorAvailability AdvisorAvailability[]
   advisor             Advisor?
+  advisorProfile      AdvisorProfile?
 }
 
 model Advisor {
@@ -218,6 +219,22 @@ model AdvisorAvailability {
   isBusy    Boolean  @default(false)
 
   advisor Admin @relation(fields: [advisorId], references: [id])
+}
+
+model AdvisorProfile {
+  id String @id @default(uuid())
+
+  adminId String @unique
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  phone          String?
+  specialization String?
+  experience     String?
+  rating         Float   @default(0)
+  avatar         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum BookingStatus {
