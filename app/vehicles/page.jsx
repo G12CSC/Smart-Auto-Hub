@@ -25,16 +25,16 @@ export default async function VehiclesPage() {
       <Header />
 
       <section
-        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
+        className="relative min-h-[85vh] bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
           backgroundImage:
-            "url(/placeholder.svg?height=384&width=1600&query=modern car showroom inventory luxury vehicles)",
+            "url(/mainImages.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
-        <div className="relative max-w-7xl mx-auto px-4 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 w-full animate-slide-in-down delay-500">
           <h1 className="text-6xl font-bold mb-4 text-balance animate-text-reveal">
             Find Your Perfect Car
           </h1>

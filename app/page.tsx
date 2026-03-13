@@ -19,6 +19,7 @@ import UserWelcome from "@/components/home/user-welcome";
 import HomeSearchbar from "@/components/home/home-searchbar";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
+import FeedbackPopup from "@/components/feedback/FeedbackPopup";
 
 interface Vehicle {
   id: number;
@@ -71,45 +72,6 @@ const featuredVehicles: Vehicle[] = [
     location: "Nugegoda Branch",
   },
 ];
-
-// const videoReviews = [
-//   {
-//     id: 1,
-//     title: "2022 Toyota Prius Full Review - Is It Worth The Money?",
-//     description:
-//       "Detailed walkthrough of the 2022 Toyota Prius including exterior, interior, features, and driving experience.",
-//     videoId: "dQw4w9WgXcQ", // Replace with actual YouTube video ID
-//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-//     uploadDate: "2 weeks ago",
-//   },
-//   {
-//     id: 2,
-//     title: "Honda Civic 2021 - Complete Technical Review",
-//     description:
-//       "In-depth technical analysis of the Honda Civic 2021 model, covering engine performance and safety features.",
-//     videoId: "dQw4w9WgXcQ",
-//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-//     uploadDate: "1 month ago",
-//   },
-//   {
-//     id: 3,
-//     title: "Suzuki Swift 2023 - Best Value for Money?",
-//     description:
-//       "Comprehensive review of the Suzuki Swift 2023, discussing its pros and cons for Sri Lankan buyers.",
-//     videoId: "dQw4w9WgXcQ",
-//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-//     uploadDate: "3 weeks ago",
-//   },
-//   {
-//     id: 4,
-//     title: "Wagon R 2021 - Family Car Test Drive",
-//     description:
-//       "Real-world test drive of the Wagon R 2021, perfect for families looking for space and comfort.",
-//     videoId: "dQw4w9WgXcQ",
-//     thumbnail: `https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg`,
-//     uploadDate: "1 week ago",
-//   },
-// ];
 
 export default async function Home() {
   const videoData = await getVideoReviews();
@@ -679,6 +641,7 @@ export default async function Home() {
         </div>
       </section>
       <Footer />
+      <FeedbackPopup />
     </div>
   );
 }

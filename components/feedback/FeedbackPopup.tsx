@@ -50,7 +50,7 @@ export default function FeedbackPopup() {
 
     if (data.success) {
       submitFeedback(e);
-        toast.success("Thank you for your feedback!");
+      toast.success("Thank you for your feedback!");
     } else {
       alert(data.message);
     }
@@ -59,61 +59,31 @@ export default function FeedbackPopup() {
   if (!showPopup) return null;
 
   return (
-    <div className={styles.container}>
+    <div className={` ${styles.container}`}>
       <div className={styles.card}>
-        <form onSubmit={handleSubmit}>
-          <h2 className={styles.title}>Customer Feedback</h2>
+        <h2 className="text-2xl font-bold mb-2">
+          Find Your Perfect Car in Sri Lanka 🇱🇰🚗
+        </h2>
 
-          <input
-            placeholder="Your Name"
-            value={name}
-            className={styles.input}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            placeholder="Your City"
-            value={city}
-            className={styles.input}
-            onChange={(e) => setCity(e.target.value)}
-            required
-          />
+        <h3 className="text-lg font-semibold text-muted-foreground mb-4">
+          Looking for a reconditioned or brand-new vehicle at the best price?
+          Our platform connects you with trusted car sellers across Sri Lanka.
+        </h3>
 
-          <textarea
-            placeholder="Your feedback"
-            value={feedback}
-            className={styles.textarea}
-            onChange={(e) => setFeedback(e.target.value)}
-            required
-          />
-
-          <div className={styles.rating}>
-            <p>Rating:</p>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span
-                key={star}
-                className={styles.star}
-                onClick={() => setRating(star)}
-              >
-                {star <= rating ? "⭐" : "☆"}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-start gap-4 mt-4">
-            <input
-              placeholder="Coupon Code"
-              value={coupon}
-              className={styles.couponCode}
-              onChange={(e) => setCoupon(e.target.value)}
-              required
-            />
-
-            <button type="submit" className={styles.submit}>
-              Submit Feedback
-            </button>
-          </div>
-        </form>
+        <ul className="list-disc list-inside mb-4">
+          <li>✔ Toyota, Honda, Nissan, Suzuki & more</li>
+          <li>✔ Brand new & reconditioned vehicles</li>
+          <li>✔ Easy leasing options available</li>
+          <li>✔ Trusted dealers island-wide</li>
+        </ul>
+        <p className="p-2">
+          Start browsing today and drive your dream car home!
+        </p>
+        <button className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer" onClick={() => {
+          window.location.href = "/vehicles";
+        }}>
+          👉 Explore Cars Now
+        </button>
         <button
           type="button"
           className={styles.closePopup}

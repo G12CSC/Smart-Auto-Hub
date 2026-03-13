@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,143 +26,146 @@ import {
   User,
   BookOpen,
   Settings,
+  Sun,
+  Moon
 } from "lucide-react";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
+import { useTheme } from "next-themes";
 
 export default function AdvisorPage() {
-
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [contactMethod, setContactMethod] = useState("email");
-  const [advisorBookings,setAdvisorBookings] = useState([]);
+  const [advisorBookings, setAdvisorBookings] = useState([]);
   const [advisorInfo, setAdvisorInfo] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
 
-    const fetchProfile = async () => {
-        const res = await fetch("/api/Advisors/profile")
-        const data = await res.json()
+  const fetchProfile = async () => {
+    const res = await fetch("/api/Advisors/profile")
+    const data = await res.json()
 
-        setAdvisorInfo(data)
+    setAdvisorInfo(data)
+  }
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+
+  const fetchAdvisorBookings = async () => {
+    try {
+      const res = await fetch("/api/Consultations/advisorBookings");
+
+      if (!res.ok) {
+        console.error("API error:", res.status);
+        setAdvisorBookings([]);
+        return;
+      }
+
+      const data = await res.json();
+      setAdvisorBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Fetch failed:", err);
+      setAdvisorBookings([]);
     }
-
-    useEffect(() => {
-        fetchProfile()
-    }, [])
+  };
 
 
-    const fetchAdvisorBookings = async () => {
-        try {
-            const res = await fetch("/api/Consultations/advisorBookings");
+  useEffect(() => {
+    fetchAdvisorBookings();
+  }, []);
 
-            if (!res.ok) {
-                console.error("API error:", res.status);
-                setAdvisorBookings([]);
-                return;
-            }
+  const handleLogout = () => {
+    signOut({
+      callbackUrl: "/login"
+    });
+  };
 
-            const data = await res.json();
-            setAdvisorBookings(Array.isArray(data) ? data : []);
-        } catch (err) {
-            console.error("Fetch failed:", err);
-            setAdvisorBookings([]);
-        }
-    };
+  const updateProfile = async () => {
 
+    const res = await fetch("/api/Advisors/profile", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(advisorInfo),
+    })
 
-    useEffect(() => {
-        fetchAdvisorBookings();
-    }, []);
-
-    const handleLogout = () => {
-        signOut({
-            callbackUrl: "/login"
-        });
-    };
-
-    const updateProfile = async () => {
-
-        const res = await fetch("/api/Advisors/profile", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(advisorInfo),
-        })
-
-        if(res.ok){
-            toast.success("Profile updated")
-            await fetchProfile()   // reload profile
-            setOpenEdit(false)
-        }
+    if (res.ok) {
+      toast.success("Profile updated")
+      await fetchProfile()   // reload profile
+      setOpenEdit(false)
     }
-    const filteredBookings = advisorBookings.filter(
-        (booking) =>
-            booking.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  }
+  const filteredBookings = advisorBookings.filter(
+    (booking) =>
+      booking.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    const handleImageUpload = (e) => {
+  const handleImageUpload = (e) => {
 
-        const file = e.target.files[0];
+    const file = e.target.files[0];
 
-        if (!file) return;
+    if (!file) return;
 
-        const reader = new FileReader();
+    const reader = new FileReader();
 
-        reader.onloadend = () => {
+    reader.onloadend = () => {
 
-            setAdvisorInfo({
-                ...advisorInfo,
-                avatar: reader.result
-            });
+      setAdvisorInfo({
+        ...advisorInfo,
+        avatar: reader.result
+      });
 
-        };
-
-        reader.readAsDataURL(file);
     };
 
-    const upcomingBookings = advisorBookings.filter((booking) => {
-        if (booking.status === "REJECTED") return false;
+    reader.readAsDataURL(file);
+  };
 
-        const bookingDate = new Date(booking.preferredDate);
-        const today = new Date();
+  const upcomingBookings = advisorBookings.filter((booking) => {
+    if (booking.status === "REJECTED") return false;
 
-        return bookingDate >= today;
+    const bookingDate = new Date(booking.preferredDate);
+    const today = new Date();
+
+    return bookingDate >= today;
+  });
+
+
+  const handleDecision = async (bookingId, decision) => {
+    const res = await fetch("/api/Consultations/advisorDecisions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookingId, decision }),
     });
 
+    if (!res.ok) {
+      toast.error("Failed to update booking");
+      return;
+    }
 
-    const handleDecision = async (bookingId, decision) => {
-        const res=await fetch("/api/Consultations/advisorDecisions", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ bookingId, decision }),
-        });
+    // ✅ UPDATE LOCAL STATE (this is what you were missing)
+    setAdvisorBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId ? { ...b, status: decision } : b
+      )
+    );
 
-        if (!res.ok) {
-            toast.error("Failed to update booking");
-            return;
-        }
-
-        // ✅ UPDATE LOCAL STATE (this is what you were missing)
-        setAdvisorBookings((prev) =>
-            prev.map((b) =>
-                b.id === bookingId ? { ...b, status: decision } : b
-            )
-        );
-
-        toast.success(`Booking ${decision.toLowerCase()}`);
-    };
+    toast.success(`Booking ${decision.toLowerCase()}`);
+  };
 
 
 
-    return (
+  return (
     <div className="min-h-screen flex flex-col bg-background">
 
 
@@ -178,21 +181,46 @@ export default function AdvisorPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 animate-slideInRight delay-300">
+            <div>
+              <button
+                className="flex items-center gap-2 text-foreground hover:text-primary py-2 w-full text-left border rounded-md p-3 cursor-pointer transition-all"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Advisor</p>
               <p className="font-semibold">{advisorInfo?.name}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-                {advisorInfo?.avatar ? (
-                    <img
-                        src={advisorInfo.avatar}
-                        className="h-full w-full object-cover"
-                    />
-                ) : (
-                    <div className="h-full w-full bg-primary flex items-center justify-center text-white text-2xl">
-                        {advisorInfo?.name?.[0]}
-                    </div>
-                )}
+              {advisorInfo?.avatar ? (
+                <img
+                  src={advisorInfo.avatar}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-primary flex items-center justify-center text-white text-2xl">
+                  {advisorInfo?.name?.[0]}
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-2 text-white/80 py-2 cursor-pointer bg-red-600 p-2 rounded-md hover:text-white pl-2 w-full text-left"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -257,11 +285,10 @@ export default function AdvisorPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${activeTab === tab.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
               >
                 <tab.icon size={18} />
                 {tab.label}
@@ -329,41 +356,40 @@ export default function AdvisorPage() {
                         {booking.message}
                       </p>
                       <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-2 mt-3">
-                              {booking.status === "FORWARDED" && (
-                                  <>
-                                      <Button
-                                          size="sm"
-                                          className="bg-emerald-600 hover:bg-emerald-700"
-                                          onClick={() => handleDecision(booking.id, "ACCEPTED")}
-                                      >
-                                          Accept
-                                      </Button>
+                        <div className="flex items-center gap-2 mt-3">
+                          {booking.status === "FORWARDED" && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                                onClick={() => handleDecision(booking.id, "ACCEPTED")}
+                              >
+                                Accept
+                              </Button>
 
-                                      <Button
-                                          size="sm"
-                                          variant="destructive"
-                                          onClick={() => handleDecision(booking.id, "REJECTED")}
-                                      >
-                                          Reject
-                                      </Button>
-                                  </>
-                              )}
-                          </div>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDecision(booking.id, "REJECTED")}
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
 
-                          <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  booking.status === "ACCEPTED"
-                                      ? "bg-emerald-500/20 text-emerald-700"
-                                      : booking.status === "REJECTED"
-                                          ? "bg-rose-500/20 text-rose-700"
-                                          : "bg-amber-500/20 text-amber-700"
-                              }`}
-                          >
-  {booking.status}
-</span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${booking.status === "ACCEPTED"
+                            ? "bg-emerald-500/20 text-emerald-700"
+                            : booking.status === "REJECTED"
+                              ? "bg-rose-500/20 text-rose-700"
+                              : "bg-amber-500/20 text-amber-700"
+                            }`}
+                        >
+                          {booking.status}
+                        </span>
 
-                          <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline">
                           <MessageCircle size={14} className="mr-1" />
                           Contact Customer
                         </Button>
@@ -384,16 +410,16 @@ export default function AdvisorPage() {
               <div className="flex flex-col md:flex-row gap-8 mb-8">
                 <div className="flex flex-col items-center">
                   <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl mb-4">
-                      {advisorInfo?.avatar ? (
-                          <img
-                              src={advisorInfo.avatar}
-                              className="h-full w-full object-cover"
-                          />
-                      ) : (
-                          <div className="h-full w-full bg-primary flex items-center justify-center text-white text-2xl">
-                              {advisorInfo?.name?.[0]}
-                          </div>
-                      )}
+                    {advisorInfo?.avatar ? (
+                      <img
+                        src={advisorInfo.avatar}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-primary flex items-center justify-center text-white text-2xl">
+                        {advisorInfo?.name?.[0]}
+                      </div>
+                    )}
                   </div>
                   <h2 className="text-2xl font-bold">{advisorInfo?.name}</h2>
                   <p className="text-muted-foreground">
@@ -469,54 +495,54 @@ export default function AdvisorPage() {
         </div>
       </main>
 
-        <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-            <DialogContent>
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent>
 
-                <DialogHeader>
-                    <DialogTitle>Edit Profile</DialogTitle>
-                </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
 
-                <Input
-                    placeholder="Phone"
-                    value={advisorInfo?.phone || ""}
-                    onChange={(e) =>
-                        setAdvisorInfo({ ...advisorInfo, phone: e.target.value })
-                    }
-                />
+          <Input
+            placeholder="Phone"
+            value={advisorInfo?.phone || ""}
+            onChange={(e) =>
+              setAdvisorInfo({ ...advisorInfo, phone: e.target.value })
+            }
+          />
 
-                <Input
-                    placeholder="Specialization"
-                    value={advisorInfo?.specialization || ""}
-                    onChange={(e) =>
-                        setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
-                    }
-                />
+          <Input
+            placeholder="Specialization"
+            value={advisorInfo?.specialization || ""}
+            onChange={(e) =>
+              setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
+            }
+          />
 
-                <Input
-                    placeholder="Experience"
-                    value={advisorInfo?.experience || ""}
-                    onChange={(e) =>
-                        setAdvisorInfo({ ...advisorInfo, experience: e.target.value })
-                    }
-                />
+          <Input
+            placeholder="Experience"
+            value={advisorInfo?.experience || ""}
+            onChange={(e) =>
+              setAdvisorInfo({ ...advisorInfo, experience: e.target.value })
+            }
+          />
 
-                <Input
-                    type="number"
-                    placeholder="Rating"
-                    value={advisorInfo?.rating || ""}
-                    onChange={(e) =>
-                        setAdvisorInfo({ ...advisorInfo, rating: Number(e.target.value) })
-                    }
-                />
+          <Input
+            type="number"
+            placeholder="Rating"
+            value={advisorInfo?.rating || ""}
+            onChange={(e) =>
+              setAdvisorInfo({ ...advisorInfo, rating: Number(e.target.value) })
+            }
+          />
 
-                <Input type="file" onChange={handleImageUpload} />
+          <Input type="file" onChange={handleImageUpload} />
 
-                <Button onClick={updateProfile}>
-                    Save Changes
-                </Button>
+          <Button onClick={updateProfile}>
+            Save Changes
+          </Button>
 
-            </DialogContent>
-        </Dialog>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

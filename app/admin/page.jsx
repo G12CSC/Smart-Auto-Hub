@@ -362,11 +362,7 @@ export default function AdminPage() {
     const notifs = localStorageAPI.getNotifications();
     setNotifications(notifs.admin);
   };
-
-  const viewVehicleDetails = (vehicle) => {
-
-  }
-
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">

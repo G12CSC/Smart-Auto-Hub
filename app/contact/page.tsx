@@ -23,10 +23,10 @@ export default function ContactPage() {
 
       {/* Hero Section */}
       <section
-        className="relative h-96 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
+        className="relative min-h-[85vh] bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
           backgroundImage:
-            "url(/placeholder.svg?height=384&width=1600&query=customer service representative contact center professional)",
+            "url(/mainImages2.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -38,6 +38,10 @@ export default function ContactPage() {
           </h1>
           <p className="text-xl opacity-90 text-balance max-w-2xl animate-text-reveal stagger-1">
             Have questions? We're here to help. Reach out to our team anytime.
+          </p>
+          <p className="text-lg">
+            Whether you need assistance with our services, want to provide<br/>
+            feedback, or just want to say hello, we'd love to hear from you!
           </p>
         </div>
       </section>
