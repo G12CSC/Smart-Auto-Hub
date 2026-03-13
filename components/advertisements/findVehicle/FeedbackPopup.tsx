@@ -3,18 +3,12 @@
 import { useEffect, useState } from "react";
 import styles from "./feedback.module.css";
 import { X } from "lucide-react";
-import { toast } from "sonner";
 
 export default function FeedbackPopup() {
   const [showPopup, setShowPopup] = useState(false);
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState(0);
-  const [coupon, setCoupon] = useState("");
 
   useEffect(() => {
-    const feedbackShown = sessionStorage.getItem("feedbackShown");
+    const feedbackShown = sessionStorage.getItem("findVehicleFeedbackShown");
 
     if (!feedbackShown) {
       setTimeout(() => {
@@ -24,37 +18,10 @@ export default function FeedbackPopup() {
   }, []);
 
   const closePopup = () => {
-    sessionStorage.setItem("feedbackShown", "true");
+    sessionStorage.setItem("findVehicleFeedbackShown", "true");
     setShowPopup(false);
   };
 
-  const submitFeedback = (e: any) => {
-    sessionStorage.setItem("feedbackShown", "true");
-    setShowPopup(false);
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-
-    const res = await fetch("/api/feedback", {
-      method: "POST",
-      body: JSON.stringify({
-        name,
-        feedback,
-        rating,
-        coupon,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      submitFeedback(e);
-      toast.success("Thank you for your feedback!");
-    } else {
-      alert(data.message);
-    }
-  };
 
   if (!showPopup) return null;
 

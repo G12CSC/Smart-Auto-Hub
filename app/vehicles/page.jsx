@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import VehicleBrowser from "@/components/vehicles/vehicle-browser";
 import {prisma} from "../../lib/prisma.ts"
+import FeedbackPopup from "@/components/advertisements/consultingbooking/FeedbackPopup";
 
 export default async function VehiclesPage() {
 
@@ -54,6 +55,7 @@ export default async function VehiclesPage() {
       <ChatBot />
 
       <Footer />
+      <FeedbackPopup />
     </div>
   );
 }

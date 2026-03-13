@@ -1,14 +1,10 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import {
-  Calendar,
-  Clock,
-  User,
-  MapPin,
-} from "lucide-react";
+import { Calendar, Clock, User, MapPin } from "lucide-react";
 
 // import { setTimeout } from "timers/promises"
 import ConsultationForm from "@/components/consultation/consultation-form";
+import FeedbackPopup from "@/components/contact/FeedbackPopup";
 
 export default function ConsultationPage() {
   return (
@@ -18,8 +14,7 @@ export default function ConsultationPage() {
       <section
         className="relative min-h-[85vh] bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center mb-24 animate-slide-in-down"
         style={{
-          backgroundImage:
-            "url(/mainImages1.png)",
+          backgroundImage: "url(/mainImages1.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -98,6 +93,7 @@ export default function ConsultationPage() {
       </div>
 
       <Footer />
+      <FeedbackPopup />
     </div>
   );
 }
