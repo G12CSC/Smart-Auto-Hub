@@ -46,7 +46,7 @@ export async function PATCH(req) {
             specialization: body.specialization,
             experience: body.experience,
             avatar: body.avatar,
-            rating:body.rating
+            rating: body.rating
         },
 
         create: {

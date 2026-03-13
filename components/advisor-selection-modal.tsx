@@ -20,8 +20,6 @@ interface Advisor {
   specialization: string;
   email: string;
   phone: string;
-  isAvailable: boolean;
-  availableTimes: string[];
 }
 
 interface AdvisorSelectionModalProps {
@@ -77,9 +75,12 @@ export default function AdvisorSelectionModal({
             const data = await res.json()
             setAdvisors(data)
             setLoading(false)
+
+            console.log("advisors data",data)
         }
 
         fetchAdvisors()
+
     }, [])
 
     const filteredAdvisors = advisors.filter((advisor) =>
@@ -135,13 +136,7 @@ export default function AdvisorSelectionModal({
                         }}
                         onClick={() => handleSelectAdvisor(advisor)}
                       >
-                        <div
-                          className={`relative p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
-                            advisor.isAvailable
-                              ? "border-primary/20 hover:border-primary bg-card"
-                              : "border-destructive/20 bg-destructive/5"
-                          }`}
-                        >
+                        <div>
                           <img
                             src={advisor.image || "/placeholder.svg"}
                             alt={advisor.name}
@@ -161,24 +156,7 @@ export default function AdvisorSelectionModal({
                               ({advisor.experience})
                             </span>
                           </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            {advisor.isAvailable ? (
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                            ) : (
-                              <AlertCircle className="w-3 h-3 text-destructive" />
-                            )}
-                            <span
-                              className={
-                                advisor.isAvailable
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-destructive"
-                              }
-                            >
-                              {advisor.isAvailable
-                                ? "Available"
-                                : "Not Available"}
-                            </span>
-                          </div>
+
                         </div>
                       </div>
                     ))}
@@ -229,27 +207,27 @@ export default function AdvisorSelectionModal({
                       Available Times
                     </p>
                     <div className="space-y-2">
-                        {selectedAdvisor?.availableTimes?.length ? (
-                            selectedAdvisor.availableTimes.map((time, index) => (
-                                <div key={index}>{time}</div>
-                            ))
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                No available times configured
-                            </p>
-                        )}
+                        {/*{selectedAdvisor?.availableTimes?.length ? (*/}
+                        {/*    selectedAdvisor.availableTimes.map((time, index) => (*/}
+                        {/*        <div key={index}>{time}</div>*/}
+                        {/*    ))*/}
+                        {/*) : (*/}
+                        {/*    <p className="text-sm text-muted-foreground">*/}
+                        {/*        No available times configured*/}
+                        {/*    </p>*/}
+                        {/*)}*/}
 
                     </div>
                   </div>
 
-                  {!selectedAdvisor.isAvailable && (
-                    <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 flex gap-2">
-                      <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        Showing this advisor not available at this moment
-                      </p>
-                    </div>
-                  )}
+                  {/*{!selectedAdvisor.isAvailable && (*/}
+                  {/*  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 flex gap-2">*/}
+                  {/*    <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />*/}
+                  {/*    <p className="text-sm text-yellow-800 dark:text-yellow-200">*/}
+                  {/*      Showing this advisor not available at this moment*/}
+                  {/*    </p>*/}
+                  {/*  </div>*/}
+                  {/*)}*/}
                 </div>
               </div>
 
