@@ -16,31 +16,49 @@ export default function ChatBot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const handleSend = (e) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
+    const handleSend = async (e) => {
+        e.preventDefault();
+        if (!input.trim() || loading) return;
 
-    const userMessage = {
-      role: "user",
-      content: input,
+        const userMessage = {
+            role: "user",
+            content: input,
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    question: input,
+                }),
+            });
+
+            const data = await res.json();
+
+            const botMessage = {
+                role: "assistant",
+                content: data.answer || "No response from AI.",
+            };
+
+            setMessages((prev) => [...prev, botMessage]);
+        } catch (error) {
+            const errorMessage = {
+                role: "assistant",
+                content: "⚠️ AI server is currently unavailable.",
+            };
+
+            setMessages((prev) => [...prev, errorMessage]);
+        }
+
+        setLoading(false);
     };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setLoading(true);
-
-    // ⏳ Simulated API delay (5 seconds)
-    setTimeout(() => {
-      const botMessage = {
-        role: "assistant",
-        content:
-          "This is a dummy response 🤖. Later this will be replaced with FastAPI data.",
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-      setLoading(false);
-    }, 5000);
-  };
 
   return (
     <>
@@ -166,6 +184,7 @@ export default function ChatBot() {
             onSubmit={handleSend}
             className="border-t p-3 flex items-center gap-2"
           >
+
             <input
               type="text"
               placeholder="Ask something..."
