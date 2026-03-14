@@ -237,6 +237,15 @@ model AdvisorProfile {
   updatedAt DateTime @updatedAt
 }
 
+model VideoReview {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  youtubeId   String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 enum BookingStatus {
   PENDING
   FORWARDED
