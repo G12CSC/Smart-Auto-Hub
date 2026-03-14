@@ -3,9 +3,17 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
+interface Subscriber {
+  id: string;
+  email: string;
+  createdAt: string;
+  source: string;
+  status: string;
+}
+
 function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?: (count: number) => void}) {
 
-  const [subscribers, setSubscribers] = useState([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
   // Fetch subscribers
   useEffect(() => {
@@ -13,11 +21,28 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
       .then((res) => res.json())
       .then((data) => {
         setSubscribers(data);
-        if (setNewsletterSubscribers) {
-          setNewsletterSubscribers(data.length);
-        }
       });
   }, []);
+
+  const handleNewsletterDelete = (id: string) => async () => {
+    if (!confirm("Are you sure you want to delete this subscriber?")) return;
+
+    const res = await fetch(`/api/newsletter/deleteSubscription/${id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSubscribers(data.newSubscribersList);
+      if (setNewsletterSubscribers) {
+        setNewsletterSubscribers(data.remainingSubscribers);
+      }
+    } else {
+      alert("Failed to delete subscriber.");
+    }
+
+  }
 
   return (
     <div className="overflow-x-auto">
@@ -41,12 +66,12 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
         <tbody>
           {subscribers.map((s) => (
             <tr
-              key={s.id}
+              key={s.id || s.email}
               className="border-b border-border hover:bg-secondary/30 transition"
             >
               <td className="px-4 py-4">{s.email}</td>
               <td className="px-4 py-4 text-sm text-muted-foreground">
-                {new Date(s.createdAt).toLocaleDateString()}
+                {new Date(s?.createdAt).toLocaleDateString()}
               </td>
 
               <td className="px-4 py-4">
@@ -62,7 +87,7 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
               </td>
 
               <td className="px-4 py-4">
-                <Button size="sm" variant="ghost">
+                <Button size="sm" variant="ghost" onClick={handleNewsletterDelete(s.id)}>
                   <Trash2 size={14} />
                 </Button>
               </td>

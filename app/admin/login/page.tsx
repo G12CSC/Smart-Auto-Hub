@@ -4,9 +4,10 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 
 export default function AdminLoginPage() {
-
+    const { data: session } = useSession();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,7 @@ export default function AdminLoginPage() {
             email,
             password,
             redirect: false, // handle errors properly
-            callbackUrl: "/admin/dashboard",
+            callbackUrl: "/admin",
         });
 
         setLoading(false);
@@ -31,9 +32,12 @@ export default function AdminLoginPage() {
             setError("Invalid admin email or password");
             return;
         }
+        console.log("Login successful:", res);
+        console.log(session?.user?.email?.split("@")[0].slice(0, 5));
 
-        // NextAuth gives url when ok
-        window.location.href = res.url ?? "/admin/dashboard";
+        // redirect will happen automatically due to callbackUrl, but you can also do it manually if needed
+        window.location.href = session?.user?.email?.split("@")[0].slice(0, 5) === "admin" ? "/admin" : "/advisor-dashboard";
+        
     };
 
     return (

@@ -66,15 +66,15 @@ export function Header() {
 
   return (
     <header className="border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
-      <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
         {/* LOGO + WORDMARK */}
         <Link href="/" className="flex items-center gap-3">
           {/* Light mode logo */}
           <Image
             src="/images/LogoBG_Removed-light.png"
             alt="Smart AutoHub Logo"
-            width={120}
-            height={60}
+            width={80}
+            height={50}
             className="object-contain block dark:hidden"
             priority
           />
@@ -82,8 +82,8 @@ export function Header() {
           <Image
             src="/images/LogoBG_Removed-dark1.png"
             alt="Smart AutoHub Logo"
-            width={120}
-            height={60}
+            width={80}
+            height={50}
             className="object-contain hidden dark:block"
             priority
           />

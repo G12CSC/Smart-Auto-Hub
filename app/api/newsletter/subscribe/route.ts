@@ -10,6 +10,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    const isExits = await prisma.newsletterEntry.findUnique({
+      where: { email },
+    });
+
+    
+
     await prisma.newsletterEntry.upsert({
       where: { email },
       update: {

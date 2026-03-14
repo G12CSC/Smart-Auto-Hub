@@ -48,7 +48,7 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
-              <ChatBot />
+            <ChatBot />
             <Toaster />
           </ThemeProvider>
           <Analytics />

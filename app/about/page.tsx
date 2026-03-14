@@ -10,29 +10,11 @@ export default function AboutPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      {/* <section
-        className="relative h-80 bg-linear-to-r from-primary via-primary/90 to-secondary text-primary-foreground flex items-center"
-        style={{
-          backgroundImage: "url(/placeholder.svg?height=320&width=1200&query=modern car showroom building)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-5xl font-bold mb-4 text-balance">About Sameera Auto Traders</h1>
-          <p className="text-xl opacity-90 text-balance">
-            Your trusted partner in finding the perfect vehicle since we started our journey in the automotive industry.
-          </p>
-        </div>
-      </section> */}
-
       <section
-        className="relative h-96 bg-linear-to-br from-primary via-primary/90 to-accent text-primary-foreground flex items-center animate-slide-in-down"
+        className="relative min-h-[85vh] bg-linear-to-br from-black via-black/90 to-black/60 text-primary-foreground flex items-center animate-slide-in-down"
         style={{
           backgroundImage:
-            "url(/placeholder.svg?height=384&width=1920&query=modern automotive dealership building exterior professional facade)",
+            "url(/mainImages1.png)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -79,7 +61,7 @@ export default function AboutPage() {
             </div>
             <div className="relative h-96 bg-muted rounded-2xl overflow-hidden shadow-2xl group animate-slide-in-right">
               <img
-                src="/luxury-car-showroom-interior-modern-vehicles-displ.jpg"
+                src="/showroom-exterior1.jpeg"
                 alt="Showroom Interior"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
