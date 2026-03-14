@@ -54,6 +54,7 @@ export const authOptions = {
       },
 
       async authorize(credentials) {
+
         if (!credentials?.email || !credentials?.password) return null;
 
         const admin = await prisma.admin.findUnique({
@@ -97,42 +98,31 @@ export const authOptions = {
     maxAge: 30 * 60, // 30 minutes
   },
 
-  callbacks: {
-    async jwt({ token, user }) {
-      //this function creates the jwt token for specific user type(user/admin/advisor)
-      if (user) {
-        token.id = user.id;
+    callbacks: {
 
-        // If admin credentials login, userType/adminRole will exist
-        if (user.userType === "admin") {
-          token.userType = "admin";
-          token.adminRole = user.adminRole;
-        } else {
-          // Any other login method => USER
-          token.userType = "user";
-          token.adminRole = undefined;
-        }
-      }
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.userType = user.userType;
+                token.adminRole = user.adminRole ?? null;
+            }
 
-      // IMPORTANT: OAuth logins may not provide userType later
-      // Ensure default always exists:
-      if (!token.userType) token.userType = "user";
+            if (!token.userType) token.userType = "user";
 
-      return token;
+            return token;
+        },
+
+        async session({ session, token }) {
+            session.user.id = token.id;
+            session.user.userType = token.userType;
+            session.user.adminRole = token.adminRole;
+            return session;
+        },
+
+        async redirect({ url, baseUrl }) {
+            return process.env.BASEURL;
+        },
     },
-
-    async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.userType = token.userType;
-      session.user.adminRole = token.adminRole;
-      return session;
-    },
-
-    async redirect({ url, baseUrl }) {
-      // Always redirect to root after login
-      return process.env.BASEURL;
-    },
-  },
 
   debug: true,
 

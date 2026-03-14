@@ -23,5 +23,7 @@ export async function PATCH(req) {
         },
     });
 
+    console.log(session);
+
     return NextResponse.json({ success: true, booking });
 }
