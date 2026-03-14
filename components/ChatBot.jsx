@@ -30,7 +30,7 @@ export default function ChatBot() {
         setLoading(true);
 
         try {
-            const res = await fetch("/api/chatbot", {
+            const res = await fetch("/api/Chatbot", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,12 +49,13 @@ export default function ChatBot() {
 
             setMessages((prev) => [...prev, botMessage]);
         } catch (error) {
-            const errorMessage = {
-                role: "assistant",
-                content: "⚠️ AI server is currently unavailable.",
-            };
+             const errorMessage = {
+                 role: "assistant",
+                 content: "⚠️ AI server is currently unavailable.",
+             };
 
-            setMessages((prev) => [...prev, errorMessage]);
+             setMessages((prev) => [...prev, errorMessage]);
+            console.log(error);
         }
 
         setLoading(false);

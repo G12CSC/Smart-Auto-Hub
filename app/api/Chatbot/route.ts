@@ -6,16 +6,19 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const question = body.question;
 
+        console.log(question);
+
         const response = await fetch("http://20.51.112.194:8000/api/v1/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                question: question,
-                user_id: "123"
+                query: question
             })
         });
+
+
 
         const data = await response.json();
 
