@@ -1,0 +1,47 @@
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+#="postgres://c96288f74f76660c93f8849944834501e8c11fe191fce6005fc2ea5de0b7b14f:sk_dgTxCaqQU6k-y53-4kEkq@db.prisma.io:5432/postgres?sslmode=require"
+
+DB_PWD="6Vx4qT5OADDdBIll"
+
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgresql://postgres:SmartAuto12@database-1.crms640k67ko.eu-north-1.rds.amazonaws.com"
+
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgresql://postgres:SmartAuto12@database-1.crms640k67ko.eu-north-1.rds.amazonaws.com"
+
+#DB_NEW_ROLE_PWD="SameeraAuto12"
+#role- dev_read_insert
+##dws_pwd=SmartAuto12
+
+RESEND_API_KEY=re_KKVK53uh_PbTnBHRAeL1xTrDthiySuxD6
+
+#if the db refuses to connect ,
+    # 1) disconnect from the development server
+    # 2) Use mobile data if using a public wifi connection
+    # 3) Generate the prisma client (npx prisma generate)
+    # 4) Now start the development server
+    # 5) Run the script/test-db.js file to ensure db connection
+# Good luck!!!
+
+NEXTAUTH_SECRET=thisismysecret
+NEXTAUTH_URL=http://localhost:3000
+
+GOOGLE_CLIENT_ID=147765621392-25pf94miiua3ehss2gla1du0llu7emlp.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+
+GITHUB_CLIENT_ID=Ov23lixS22jQHtFGYSHr
+GITHUB_CLIENT_SECRET=a590010df81da5e6099dc89766c73c2781945667
+
+
+#from car api(the external api data source)
+API_KEY=537916254c07301a98f72747367ad92a
+
+URL=http://localhost:3000
+BASEURL=http://localhost:3000

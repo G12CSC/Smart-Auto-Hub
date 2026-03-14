@@ -9,16 +9,14 @@ import { prisma } from "@/lib/prisma"
 export default async function VehicleDetailsPage({
                                                      params,
                                                  }: {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }) {
 
-    const vehicleId = params.id;
-
-
+    const { id } = await params;
 
     const vehicle = await prisma.car.findUnique({
-        where: { id: vehicleId },
-    })
+        where: { id },
+    });
 
     if (!vehicle) {
         notFound()
