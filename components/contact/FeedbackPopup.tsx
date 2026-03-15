@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import styles from "./feedback.module.css";
 import { X } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+} from "../ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { Button } from "../ui/button";
 
 export default function FeedbackPopup() {
   const [showPopup, setShowPopup] = useState(false);
@@ -22,7 +32,6 @@ export default function FeedbackPopup() {
     setShowPopup(false);
   };
 
-
   if (!showPopup) return null;
 
   return (
@@ -33,10 +42,12 @@ export default function FeedbackPopup() {
         </h2>
 
         <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-          Looking for your dream car or need more information about our vehicles?
+          Looking for your dream car or need more information about our
+          vehicles?
         </h3>
         <p className="mb-4">
-          Our team is ready to help you with car inquiries, vehicle availability, pricing, and consultation services.
+          Our team is ready to help you with car inquiries, vehicle
+          availability, pricing, and consultation services.
         </p>
 
         <ul className="list-disc list-inside mb-4">
@@ -46,11 +57,15 @@ export default function FeedbackPopup() {
           <li>💬 Quick responses to your questions</li>
         </ul>
         <p className="p-2">
-          Reach out to us anytime and let us help you drive away with confidence.
+          Reach out to us anytime and let us help you drive away with
+          confidence.
         </p>
-        <button className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer" onClick={() => {
-          window.location.href = "/contact";
-        }}>
+        <button
+          className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer"
+          onClick={() => {
+            window.location.href = "/contact";
+          }}
+        >
           📩 Contact Sameera Auto Traders today
         </button>
         <button
@@ -63,4 +78,47 @@ export default function FeedbackPopup() {
       </div>
     </div>
   );
+  <Dialog>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          <h2 className="text-2xl font-bold mb-2">
+            Contact Sameera Auto Traders Today !
+          </h2>
+        </DialogTitle>
+        <DialogDescription>
+          <h3 className="text-lg font-semibold text-muted-foreground mb-4">
+            Looking for your dream car or need more information about our
+            vehicles?
+          </h3>
+          <p className="mb-4">
+            Our team is ready to help you with car inquiries, vehicle
+            availability, pricing, and consultation services.
+          </p>
+
+          <ul className="list-disc list-inside mb-4">
+            <li>📞 Friendly customer support</li>
+            <li>🚗 Expert advice on buying vehicles</li>
+            <li>🤝 Trusted car dealers</li>
+            <li>💬 Quick responses to your questions</li>
+          </ul>
+          <p className="p-2">
+            Reach out to us anytime and let us help you drive away with
+            confidence.
+          </p>
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="outline">Close</Button>
+        </DialogClose>
+        <Button
+          onClick={() => (window.location.href = "/contact")}
+          className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer"
+        >
+          📩 Contact Sameera Auto Traders today
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>;
 }
