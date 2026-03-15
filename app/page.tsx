@@ -10,7 +10,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 //import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
@@ -39,46 +39,18 @@ interface VideoReview {
   createdAt: Date;
 }
 
-const featuredVehicles: Vehicle[] = [
-  {
-    id: 1,
-    name: "2022 Toyota Prius",
-    price: "LKR 17,500,000",
-    status: "Available",
-    image: "/toyota-prius-2022.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 2,
-    name: "2021 Honda Civic",
-    price: "LKR 15,200,000",
-    status: "Available",
-    image: "/honda-civic-2021.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 3,
-    name: "2023 Suzuki Swift",
-    price: "LKR 12,800,000",
-    status: "Shipped",
-    image: "/suzuki-swift-2023.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 4,
-    name: "2021 Suzuki Wagon R",
-    price: "LKR 6,800,000",
-    status: "Available",
-    image: "/suzuki-wagon-r-2021.jpg",
-    location: "Nugegoda Branch",
-  },
-];
-
 export default async function Home() {
   const videoData = await getVideoReviews();
   const videoReviews = videoData.success
     ? (videoData.data as VideoReview[])
     : [];
+
+    const featuredVehicles = await prisma.car.findMany({
+        take: 4,
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
 
   return (
     <div className="min-h-screen bg-background ">
@@ -194,9 +166,9 @@ export default async function Home() {
       </section>
 
       {/* Quick Search Bar */}
-      <section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">
-        <HomeSearchbar />
-      </section>
+      {/*<section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">*/}
+      {/*  <HomeSearchbar />*/}
+      {/*</section>*/}
 
       {/* Featured Vehicles */}
       <section className="max-w-7xl mx-auto px-4 mb-24">
@@ -233,26 +205,18 @@ export default async function Home() {
               <div className="relative h-52 bg-muted overflow-hidden">
                 <img
                   src={vehicle.image || "/placeholder.svg"}
-                  alt={vehicle.name}
+                  alt={vehicle.brand}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <span
-                  className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm ${
-                    vehicle.status === "Available"
-                      ? "bg-green-500/90 text-white"
-                      : "bg-yellow-500/90 text-white"
-                  }`}
-                >
-                  {vehicle.status}
-                </span>
+
               </div>
 
               <div className="p-5">
                 <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-                  {vehicle.name}
+                  {vehicle.brand} {vehicle.model}
                 </h3>
                 <p className="text-primary font-bold text-xl mb-3">
-                  {vehicle.price}
+                    LKR {vehicle.price.toLocaleString()}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
                   <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>

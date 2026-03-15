@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { X } from 'lucide-react'
 
 export function VehicleCompare() {
+
     const [compareList, setCompareList] = useState([])
 
     //Load comparison list from localStorage on mount and when storage/custom events fire

@@ -10,17 +10,17 @@ export default async function VehiclesPage() {
   let vehicles = [];
   let error = null;
 
-  try {
-
-      vehicles=await prisma.car.findMany({
-          orderBy: {
-              createdAt: "desc",
-          },
-      })
-
-  }catch(error) {
-      error = error.message;
-  }
+  // try {
+  //
+  //     vehicles=await prisma.car.findMany({
+  //         orderBy: {
+  //             createdAt: "desc",
+  //         },
+  //     })
+  //
+  // }catch(error) {
+  //     error = error.message;
+  // }
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -48,7 +48,7 @@ export default async function VehiclesPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* <h1 className="text-4xl font-bold mb-8">Search Our Inventory</h1> */}
-        <VehicleBrowser initialVehicles={vehicles} initialError={error} />
+        <VehicleBrowser />
       </div>
 
       {/* Chatbot Icon */}
