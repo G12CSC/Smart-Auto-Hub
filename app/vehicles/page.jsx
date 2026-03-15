@@ -2,25 +2,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import VehicleBrowser from "@/components/vehicles/vehicle-browser";
-import {prisma} from "../../lib/prisma.ts"
 import FeedbackPopup from "@/components/advertisements/consultingbooking/FeedbackPopup";
 
 export default async function VehiclesPage() {
 
-  let vehicles = [];
-  let error = null;
-
-  // try {
-  //
-  //     vehicles=await prisma.car.findMany({
-  //         orderBy: {
-  //             createdAt: "desc",
-  //         },
-  //     })
-  //
-  // }catch(error) {
-  //     error = error.message;
-  // }
   return (
     <div className="min-h-screen bg-background">
       <Header />

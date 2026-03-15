@@ -110,20 +110,20 @@ export default async function Home() {
                   size="lg"
                   className="border-primary/40 text-primary hover:bg-primary/10 font-semibold px-8 py-6 text-lg rounded-lg bg-transparent"
                 >
-                  <Link href="/consultation">Book Consultation</Link>
+                  <Link href="/consultation">Book An Appointment</Link>
                 </Button>
               </div>
 
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border/40">
                 <div className="space-y-2">
-                  <p className="text-3xl font-bold text-primary">500+</p>
+                  <p className="text-3xl font-bold text-primary">30+</p>
                   <p className="text-sm text-muted-foreground">
                     Vehicles Available
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-3xl font-bold text-primary">98%</p>
+                  <p className="text-3xl font-bold text-primary">95%</p>
                   <p className="text-sm text-muted-foreground">
                     Customer Satisfaction
                   </p>
@@ -140,12 +140,12 @@ export default async function Home() {
             {/* Right side - Showroom Image */}
             <div className="relative h-[500px] animate-slide-in-right">
               <div className="absolute inset-0 bg-linear-to-br from-primary/40 to-primary/20 rounded-2xl blur-3xl opacity-60" />
-              <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xl">
+              <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xlgroup hover-glow transition-shadow duration-300">
                 <Image
                   src="/showroom-exterior1.jpeg"
                   alt="Premium Auto Showroom"
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-[105] transition-transform duration-500"
                   priority
                 />
                 {/* Overlay gradient for text readability */}
@@ -322,31 +322,31 @@ export default async function Home() {
               {[
                 {
                   icon: "🏆",
-                  number: "20+",
+                  number: "10+",
                   label: "Years in Business",
                   description: "Two decades of excellence",
                 },
                 {
                   icon: "😊",
-                  number: "500+",
+                  number: "50+",
                   label: "Happy Customers",
                   description: "Customers trust us annually",
                 },
                 {
                   icon: "🚗",
-                  number: "100+",
+                  number: "30+",
                   label: "Vehicles Available",
                   description: "Curated selection",
                 },
                 {
                   icon: "👨‍🔧",
-                  number: "15+",
+                  number: "5+",
                   label: "Expert Team",
                   description: "Certified specialists",
                 },
                 {
                   icon: "⭐",
-                  number: "4.9/5",
+                  number: "4.6/5",
                   label: "Customer Rating",
                   description: "Based on verified reviews",
                 },

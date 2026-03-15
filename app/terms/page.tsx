@@ -3,10 +3,21 @@ import Link from "next/link";
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <section className="max-w-4xl mx-auto mt-4">
+        {/* Back Link */}
+        <div className="pt-8 my-8">
+          <Link
+            href="/"
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+      </section>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <section className="max-w-4xl mx-auto bg-linear-to-r from-black to-black/60 text-black/40 py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             Terms of Service
           </h1>
           <p className="text-xl text-blue-100">
@@ -22,7 +33,7 @@ export default function TermsOfServicePage() {
 
       {/* Content */}
       <section className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-8 space-y-8">
             {/* Agreement to Terms */}
             <div>
@@ -101,46 +112,11 @@ export default function TermsOfServicePage() {
               </div>
             </div>
 
-            {/* Payment Terms */}
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                4. Payment Terms
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                Payment terms include:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-slate-600 dark:text-slate-400 ml-4">
-                <li>Full payment required before vehicle delivery</li>
-                <li>
-                  Deposits are non-refundable unless otherwise agreed in writing
-                </li>
-                <li>
-                  Financing is subject to approval by our partner institutions
-                </li>
-                <li>
-                  Additional fees may apply for registration, documentation, and
-                  delivery
-                </li>
-              </ul>
-            </div>
-
-            {/* Warranty and Returns */}
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                5. Warranty and Returns
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Warranty coverage varies by vehicle and is specified in the
-                purchase agreement. Return policies, if applicable, are outlined
-                in your sales contract. All warranty claims must be made in
-                writing within the specified timeframe.
-              </p>
-            </div>
 
             {/* User Accounts */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                6. User Accounts
+                4. User Accounts
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
                 When creating an account, you must:
@@ -158,7 +134,7 @@ export default function TermsOfServicePage() {
             {/* Limitation of Liability */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                7. Limitation of Liability
+                5. Limitation of Liability
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 Sameera Auto Traders shall not be liable for any indirect,
@@ -172,7 +148,7 @@ export default function TermsOfServicePage() {
             {/* Indemnification */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                8. Indemnification
+                6. Indemnification
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 You agree to indemnify and hold harmless Sameera Auto Traders
@@ -185,7 +161,7 @@ export default function TermsOfServicePage() {
             {/* Modifications */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                9. Modifications to Terms
+                7. Modifications to Terms
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 We reserve the right to modify these Terms of Service at any
@@ -198,7 +174,7 @@ export default function TermsOfServicePage() {
             {/* Governing Law */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                10. Governing Law
+                8. Governing Law
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 These Terms of Service shall be governed by and construed in
@@ -210,7 +186,7 @@ export default function TermsOfServicePage() {
             {/* Contact */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                11. Contact Information
+                9. Contact Information
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
                 For questions about these Terms of Service, contact us:
@@ -220,16 +196,6 @@ export default function TermsOfServicePage() {
                 <p>Phone: +94 77 123 4567</p>
                 <p>Address: 123 Main Street, Colombo, Sri Lanka</p>
               </div>
-            </div>
-
-            {/* Back Link */}
-            <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
-              <Link
-                href="/"
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
-                ← Back to Home
-              </Link>
             </div>
           </div>
         </div>
