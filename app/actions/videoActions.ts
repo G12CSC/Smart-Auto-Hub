@@ -47,8 +47,8 @@ export async function addVideoReview(formData: {
 //Delete a video review by ID
 export async function deleteVideoReview(id: string) {
   try {
-    await fetch(`/api/videoReviews/${id}`, {
-      method: "DELETE",
+    await prisma.videoReview.delete({
+      where: { id },
     });
     //telling NextJs to refresh the data on these pages immediately
     revalidatePath("/");
@@ -57,5 +57,30 @@ export async function deleteVideoReview(id: string) {
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to delete video review" };
+  }
+}
+
+// Edit a video review by ID
+export async function editVideoReview(
+  id: string,
+  formData: { title: string; description: string; videoId: string }
+) {
+  try {
+    await prisma.videoReview.update({
+      where: { id },
+      data: {
+        title: formData.title,
+        description: formData.description,
+        youtubeId: formData.videoId,
+      },
+    });
+    //telling NextJs to refresh the data on these pages immediately
+    revalidatePath("/");
+    revalidatePath("/admin");
+
+    return { success: true };
+  }
+  catch (error) {
+    return { success: false, error: "Failed to edit video review" };
   }
 }

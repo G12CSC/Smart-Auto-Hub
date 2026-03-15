@@ -28,6 +28,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  CircleX,
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -60,10 +61,10 @@ import {
   getVideoReviews,
   addVideoReview,
   deleteVideoReview,
+  editVideoReview
 } from "@/app/actions/videoActions";
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
-import { revalidatePath } from "next/cache.js";
 
 const stats = [
   {
@@ -166,6 +167,38 @@ export default function AdminPage() {
       setIsRefreshing(false);
     }
   };
+
+  const handleVideoFieldChange = (field, value, videoId) => {
+    setVideoReviews((prev) =>
+      prev.map((video) =>
+        video.id === videoId ? { ...video, [field]: value } : video
+      )
+    );
+  }
+
+  const handleEditVideo = async (videoId) => {
+    const video = videoReviews.find((v) => v.id === videoId);
+    if (!video) {
+      toast.error("Video not found");
+      return;
+    }
+    try {
+      const result = await editVideoReview(videoId, {
+        title: video.title,
+        description: video.description,
+      });
+      if (result.success) {
+        toast.success("Video review updated successfully");
+        loadVideos();
+      } else {
+        toast.error("Failed to update video review");
+      }
+    }
+    catch(error) {
+      toast.error("Failed to update video review");
+    }
+  }
+
 
   const handleBranchInventory = async () => {
     // This function can be expanded to fetch and display inventory for each branch
@@ -1232,9 +1265,47 @@ export default function AdminPage() {
                       >
                         <ExternalLink size={16} />
                       </Button>
-                      <Button size="sm" variant="ghost">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="ghost">
                         <Edit size={16} />
                       </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-lg font-bold flex justify-between items-center">
+                              Edit Video Review
+                              <AlertDialogCancel size="xs" variant="outline" className="ml-4 cursor-pointer" >
+                                <CircleX />
+                              </AlertDialogCancel>
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will allow you to edit the video title and
+                              description. To change the video itself, please
+                              delete and re-add with the new YouTube ID.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="p-4">
+                            <Input
+                              className="mb-4"
+                              value={video.title}
+                              onChange={(e) => handleVideoFieldChange("title", e.target.value, video.id)}
+                              placeholder="Video Title"
+                            />
+                            <Textarea
+                              value={video.description}
+                              onChange={(e) => handleVideoFieldChange("description", e.target.value, video.id)}
+                              placeholder="Video Description"
+                            />
+                            <Button onClick={() => {
+                              handleEditVideo(video.id);
+                              
+                              }} className="mt-4">
+                              Save Changes
+                            </Button>
+                          </div>
+                        </AlertDialogContent>
+                      </AlertDialog>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button

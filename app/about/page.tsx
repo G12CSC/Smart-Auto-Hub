@@ -82,7 +82,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 place-content-center mb-12">
             <div className="text-center group animate-pop-in">
               <div className="relative mb-4 overflow-hidden rounded-2xl">
                 <img
@@ -132,22 +132,6 @@ export default function AboutPage() {
               <p className="text-primary font-semibold mb-2">Sales Executive</p>
               <p className="text-sm text-muted-foreground">
                 Customer satisfaction specialist
-              </p>
-            </div>
-
-            <div className="text-center group animate-pop-in delay-300">
-              <div className="relative mb-4 overflow-hidden rounded-2xl">
-                <img
-                  src="/professional-automotive-service-manager-female-sri.jpg"
-                  alt="Service Manager"
-                  className="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-              <h3 className="font-bold text-lg mb-1">Nimesha Silva</h3>
-              <p className="text-primary font-semibold mb-2">Service Manager</p>
-              <p className="text-sm text-muted-foreground">
-                After-sales support lead
               </p>
             </div>
           </div>
@@ -335,7 +319,7 @@ export default function AboutPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-linear-to-r from-primary to-accent rounded-lg p-12 text-center text-primary-foreground animate-slide-in-down">
+        <section className="bg-linear-to-r from-red-600 to-red-400 rounded-lg p-12 text-center text-primary-foreground animate-slide-in-down">
           <h2 className="text-3xl font-bold mb-4 animate-text-reveal">
             Ready to Find Your Perfect Vehicle?
           </h2>
