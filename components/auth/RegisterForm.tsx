@@ -2,20 +2,22 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { FcGoogle } from "react-icons/fc";
 import {
   UserIcon,
   MailIcon,
-  PhoneIcon,
   LockIcon,
   EyeIcon,
   EyeOffIcon,
   Loader2Icon,
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { Checkbox } from "@/components/ui/Checkbox";
+
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Checkbox } from "../ui/checkbox";
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -25,6 +27,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    countryCode: "+94",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -64,6 +67,13 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     }
   };
 
+  const handleCountryCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      countryCode: e.target.value,
+    }));
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = "Full name is required";
@@ -90,18 +100,49 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors((prev) => ({
+      ...prev,
+      submit: "",
+    }));
+
     if (validate()) {
       setIsLoading(true);
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.name,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone,
+            countryCode: formData.countryCode,
+          }),
+        });
 
-      // TODO: Connect this to your Next.js API route or external backend
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
-        alert("Registration successful!");
+        if (!res.ok) {
+          setErrors((prev) => ({
+            ...prev,
+            submit: "Account already exists",
+          }));
+          setShake(true);
+          setTimeout(() => setShake(false), 500);
+          return;
+        }
+
         onSwitchToLogin();
-      }, 1500);
+      } catch {
+        setErrors((prev) => ({
+          ...prev,
+          submit: "Unable to create account. Please try again.",
+        }));
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
@@ -155,6 +196,25 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           Create Account
         </h2>
         <p className="text-muted-foreground">Join Sameera Auto Traders today</p>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-11 animate-slide-up-2"
+        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+      >
+        <FcGoogle className="mr-2 h-5 w-5" />
+        Continue with Google
+      </Button>
+
+      <div className="relative animate-slide-up-2">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">Or</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -212,16 +272,28 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-                <PhoneIcon className="h-5 w-5" />
-              </div>
+            <div className="flex gap-2">
+              <select
+                id="countryCode"
+                value={formData.countryCode}
+                onChange={handleCountryCodeChange}
+                aria-label="Country code"
+                title="Country code"
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="+94">+94</option>
+                <option value="+91">+91</option>
+                <option value="+1">+1</option>
+                <option value="+44">+44</option>
+                <option value="+61">+61</option>
+              </select>
+
               <Input
                 id="phone"
                 type="tel"
-                placeholder="+1 (555) 000-0000"
+                placeholder="7xxxxxxx"
                 className={cn(
-                  "pl-10 transition-all duration-300",
+                  "transition-all duration-300",
                   errors.phone &&
                     "border-destructive focus-visible:ring-destructive",
                 )}
@@ -357,10 +429,11 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               onCheckedChange={(checked) => {
                 setAgreeTerms(checked as boolean);
                 if (errors.terms)
-                  setErrors((prev) => ({
-                    ...prev,
-                    terms: undefined,
-                  }));
+                  setErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.terms;
+                    return next;
+                  });
               }}
               className="mt-1"
             />
@@ -399,6 +472,12 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             "Create Account"
           )}
         </Button>
+
+        {errors.submit && (
+          <p className="text-sm text-destructive animate-in fade-in text-center">
+            {errors.submit}
+          </p>
+        )}
 
         <p className="text-center text-sm text-muted-foreground animate-slide-up-3 delay-500 mt-4">
           Already have an account?{" "}
