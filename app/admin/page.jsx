@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import RightPanel from "@/components/branches/RightPanel";
 import {
   Search,
   Filter,
@@ -62,6 +63,7 @@ import {
 } from "@/app/actions/videoActions";
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
+import { revalidatePath } from "next/cache.js";
 
 const stats = [
   {
@@ -90,8 +92,6 @@ const stats = [
   }
 ];
 
-const branchOptions = ["Colombo", "Matara", "Nugegoda"];
-const statusOptions = ["Available", "Shipped", "Reserved"];
 
 const vehicleFormDefaults = {
   companyName: "",
@@ -108,9 +108,6 @@ const vehicleFormDefaults = {
   status: "Available",
 };
 
-
-
-const newsletterSubscribers = [];
 
 export default function AdminPage() {
   const { data: session } = useSession();
@@ -136,14 +133,18 @@ export default function AdminPage() {
   const [adminVehicles, setAdminVehicles] = useState([]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [videoIds, setVideoIds] = useState([]);
 
-  const [deleteVehicleId, setDeleteVehicleId] = useState(null);
   const [deleteVideoId, setDeleteVideoId] = useState(null);
-  const [adminMessage, setAdminMessage] = useState("");
 
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
-  const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] =
-    useState(null);
+  const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] = useState(null);
+  const [branchInventory, setBranchInventory] = useState({});
+  const [viewBranchModel, setViewBranchModel] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+
+  const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState(null);
 
   const fetchBookings = async () => {
     try {
@@ -166,7 +167,19 @@ export default function AdminPage() {
     }
   };
 
+  const handleBranchInventory = async () => {
+    // This function can be expanded to fetch and display inventory for each branch
+    const branchInventory = await fetch("/api/branches").then(res => res.json());
+    console.log("Branch Inventory:", branchInventory);
+    setBranchInventory(branchInventory);
+  };
 
+  const openEditVehicle = (vehicle) => {
+    setEditingVehicle(vehicle);
+    setVehicleForm(vehicle); // preload form
+    setIsEditVehicleOpen(true);
+
+  };
 
   const loadVehicles = async () => {
     const result = await vehicleAPI.getAllVehicles();
@@ -183,6 +196,7 @@ export default function AdminPage() {
     const result = await getVideoReviews();
     if (result.success) {
       setVideoReviews(result.data);
+      setVideoIds(result.ids);
     }
   };
 
@@ -198,81 +212,85 @@ export default function AdminPage() {
     setIsSavingVehicle(true);
     setVehicleFormError("");
 
+    // Validation
     if (
-      !vehicleForm.companyName.trim() ||
-      !vehicleForm.model.trim() ||
+      !vehicleForm.brand?.trim() ||
+      !vehicleForm.model?.trim() ||
       !vehicleForm.year ||
-      !vehicleForm.type.trim() ||
-      !vehicleForm.mileage ||
-      !vehicleForm.transmission.trim() ||
-      !vehicleForm.fuelType.trim() ||
-      !vehicleForm.branch ||
-      !vehicleForm.price ||
-      !vehicleForm.status
+      !vehicleForm.price
     ) {
-      setVehicleFormError("Please fill in all required fields.");
+      setVehicleFormError("Please fill required fields.");
       setIsSavingVehicle(false);
       return;
     }
 
+    // Convert images string → array
     const images = vehicleForm.images
-      .split(/,|\n/)
+      ?.split(/,|\n/)
       .map((value) => value.trim())
-      .filter(Boolean);
-
-    const nameParts = [
-      vehicleForm.year,
-      vehicleForm.companyName,
-      vehicleForm.model,
-    ].filter(Boolean);
-    const vehicleName = nameParts.join(" ");
+      .filter(Boolean) || [];
 
     const newVehicle = {
-      name: vehicleName,
-      make: vehicleForm.companyName.trim(),
+      brand: vehicleForm.brand.trim(),
       model: vehicleForm.model.trim(),
       year: Number(vehicleForm.year),
-      type: vehicleForm.type.trim(),
-      mileage: Number(vehicleForm.mileage),
-      transmission: vehicleForm.transmission.trim(),
-      fuelType: vehicleForm.fuelType.trim(),
-      location: vehicleForm.branch,
       price: Number(vehicleForm.price),
-      status: vehicleForm.status,
-      description: vehicleForm.description.trim(),
-      images,
-      views: 0,
+      mileage: Number(vehicleForm.mileage) || 0,
+      transmission: vehicleForm.transmission?.trim() || null,
+      fuelType: vehicleForm.fuelType?.trim() || null,
+      bodyType: vehicleForm.bodyType?.trim() || null,
+      engineCapacity: vehicleForm.engineCapacity
+        ? Number(vehicleForm.engineCapacity)
+        : null,
+      location: vehicleForm.location?.trim() || null,
+      dealer: vehicleForm.dealer?.trim() || null,
+      condition: vehicleForm.condition || null,
+      edition: vehicleForm.edition || null,
+      images
     };
 
-    const result = await vehicleAPI.addVehicle(newVehicle);
-    if (result.success) {
-      await loadVehicles();
-      setVehicleForm(vehicleFormDefaults);
-      setIsAddVehicleOpen(false);
-    } else {
-      setVehicleFormError(result.error || "Failed to add vehicle.");
+    try {
+
+      const result = await vehicleAPI.addVehicle(newVehicle);
+
+      if (result.success) {
+        await loadVehicles();
+        setVehicleForm(vehicleFormDefaults);
+        setIsAddVehicleOpen(false);
+        toast.success("Vehicle added successfully");
+
+      } else {
+        setVehicleFormError(result.error || "Failed to add vehicle.");
+        toast.error(result.error || "Failed to add vehicle.");
+      }
+
+    } catch (error) {
+      setVehicleFormError("Something went wrong.");
     }
 
     setIsSavingVehicle(false);
   };
 
-  const handleDeleteVehicle = (vehicleId) => {
-    try {
-      const res = fetch(`/api/vehicle/deleteVehicle/${vehicleId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      }).then((res) => res.json()).then((data) => {
-        if (data.success) {
-          toast.success("Vehicle deleted successfully");
-          loadVehicles();
-        } else {
-          toast.error("Failed to delete vehicle");
-        }
-      })
-    } catch (error) {
+  const handleDeleteVehicle = async (vehicleId) => {
+
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      toast.success("Vehicle deleted successfully");
+
+    } else {
       toast.error("Failed to delete vehicle");
     }
-  };
+
+  } catch (error) {
+    toast.error("Failed to delete vehicle");
+
+  }
+};
 
   const handleAddVideo = async () => {
     //Basic Validation
@@ -343,6 +361,7 @@ export default function AdminPage() {
     loadVehicles();
     loadVideos();
     handleAdminRequest();
+    handleBranchInventory();
   }, []);
 
 
@@ -362,7 +381,46 @@ export default function AdminPage() {
     const notifs = localStorageAPI.getNotifications();
     setNotifications(notifs.admin);
   };
-  
+
+  const handleEditVehicle = async (event) => {
+    event.preventDefault();
+
+    const images = vehicleForm.images.toString().split(/,|\n/).map((value) => value.trim()).filter(Boolean);
+
+    const updatedVehicle = {
+      brand: vehicleForm.brand,
+      model: vehicleForm.model,
+      year: Number(vehicleForm.year),
+      price: Number(vehicleForm.price),
+      mileage: Number(vehicleForm.mileage),
+      transmission: vehicleForm.transmission,
+      fuelType: vehicleForm.fuelType,
+      bodyType: vehicleForm.bodyType,
+      location: vehicleForm.location,
+      images
+    };
+    console.log("UpdatedVehicle:", updatedVehicle);
+    const id = editingVehicle.id;
+    console.log("Vehicle ID:", id);
+    const res = await fetch(`/api/vehicles/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedVehicle)
+    });
+
+    if (res.ok) {
+      await loadVehicles();
+      setIsEditVehicleOpen(false);
+      toast.success("Vehicle updated successfully");
+    }
+    else {
+      setIsEditVehicleOpen(false);
+      toast.error("Failed to update vehicle");
+    }
+
+
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -709,209 +767,171 @@ export default function AdminPage() {
                     <DialogHeader>
                       <DialogTitle>Add Vehicle</DialogTitle>
                     </DialogHeader>
+
                     <form onSubmit={handleAddVehicle} className="space-y-4">
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground">
-                          Vehicle Details
-                        </h3>
-                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        {/* Brand */}
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Company Name
+                          <label className="text-sm font-medium mb-2 block">
+                            Brand
                           </label>
                           <Input
-                            value={vehicleForm.companyName}
-                            onChange={(e) =>
-                              handleVehicleFieldChange(
-                                "companyName",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="e.g., Toyota"
+                            value={vehicleForm.brand}
+                            onChange={(e) => handleVehicleFieldChange("brand", e.target.value)}
+                            placeholder="Toyota"
                             required
                           />
                         </div>
+
+                        {/* Model */}
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Vehicle Model
+                          <label className="text-sm font-medium mb-2 block">
+                            Model
                           </label>
                           <Input
                             value={vehicleForm.model}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("model", e.target.value)
-                            }
-                            placeholder="e.g., Prius"
+                            onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
+                            placeholder="Prius"
                             required
                           />
                         </div>
+
+                        {/* Year */}
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="text-sm font-medium mb-2 block">
                             Year
                           </label>
                           <Input
                             type="number"
                             value={vehicleForm.year}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("year", e.target.value)
-                            }
-                            placeholder="2024"
+                            onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
                             required
                           />
                         </div>
+
+                        {/* Price */}
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Vehicle Type
-                          </label>
-                          <Input
-                            value={vehicleForm.type}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("type", e.target.value)
-                            }
-                            placeholder="Sedan, SUV..."
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Current Mileage (km)
-                          </label>
-                          <Input
-                            type="number"
-                            value={vehicleForm.mileage}
-                            onChange={(e) =>
-                              handleVehicleFieldChange(
-                                "mileage",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="25000"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Transmission Type
-                          </label>
-                          <Input
-                            value={vehicleForm.transmission}
-                            onChange={(e) =>
-                              handleVehicleFieldChange(
-                                "transmission",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="Automatic"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Fuel Type
-                          </label>
-                          <Input
-                            value={vehicleForm.fuelType}
-                            onChange={(e) =>
-                              handleVehicleFieldChange(
-                                "fuelType",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="Hybrid"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Branch
-                          </label>
-                          <select
-                            value={vehicleForm.branch}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("branch", e.target.value)
-                            }
-                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                            required
-                          >
-                            {branchOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Vehicle Price (LKR)
+                          <label className="text-sm font-medium mb-2 block">
+                            Price (LKR)
                           </label>
                           <Input
                             type="number"
                             value={vehicleForm.price}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("price", e.target.value)
-                            }
-                            placeholder="7500000"
+                            onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
                             required
                           />
                         </div>
+
+                        {/* Mileage */}
                         <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Status
+                          <label className="text-sm font-medium mb-2 block">
+                            Mileage
+                          </label>
+                          <Input
+                            type="number"
+                            value={vehicleForm.mileage}
+                            onChange={(e) => handleVehicleFieldChange("mileage", e.target.value)}
+                          />
+                        </div>
+
+                        {/* Transmission */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Transmission
+                          </label>
+                          <Input
+                            value={vehicleForm.transmission}
+                            onChange={(e) => handleVehicleFieldChange("transmission", e.target.value)}
+                            placeholder="Automatic"
+                          />
+                        </div>
+
+                        {/* Fuel Type */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Fuel Type
+                          </label>
+                          <Input
+                            value={vehicleForm.fuelType}
+                            onChange={(e) => handleVehicleFieldChange("fuelType", e.target.value)}
+                            placeholder="Hybrid"
+                          />
+                        </div>
+
+                        {/* Body Type */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Body Type
+                          </label>
+                          <Input
+                            value={vehicleForm.bodyType}
+                            onChange={(e) => handleVehicleFieldChange("bodyType", e.target.value)}
+                            placeholder="SUV"
+                          />
+                        </div>
+
+                        {/* Engine Capacity */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Engine Capacity (cc)
+                          </label>
+                          <Input
+                            type="number"
+                            value={vehicleForm.engineCapacity}
+                            onChange={(e) => handleVehicleFieldChange("engineCapacity", e.target.value)}
+                          />
+                        </div>
+                        {/* Condition */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Condition
                           </label>
                           <select
-                            value={vehicleForm.status}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("status", e.target.value)
-                            }
-                            className="w-full px-3 py-2 rounded-md bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                            required
+                            value={vehicleForm.condition}
+                            onChange={(e) => handleVehicleFieldChange("condition", e.target.value)}
+                            className="w-full border rounded-md px-3 py-2"
                           >
-                            {statusOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
+                            <option value="NEW">New</option>
+                            <option value="USED">Used</option>
+                            <option value="RECONDITIONED">Reconditioned</option>
                           </select>
                         </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">
-                            Description
+                        {/* Location */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Location
                           </label>
-                          <Textarea
-                            value={vehicleForm.description}
-                            onChange={(e) =>
-                              handleVehicleFieldChange(
-                                "description",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="Brief description of the vehicle..."
-                            rows={4}
+                          <Input
+                            value={vehicleForm.location}
+                            onChange={(e) => handleVehicleFieldChange("location", e.target.value)}
+                            placeholder="Colombo"
                           />
                         </div>
+                        {/* Dealer */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">
+                            Dealer
+                          </label>
+                          <Input
+                            value={vehicleForm.dealer}
+                            onChange={(e) => handleVehicleFieldChange("dealer", e.target.value)}
+                            placeholder="Sameera Auto Traders"
+                          />
+                        </div>
+                        {/* Images */}
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">
-                            Images (array)
+                          <label className="text-sm font-medium mb-2 block">
+                            Images
                           </label>
                           <Textarea
                             value={vehicleForm.images}
-                            onChange={(e) =>
-                              handleVehicleFieldChange("images", e.target.value)
-                            }
-                            placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                            rows={3}
+                            onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
+                            placeholder="image1.jpg,image2.jpg"
                           />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Separate multiple image URLs with commas or new
-                            lines.
-                          </p>
                         </div>
                       </div>
-                      {vehicleFormError && (
-                        <p className="text-sm text-destructive">
-                          {vehicleFormError}
-                        </p>
-                      )}
                       <DialogFooter>
                         <Button
                           type="button"
@@ -920,8 +940,8 @@ export default function AdminPage() {
                         >
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={isSavingVehicle}>
-                          {isSavingVehicle ? "Saving..." : "Save Vehicle"}
+                        <Button type="submit">
+                          Save Vehicle
                         </Button>
                       </DialogFooter>
                     </form>
@@ -989,12 +1009,67 @@ export default function AdminPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {/* <Button size="sm" variant="ghost">
-                            <Eye size={16} />
-                          </Button> */}
-                          <Button size="sm" variant="ghost">
+                          <Button
+                            variant="outline"
+                            onClick={() => openEditVehicle(vehicle)}
+                          >
                             <Edit size={16} />
                           </Button>
+                          <Dialog open={isEditVehicleOpen} onOpenChange={setIsEditVehicleOpen} className="bg-transparent">
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+
+                              <DialogHeader>
+                                <DialogTitle>Edit Vehicle</DialogTitle>
+                              </DialogHeader>
+
+                              <form onSubmit={handleEditVehicle} className="space-y-4">
+
+                                <Input
+                                  value={vehicleForm.brand}
+                                  onChange={(e) => handleVehicleFieldChange("brand", e.target.value)}
+                                  placeholder="Brand"
+                                />
+
+                                <Input
+                                  value={vehicleForm.model}
+                                  onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
+                                  placeholder="Model"
+                                />
+
+                                <Input
+                                  type="number"
+                                  value={vehicleForm.year}
+                                  onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
+                                />
+
+                                <Input
+                                  type="number"
+                                  value={vehicleForm.price}
+                                  onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
+                                />
+
+                                <Textarea
+                                  value={vehicleForm.images}
+                                  onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
+                                />
+
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setIsEditVehicleOpen(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+
+                                  <Button type="submit">
+                                    Update Vehicle
+                                  </Button>
+                                </DialogFooter>
+
+                              </form>
+
+                            </DialogContent>
+                          </Dialog>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="ghost">
@@ -1049,7 +1124,7 @@ export default function AdminPage() {
               </div>
 
               {/* Add New Video Form */}
-              <div className="bg-secondary/30 rounded-lg border border-border p-6 mb-6">
+              <div className="bg-white dark:bg-black/50 rounded-lg border border-border p-6 mb-6">
                 <h3 className="font-bold text-lg mb-4">Add New Video Review</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="md:col-span-2">
@@ -1080,28 +1155,31 @@ export default function AdminPage() {
                       }
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      YouTube Video ID
-                    </label>
-                    <Input
-                      placeholder="e.g., dQw4w9WgXcQ"
-                      value={newVideo.videoId}
-                      onChange={(e) =>
-                        setNewVideo({ ...newVideo, videoId: e.target.value })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Find this in the YouTube URL: youtube.com/watch?v=
-                      <strong>VIDEO_ID</strong>
-                    </p>
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        YouTube Video ID
+                      </label>
+                      <Input
+                        placeholder="e.g., dQw4w9WgXcQ"
+                        value={newVideo.videoId}
+                        onChange={(e) =>
+                          setNewVideo({ ...newVideo, videoId: e.target.value })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Find this in the YouTube URL: youtube.com/watch?v=
+                        <strong>VIDEO_ID</strong>
+                      </p>
+                    </div>
+                    <div className="flex items-end pt-2">
+                      <Button className="w-full" onClick={handleAddVideo}>
+                        <Plus size={18} className="mr-2" />
+                        Add Video
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-end">
-                    <Button className="w-full" onClick={handleAddVideo}>
-                      <Plus size={18} className="mr-2" />
-                      Add Video
-                    </Button>
-                  </div>
+
                 </div>
               </div>
 
@@ -1114,10 +1192,11 @@ export default function AdminPage() {
                   <div
                     key={video.id}
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
+
                   >
                     <div className="relative h-24 w-40 shrink-0 bg-secondary rounded overflow-hidden group">
                       <img
-                        src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                        src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
                         alt={video.title}
                         className="w-full h-full object-cover"
                       />
@@ -1132,10 +1211,12 @@ export default function AdminPage() {
                       <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {video.description}
                       </p>
+
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Uploaded: {video.uploadDate}</span>
+                        <span>Uploaded: { }</span>
                         <span>{video.views} views</span>
-                        <span>ID: {video.videoId}</span>
+                        <span>ID: {video.youtubeId}</span>
+
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1144,7 +1225,7 @@ export default function AdminPage() {
                         variant="ghost"
                         onClick={() =>
                           window.open(
-                            `https://www.youtube.com/watch?v=${video.videoId}`,
+                            `https://www.youtube.com/watch?v=${video.youtubeId}`,
                             "_blank",
                           )
                         }
@@ -1231,12 +1312,9 @@ export default function AdminPage() {
             <div>
               <h2 className="text-2xl font-bold mb-6">Branch-wise Inventory</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {["Nugegoda", "Matara", "Colombo"].map((branch, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-gray-50 dark:bg-gray-950 rounded-lg border border-border p-6"
-                  >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(branchInventory).map(([branch, vehicles]) => (
+                  <div key={branch} className="bg-white dark:bg-black/50 rounded-lg border border-border p-4">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-3 bg-primary/10 rounded-lg">
                         <MapPin size={24} className="text-primary" />
@@ -1246,47 +1324,58 @@ export default function AdminPage() {
                         <p className="text-sm text-muted-foreground">Branch</p>
                       </div>
                     </div>
+                    {vehicles.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No vehicles in this branch.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            Total Vehicles
+                          </span>
+                          <span className="font-bold text-lg">
+                            {vehicles.length}
+                          </span>
+                        </div>
 
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          Total Vehicles
-                        </span>
-                        <span className="font-bold text-lg">
-                          {45 + idx * 10}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          Available
-                        </span>
-                        <span className="font-semibold text-green-600">
-                          {30 + idx * 5}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          Shipped
-                        </span>
-                        <span className="font-semibold text-orange-600">
-                          {10 + idx * 3}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          Reserved
-                        </span>
-                        <span className="font-semibold text-blue-600">
-                          {5 + idx * 2}
-                        </span>
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* List of vehicles brands only */}
+                          {Array.from(new Set(vehicles.map((v) => v.brand))).map((brand) => (
+                            <div key={brand} className="flex justify-between items-center border border-border rounded cursor-pointer hover:bg-red-50 px-3 py-2" onClick={() => {
+                              setSelectedBrand(brand);
+                              setViewBranchModel(true);
+                            }}>
+                              <span className="text-sm text-muted-foreground">{brand}</span>
+                              <span className="font-bold">{vehicles.filter((v) => v.brand === brand).length}</span>
+                            </div>
+                          ))}
+                        </div>
 
-                    <Button className="w-full mt-4" variant="outline">
-                      View Details
-                    </Button>
+                        <div className="max-h-48 overflow-y-auto">
+                          <Button onClick={() => {
+                            setViewBranchModel(true);
+                            setSelectedBrand(null);
+                          }
+                          } className="w-full mt-4 cursor-pointer" variant="outline">
+                            View Details
+                          </Button>
+
+                        </div>
+                        {
+                          viewBranchModel && (
+                            <>
+                              <RightPanel branch={branch} brand={selectedBrand} setViewBranchModel={setViewBranchModel} />
+                            </>
+                          )
+                        }
+                      </div>
+                    )
+                    }
+
                   </div>
-                ))}
+                ))
+                }
               </div>
             </div>
           )}
