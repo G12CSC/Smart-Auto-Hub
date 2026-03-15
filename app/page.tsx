@@ -460,7 +460,7 @@ export default async function Home() {
             className="self-start md:self-auto bg-transparent"
           >
             <a
-              href="https://www.youtube.com/@SameeraAutoTraders"
+              href="https://www.youtube.com/@SAMEERAAUTOENTERTAINMENT"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
@@ -476,57 +476,13 @@ export default async function Home() {
         {/* Featured Video */}
         {videoReviews.length > 0 ? (
           <>
-            <div className="mb-12">
-              <a
-                href={`https://www.youtube.com/watch?v=${videoReviews[0].videoId}`}
-                className="relative h-80 md:h-96 lg:h-[112] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  src={`https://img.youtube.com/vi/${videoReviews[0].videoId}/maxresdefault.jpg`}
-                  alt={videoReviews[0].title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
-
-                {/* Play button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110">
-                    <Play className="text-white fill-white ml-2" size={48} />
-                  </div>
-                </div>
-
-                {/* Featured badge */}
-                <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
-                  Featured Review
-                </Badge>
-
-                {/* Content at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
-                    {videoReviews[0].title}
-                  </h3>
-                  <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
-                    {videoReviews[0].description}
-                  </p>
-                  <p className="text-sm text-white/70 flex items-center gap-2">
-                    <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-                    {videoReviews[0]?.uploadDate}
-                  </p>
-                </div>
-              </a>
-            </div>
 
             {/* Video Grid - Remaining videos */}
             {videoReviews.length > 1 && (
               <div>
                 <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {videoReviews.slice(1).map((video, index) => (
+                  {videoReviews.slice(0,3).map((video, index) => (
                     <a
                       key={video.id}
                       className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
@@ -534,13 +490,13 @@ export default async function Home() {
                         opacity: 0,
                         animationDelay: `${(index + 1) * 0.1}s`,
                       }}
-                      href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                      href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <div className="relative h-48 bg-muted overflow-hidden">
                         <img
-                          src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                           alt={video.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -569,10 +525,6 @@ export default async function Home() {
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                           {video.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                          {video.uploadDate}
                         </p>
                       </div>
                     </a>

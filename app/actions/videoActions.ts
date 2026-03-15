@@ -6,12 +6,14 @@ import { revalidatePath } from "next/cache";
 //Fetch all videos (Newest first)
 export async function getVideoReviews() {
   try {
+    const videosId: string[] = [];
     const videos = await prisma.videoReview.findMany({
       orderBy: {
         createdAt: "desc",
       },
     });
-    return { success: true, data: videos };
+    videos.forEach((video) => videosId.push(video.youtubeId));
+    return { success: true, data: videos, ids: videosId };
   } catch (error) {
     return { success: false, error: "Failed to fetch video reviews" };
   }
@@ -28,7 +30,7 @@ export async function addVideoReview(formData: {
       data: {
         title: formData.title,
         description: formData.description,
-        videoId: formData.videoId,
+        youtubeId: formData.videoId,
       },
     });
 
@@ -45,8 +47,8 @@ export async function addVideoReview(formData: {
 //Delete a video review by ID
 export async function deleteVideoReview(id: string) {
   try {
-    await prisma.videoReview.delete({
-      where: { id },
+    await fetch(`/api/videoReviews/${id}`, {
+      method: "DELETE",
     });
     //telling NextJs to refresh the data on these pages immediately
     revalidatePath("/");
