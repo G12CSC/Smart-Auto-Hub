@@ -21,9 +21,13 @@ export default function FeedbackPopup() {
     const feedbackShown = sessionStorage.getItem("contactFeedbackShown");
 
     if (!feedbackShown) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setShowPopup(true);
       }, 15000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
   }, []);
 
