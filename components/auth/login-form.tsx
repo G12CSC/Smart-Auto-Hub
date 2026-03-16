@@ -106,21 +106,13 @@ export default function LoginForm() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
                 <button
                     onClick={() => signIn("google")}
                     className="flex items-center justify-center gap-2 h-10 border rounded-lg hover:bg-gray-100 dark:text-black"
                 >
                     <FcGoogle size={20} />
                     Google
-                </button>
-
-                <button
-                    onClick={() => signIn("github")}
-                    className="flex items-center justify-center gap-2 h-10 border rounded-lg dark:text-black hover:bg-gray-100"
-                >
-                    <FaGithub size={20} className="text-blue-600" />
-                    Github
                 </button>
             </div>
 

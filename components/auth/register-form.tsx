@@ -90,19 +90,19 @@ export default function RegisterForm() {
                         <select
                             value={countryCode}
                             onChange={(e) => setCountryCode(e.target.value)}
-                            className="border rounded-xl px-3 py-2 dark:text-black"
+                            className="border rounded-xl px-2 py-2 dark:text-black"
                         >
-                            <option value="+94">ðŸ‡±ðŸ‡° +94</option>
-                            <option value="+91">ðŸ‡®ðŸ‡³ +91</option>
-                            <option value="+1">ðŸ‡ºðŸ‡¸ +1</option>
-                            <option value="+44">ðŸ‡¬ðŸ‡§ +44</option>
-                            <option value="+61">ðŸ‡¦ðŸ‡º +61</option>
+                            <option value="+94"> +94</option>
+                            <option value="+91"> +91</option>
+                            <option value="+1">+1</option>
+                            <option value="+44"> +44</option>
+                            <option value="+61"> +61</option>
                         </select>
 
                         <input
                             type="number"
                             placeholder="7xxxxxxx"
-                            className="flex-1 border rounded-xl px-4 py-2 dark:text-black"
+                            className="border rounded-xl px-4 py-2 dark:text-black"
                             onChange={(e) => setPhone(e.target.value)}
                             required
                         />

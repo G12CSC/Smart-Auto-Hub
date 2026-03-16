@@ -1212,7 +1212,6 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </div>
-
                 </div>
               </div>
 
