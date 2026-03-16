@@ -101,9 +101,9 @@ export default function VehicleBrowser({
 
   return (
     <div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {/* Filters Panel */}
-        <div className="lg:col-span-1">
+        <div className="md:col-span-1 lg:col-span-1">
           <div className="bg-card rounded-lg p-6 border border-border sticky top-28 shadow-sm hover:shadow-md transition animate-slide-in-left">
             <h2 className="font-bold text-xl mb-6">Filters</h2>
 
@@ -194,13 +194,13 @@ export default function VehicleBrowser({
             </Button>
           </div>
         </div>
-        <div className="lg:col-span-3">
+        <div className="md:col-span-2 lg:col-span-3">
           {loading ? (
             <p>Loading vehicles...</p>
           ) : vehicles.length === 0 ? (
             <p>No vehicles found</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentVehicles.map((vehicle) => (
                 <Link key={vehicle.id} href={`/vehicles/${vehicle.id}`}>
                   <div className="border rounded-lg p-4 hover:shadow-lg transition">
