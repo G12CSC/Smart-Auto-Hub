@@ -54,7 +54,6 @@ export const authOptions = {
       },
 
       async authorize(credentials) {
-
         if (!credentials?.email || !credentials?.password) return null;
 
         const admin = await prisma.admin.findUnique({
@@ -98,31 +97,30 @@ export const authOptions = {
     maxAge: 30 * 60, // 30 minutes
   },
 
-    callbacks: {
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.userType = user.userType;
+        token.adminRole = user.adminRole ?? null;
+      }
 
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-                token.userType = user.userType;
-                token.adminRole = user.adminRole ?? null;
-            }
+      if (!token.userType) token.userType = "user";
 
-            if (!token.userType) token.userType = "user";
-
-            return token;
-        },
-
-        async session({ session, token }) {
-            session.user.id = token.id;
-            session.user.userType = token.userType;
-            session.user.adminRole = token.adminRole;
-            return session;
-        },
-
-        async redirect({ url, baseUrl }) {
-            return process.env.BASEURL;
-        },
+      return token;
     },
+
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.userType = token.userType;
+      session.user.adminRole = token.adminRole;
+      return session;
+    },
+
+    async redirect({ url, baseUrl }) {
+      return process.env.BASEURL;
+    },
+  },
 
   debug: true,
 
