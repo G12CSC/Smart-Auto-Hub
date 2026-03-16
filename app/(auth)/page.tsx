@@ -7,8 +7,14 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 import { cn } from "@/lib/utils";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 
-export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+type AuthTab = "login" | "register";
+
+interface AuthPageProps {
+  initialTab?: AuthTab;
+}
+
+export default function AuthPage({ initialTab = "login" }: AuthPageProps) {
+  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
 
   return (
     <div className="min-h-screen w-full flex bg-background overflow-hidden">
@@ -21,15 +27,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
           <div
             className="absolute top-[20%] left-[10%] w-32 h-32 rounded-full bg-primary blur-3xl animate-float"
-            style={{ animationDelay: "0s" }}
           />
           <div
-            className="absolute top-[60%] right-[10%] w-48 h-48 rounded-full bg-primary blur-3xl animate-float"
-            style={{ animationDelay: "2s" }}
+            className="absolute top-[60%] right-[10%] w-48 h-48 rounded-full bg-primary blur-3xl animate-float delay-2000"
           />
           <div
-            className="absolute bottom-[10%] left-[20%] w-24 h-24 rounded-full bg-accent blur-2xl animate-float"
-            style={{ animationDelay: "4s" }}
+            className="absolute bottom-[10%] left-[20%] w-24 h-24 rounded-full bg-accent blur-2xl animate-float delay-4000"
           />
         </div>
 
@@ -131,26 +134,22 @@ export default function AuthPage() {
               </button>
 
               <div
-                className="absolute bottom-0 left-0 h-0.5 bg-primary transition-transform duration-300 ease-in-out z-20"
-                style={{
-                  width: "50%",
-                  transform:
-                    activeTab === "login"
-                      ? "translateX(0%)"
-                      : "translateX(100%)",
-                }}
+                className={cn(
+                  "absolute bottom-0 left-0 h-0.5 w-1/2 bg-primary transition-transform duration-300 ease-in-out z-20",
+                  activeTab === "login" ? "translate-x-0" : "translate-x-full",
+                )}
               />
             </div>
           </div>
 
           {/* Form Container */}
-          <div className="relative w-full max-w-md mx-auto min-h-[400px]">
+          <div className="relative w-full max-w-md mx-auto">
             <div
               className={cn(
-                "absolute inset-0 transition-all duration-500 ease-in-out",
+                "transition-all duration-500 ease-in-out",
                 activeTab === "login"
                   ? "opacity-100 translate-x-0 pointer-events-auto"
-                  : "opacity-0 -translate-x-8 pointer-events-none",
+                  : "opacity-0 -translate-x-8 pointer-events-none absolute inset-x-0 top-0",
               )}
             >
               <LoginForm onSwitchToRegister={() => setActiveTab("register")} />
@@ -158,10 +157,10 @@ export default function AuthPage() {
 
             <div
               className={cn(
-                "absolute inset-0 transition-all duration-500 ease-in-out",
+                "transition-all duration-500 ease-in-out",
                 activeTab === "register"
                   ? "opacity-100 translate-x-0 pointer-events-auto"
-                  : "opacity-0 translate-x-8 pointer-events-none",
+                  : "opacity-0 translate-x-8 pointer-events-none absolute inset-x-0 top-0",
               )}
             >
               <RegisterForm onSwitchToLogin={() => setActiveTab("login")} />

@@ -172,25 +172,6 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         shake && "animate-[shake_0.5s_ease-in-out]",
       )}
     >
-      {/* Moved the style block here so it's scoped correctly */}
-      <style jsx>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          50% {
-            transform: translateX(5px);
-          }
-          75% {
-            transform: translateX(-5px);
-          }
-        }
-      `}</style>
-
       <div className="text-center mb-6 animate-slide-up-1">
         <h2 className="text-3xl font-bold text-foreground mb-2">
           Create Account
@@ -201,7 +182,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-11 animate-slide-up-2"
+        className="w-full h-11 animate-slide-up-2 mb-4"
         onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
       >
         <FcGoogle className="mr-2 h-5 w-5" />
@@ -217,7 +198,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
         <div className="space-y-2 animate-slide-up-2">
           <Label htmlFor="name">Full Name</Label>
           <div className="relative group">

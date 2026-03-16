@@ -15,6 +15,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -96,24 +97,6 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         shake && "animate-[shake_0.5s_ease-in-out]",
       )}
     >
-      <style jsx>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          50% {
-            transform: translateX(5px);
-          }
-          75% {
-            transform: translateX(-5px);
-          }
-        }
-      `}</style>
-
       <div className="text-center mb-8 animate-slide-up-1">
         <h2 className="text-3xl font-bold text-foreground mb-2">
           Welcome Back
@@ -161,6 +144,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             <button
               type="button"
               className="text-sm font-medium text-primary hover:underline transition-all"
+              onClick={() => router.push("/forgot-password")}
             >
               Forgot Password?
             </button>
@@ -283,10 +267,19 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           <button
             type="button"
             onClick={onSwitchToRegister}
-            className="font-semibold text-primary hover:underline transition-all"
+            className="font-semibold text-primary hover:underline transition-all hover:cursor-pointer"
           >
             Create an account
           </button>
+        </p>
+        <p className="text-center text-sm text-muted-foreground animate-slide-up-3 delay-500 mt-4">
+          If you're an admin or an advisor
+          <Link
+            href="/admin/login"
+            className="font-semibold text-primary hover:underline transition-all ml-1"
+          >
+            Go to Admin Portal Login
+          </Link>
         </p>
       </form>
     </div>

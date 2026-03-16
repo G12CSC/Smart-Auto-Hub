@@ -555,6 +555,14 @@ html {
   animation-delay: 0.5s;
 }
 
+.delay-2000 {
+  animation-delay: 2s;
+}
+
+.delay-4000 {
+  animation-delay: 4s;
+}
+
 /* Stagger delays for sequential animations */
 .stagger-1 {
   animation-delay: 0.1s;
@@ -584,6 +592,22 @@ html {
 .hover-glow:hover {
   box-shadow: 0 10px 40px rgba(255, 59, 48, 0.2);
   transform: translateY(-4px);
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
 }
 
 @layer base {
