@@ -17,7 +17,7 @@ export default function NewsletterTable() {
   return (
     <table className="w-full table-auto border-collapse border border-gray-300">
       <thead>
-        <tr className=" bg-gray-100 text-gray-700 py-4">
+        <tr className=" bg-gray-100 dark:bg-gray-700 text-gray-100 py-4">
           <th className="px-6 py-4 text-center">Title</th>
           <th className="px-6 py-4 text-center">Created</th>
           <th className="px-6 py-4 text-center">Status</th>
@@ -27,13 +27,13 @@ export default function NewsletterTable() {
       </thead>
       <tbody>
         {data.map((n) => (
-          <tr className="border-t hover:bg-gray-50 transition" key={n.id}>
-            <td className="px-6 py-4 text-sm text-gray-700 text-center">
+          <tr className="border-t transition" key={n.id}>
+            <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center">
               <span className="inline-flex items-center text-center">
                 {n?.title}
               </span>
             </td>
-            <td className="px-6 py-4 text-sm text-gray-700 text-center">
+            <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center">
               <span className="inline-flex items-center text-center">
                 {new Date(n.createdAt).toLocaleDateString()}
               </span>
@@ -43,7 +43,7 @@ export default function NewsletterTable() {
                   {n.broadcasts?.[0]?.status ?? "NOT SENT"}
               </span>
             </td>
-            <td className="px-6 py-4 text-sm text-gray-700 text-center">
+            <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center">
               {n?.sentAt
                 ? new Date(n.sentAt).toLocaleDateString()
                 : "-"}

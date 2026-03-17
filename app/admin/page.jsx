@@ -66,7 +66,7 @@ import {
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
-import {vehicleAPI} from "../../lib/api/vehicles.js";
+import { vehicleAPI } from "../../lib/api/vehicles.js";
 
 const stats = [
 ];
@@ -126,28 +126,28 @@ export default function AdminPage() {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
 
-    const stats = [
+  const stats = [
 
-        {
-            label: "Pending Requests",
-            value: pendingRequests,
-            icon: Users,
-            color: "bg-yellow-500/20 text-yellow-600",
-        },
-        {
-            label: "Total Vehicles",
-            value: totalVehicles,
-            icon: Car,
-            color: "bg-green-500/20 text-green-600",
-        },
+    {
+      label: "Pending Requests",
+      value: pendingRequests,
+      icon: Users,
+      color: "bg-yellow-500/20 text-yellow-600",
+    },
+    {
+      label: "Total Vehicles",
+      value: totalVehicles,
+      icon: Car,
+      color: "bg-green-500/20 text-green-600",
+    },
 
-        {
-            label: "Newsletter Subscribers",
-            value: newsletterSubscribers,
-            icon: Mail,
-            color: "bg-blue-500/20 text-blue-600",
-        },
-    ];
+    {
+      label: "Newsletter Subscribers",
+      value: newsletterSubscribers,
+      icon: Mail,
+      color: "bg-blue-500/20 text-blue-600",
+    },
+  ];
 
   const fetchBookings = async () => {
     try {
@@ -196,7 +196,7 @@ export default function AdminPage() {
         toast.error("Failed to update video review");
       }
     }
-    catch(error) {
+    catch (error) {
       toast.error("Failed to update video review");
     }
   }
@@ -308,24 +308,22 @@ export default function AdminPage() {
 
   const handleDeleteVehicle = async (vehicleId) => {
 
-  try {
-    const res = await fetch(`/api/vehicles/${vehicleId}`, {
-      method: "DELETE",
-    });
+    try {
+      const res = await fetch(`/api/vehicles/${vehicleId}`, {
+        method: "DELETE",
+      });
 
-    const data = await res.json();
-    if (data.success) {
-      toast.success("Vehicle deleted successfully");
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Vehicle deleted successfully");
 
-    } else {
+      } 
+
+    } catch (error) {
       toast.error("Failed to delete vehicle");
+
     }
-
-  } catch (error) {
-    toast.error("Failed to delete vehicle");
-
-  }
-};
+  };
 
   const handleAddVideo = async () => {
     //Basic Validation
@@ -412,8 +410,8 @@ export default function AdminPage() {
       localStorageAPI.clearNotification("admin", "videos");
     } else if (tabId === "newsletter") {
       localStorageAPI.clearNotification("admin", "newsletter");
-    }else if (tabId === "advisors") {
-        localStorageAPI.clearNotification("admin", "advisors");
+    } else if (tabId === "advisors") {
+      localStorageAPI.clearNotification("admin", "advisors");
     }
 
     const notifs = localStorageAPI.getNotifications();
@@ -568,12 +566,12 @@ export default function AdminPage() {
                 icon: MapPin,
                 count: 0,
               },
-                {
-                    id: "advisors",
-                    label: "Create an advisor",
-                    icon: MapPin,
-                    count: 0,
-                },
+              {
+                id: "advisors",
+                label: "Create an advisor",
+                icon: MapPin,
+                count: 0,
+              },
             ].map((tab) => (
               <Button
                 key={tab.id}
@@ -1278,8 +1276,8 @@ export default function AdminPage() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="ghost">
-                        <Edit size={16} />
-                      </Button>
+                            <Edit size={16} />
+                          </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -1309,8 +1307,8 @@ export default function AdminPage() {
                             />
                             <Button onClick={() => {
                               handleEditVideo(video.id);
-                              
-                              }} className="mt-4">
+
+                            }} className="mt-4">
                               Save Changes
                             </Button>
                           </div>
@@ -1388,31 +1386,31 @@ export default function AdminPage() {
             </div>
           )}
 
-            {activeTab === "advisors" && (
+          {activeTab === "advisors" && (
+            <div>
+
+              <div className="flex items-center justify-between mb-6">
                 <div>
-
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 className="text-2xl font-bold">Advisor Management</h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Create and manage advisor accounts
-                            </p>
-                        </div>
-
-                        <Button onClick={() => setIsCreateAdvisorOpen(true)}>
-                            <UserCog size={18} className="mr-2" />
-                            Create Advisor
-                        </Button>
-
-                    </div>
-
-                    <div className="text-muted-foreground">
-                        Advisors created here will receive temporary credentials
-                        and will be required to change their password on first login.
-                    </div>
-
+                  <h2 className="text-2xl font-bold">Advisor Management</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Create and manage advisor accounts
+                  </p>
                 </div>
-            )}
+
+                <Button onClick={() => setIsCreateAdvisorOpen(true)}>
+                  <UserCog size={18} className="mr-2" />
+                  Create Advisor
+                </Button>
+
+              </div>
+
+              <div className="text-muted-foreground">
+                Advisors created here will receive temporary credentials
+                and will be required to change their password on first login.
+              </div>
+
+            </div>
+          )}
 
 
 
@@ -1452,7 +1450,6 @@ export default function AdminPage() {
                           {/* List of vehicles brands only */}
                           {Array.from(new Set(vehicles.map((v) => v.brand))).map((brand) => (
                             <div key={brand} className="flex justify-between items-center border border-border rounded cursor-pointer hover:bg-red-50 px-3 py-2" onClick={() => {
-                              selected
                               setSelectedBrand(brand);
                               setViewBranchModel(true);
                             }}>
@@ -1515,10 +1512,10 @@ export default function AdminPage() {
           setSelectedRequestForAdvisor(null);
         }}
       />
-        <CreateAdvisorModal
-            open={isCreateAdvisorOpen}
-            onClose={() => setIsCreateAdvisorOpen(false)}
-        />
+      <CreateAdvisorModal
+        open={isCreateAdvisorOpen}
+        onClose={() => setIsCreateAdvisorOpen(false)}
+      />
     </div>
   );
 }

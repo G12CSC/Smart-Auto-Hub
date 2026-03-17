@@ -7,7 +7,6 @@ export async function GET(req: Request) {
 
     const brand = searchParams.get("brand");
     const model = searchParams.get("model");
-    //const minMileage = searchParams.get("minMileage");
     const maxMileage = searchParams.get("maxMileage");
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");

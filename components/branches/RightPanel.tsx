@@ -28,6 +28,7 @@ export default function RightPanel({
     if (branch) {
       fetchVehicles();
     }
+    console.log("Fetched vehicles for branch:", branch, "and brand:", brand);
   }, [branch]);
 
   return (
