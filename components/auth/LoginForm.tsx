@@ -60,6 +60,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     setAuthError("");
 
     if (validate()) {
+
       setIsLoading(true);
       try {
         const res = await signIn("user-credentials", {

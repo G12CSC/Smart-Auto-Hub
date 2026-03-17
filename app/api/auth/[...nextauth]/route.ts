@@ -39,6 +39,7 @@ export const authOptions = {
 
         return {
           id: user.id,
+            name: user.name,
           email: user.email,
           userType: "user",
         };
@@ -106,6 +107,7 @@ export const authOptions = {
             if (user) {
                 token.id = user.id;
                 token.userType = user.userType;
+                token.name = user.name;
                 token.adminRole = user.adminRole ?? null;
                 token.mustChangePassword = user.mustChangePassword ?? false;
             }
@@ -118,6 +120,7 @@ export const authOptions = {
         async session({ session, token }) {
             session.user.id = token.id;
             session.user.userType = token.userType;
+            session.user.name = token.name;
             session.user.adminRole = token.adminRole;
             session.user.mustChangePassword = token.mustChangePassword;
             return session;

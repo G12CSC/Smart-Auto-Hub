@@ -3,12 +3,13 @@
 import { handleConsultationRequests } from "@/app/APITriggers/handleConsultationRequests";
 import { Consultation } from "@/types";
 import { AlertCircle, Calendar, Loader2 } from "lucide-react";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import {useSession} from "next-auth/react";
 
 export default function ConsultationForm() {
+
   const [formData, setFormData] = useState<Consultation>({
     fullName: "",
     email: "",
@@ -19,11 +20,22 @@ export default function ConsultationForm() {
     preferredTime: "",
     message: "",
   });
+
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
     const { data: session } = useSession();
+
+    useEffect(() => {
+        if (session?.user) {
+            setFormData((prev) => ({
+                ...prev,
+                fullName: session?.user?.name ?? "",
+                email: session?.user?.email ?? "",
+            }));
+        }
+    }, [session]);
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
@@ -125,6 +137,7 @@ export default function ConsultationForm() {
       return;
     }
 
+
     try {
       setIsSubmitting(true);
 
@@ -160,6 +173,8 @@ export default function ConsultationForm() {
     }, 3000);
   };
 
+
+
   const getInputClassName = (fieldName: string, baseClassName: string) => {
     if ((submitted || touched[fieldName]) && errors[fieldName]) {
       return `${baseClassName} border-red-500 focus:ring-red-500`;
@@ -188,18 +203,21 @@ export default function ConsultationForm() {
           <label className="block text-sm font-semibold mb-2">
             Full Name *
           </label>
-          <input
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="John Doe"
-            className={getInputClassName(
-              "fullName",
-              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition",
-            )}
-          />
+            <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                readOnly={!!session}
+                className={`${
+                    session ? "bg-muted cursor-not-allowed" : ""
+                } ${getInputClassName(
+                    "fullName",
+                    "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                )}`}
+            />
+
           {errors.fullName && touched.fullName && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
               <AlertCircle size={12} />
@@ -213,18 +231,20 @@ export default function ConsultationForm() {
           <label className="block text-sm font-semibold mb-2">
             Email Address *
           </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="john@example.com"
-            className={getInputClassName(
-              "email",
-              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition",
-            )}
-          />
+            <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                readOnly={!!session}
+                className={`${
+                    session ? "bg-muted cursor-not-allowed" : ""
+                } ${getInputClassName(
+                    "email",
+                    "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                )}`}
+            />
           {errors.email && touched.email && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
               <AlertCircle size={12} />
