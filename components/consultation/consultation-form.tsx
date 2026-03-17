@@ -308,42 +308,40 @@ export default function ConsultationForm() {
           )}
         </div>
 
-        {/* Consultation Type */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Consultation Type *
-          </label>
-          <div className="space-y-2">
-            {[
-              "General Inquiry",
-              "Test Drive",
-              "Finance Options",
-              "Trade-in Valuation",
-            ].map((type) => (
-              <label
-                key={type}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="consultationType"
-                  value={type}
-                  checked={formData.consultationType === type}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm">{type}</span>
+          <div>
+              <label className="block text-sm font-semibold mb-2">
+                  Consultation Type *
               </label>
-            ))}
+
+              <div className="space-y-2">
+                  {[
+                      "General Inquiry",
+                      "Test Drive",
+                      "Finance Options",
+                      "Trade-in Valuation",
+                  ].map((type) => (
+                      <label key={type} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                              type="checkbox"
+                              value={type}
+                              checked={formData.consultationType.includes(type)}
+                              onChange={(e) => {
+                                  const checked = e.target.checked;
+
+                                  setFormData((prev) => ({
+                                      ...prev,
+                                      consultationType: checked
+                                          ? [...prev.consultationType, type] // add
+                                          : prev.consultationType.filter((t) => t !== type), // remove
+                                  }));
+                              }}
+                              className="w-4 h-4"
+                          />
+                          <span className="text-sm">{type}</span>
+                      </label>
+                  ))}
+              </div>
           </div>
-          {errors.consultationType && touched.consultationType && (
-            <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
-              <AlertCircle size={12} />
-              <span>{errors.consultationType}</span>
-            </div>
-          )}
-        </div>
 
         {/* Preferred Date */}
         <div>
