@@ -17,7 +17,7 @@ export default function RightPanel({
   useEffect(() => {
     async function fetchVehicles() {
       try {
-        const response = await fetch(`/api/branches/branch?branch=${branch}&brand=${brand   || ""}`);
+        const response = await fetch(`/api/branches/branch?branch=${branch || ""}&brand=${brand   || ""}`);
         const data = await response.json();
         setVehicles(data);
       } catch (error) {

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1453,6 +1452,7 @@ export default function AdminPage() {
                           {/* List of vehicles brands only */}
                           {Array.from(new Set(vehicles.map((v) => v.brand))).map((brand) => (
                             <div key={brand} className="flex justify-between items-center border border-border rounded cursor-pointer hover:bg-red-50 px-3 py-2" onClick={() => {
+                              selected
                               setSelectedBrand(brand);
                               setViewBranchModel(true);
                             }}>
@@ -1464,8 +1464,8 @@ export default function AdminPage() {
 
                         <div className="max-h-48 overflow-y-auto">
                           <Button onClick={() => {
-                            setViewBranchModel(true);
                             setSelectedBrand(null);
+                            setViewBranchModel(true);
                           }
                           } className="w-full mt-4 cursor-pointer" variant="outline">
                             View Details

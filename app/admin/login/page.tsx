@@ -33,10 +33,10 @@ export default function AdminLoginPage() {
             return;
         }
         console.log("Login successful:", res);
-        console.log(session?.user?.email?.split("@")[0].slice(0, 5));
+        console.log(session?.user?.email?.split("@")[0]);
 
         // redirect will happen automatically due to callbackUrl, but you can also do it manually if needed
-        window.location.href = session?.user?.email?.split("@")[0].slice(0, 5) === "admin" ? "/admin" : "/advisor-dashboard";
+        window.location.href = session?.user?.email?.split("@")[0] == "adminSmartAuto" ? "/admin" : "/advisor-dashboard";
         
     };
 
