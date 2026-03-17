@@ -127,6 +127,29 @@ export default function AdminPage() {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
 
+    const stats = [
+
+        {
+            label: "Pending Requests",
+            value: pendingRequests,
+            icon: Users,
+            color: "bg-yellow-500/20 text-yellow-600",
+        },
+        {
+            label: "Total Vehicles",
+            value: totalVehicles,
+            icon: Car,
+            color: "bg-green-500/20 text-green-600",
+        },
+
+        {
+            label: "Newsletter Subscribers",
+            value: newsletterSubscribers,
+            icon: Mail,
+            color: "bg-blue-500/20 text-blue-600",
+        },
+    ];
+
   const fetchBookings = async () => {
     try {
       const res = await fetch("/api/Consultations/getAllBooking");
