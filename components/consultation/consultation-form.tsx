@@ -6,6 +6,7 @@ import { AlertCircle, Calendar, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import {useSession} from "next-auth/react";
 
 export default function ConsultationForm() {
   const [formData, setFormData] = useState<Consultation>({
@@ -22,7 +23,7 @@ export default function ConsultationForm() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const { data: session } = useSession();
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
@@ -98,6 +99,12 @@ export default function ConsultationForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+      // 🚨 BLOCK if not logged in
+      if (!session) {
+          toast.error("You must be logged in to book a consultation");
+          return;
+      }
 
     const newErrors = {} as { [key: string]: string };
     Object.keys(formData).forEach((key) => {
