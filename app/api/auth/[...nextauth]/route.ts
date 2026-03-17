@@ -67,6 +67,7 @@ export const authOptions = {
           credentials.password,
           admin.passwordHash,
         );
+
         if (!ok) return null;
 
         return {
@@ -74,6 +75,7 @@ export const authOptions = {
           email: admin.email,
           userType: admin.role === "advisor" ? "advisor" : "admin",
           adminRole: admin.role,
+            mustChangePassword: admin.mustChangePassword
         };
       },
     }),
@@ -105,6 +107,7 @@ export const authOptions = {
                 token.id = user.id;
                 token.userType = user.userType;
                 token.adminRole = user.adminRole ?? null;
+                token.mustChangePassword = user.mustChangePassword ?? false;
             }
 
             if (!token.userType) token.userType = "user";
@@ -116,6 +119,7 @@ export const authOptions = {
             session.user.id = token.id;
             session.user.userType = token.userType;
             session.user.adminRole = token.adminRole;
+            session.user.mustChangePassword = token.mustChangePassword;
             return session;
         },
 

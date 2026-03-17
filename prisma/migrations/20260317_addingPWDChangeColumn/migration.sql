@@ -1,0 +1,2 @@
+ALTER TABLE "Admin"
+    ADD COLUMN "mustChangePassword" BOOLEAN NOT NULL DEFAULT TRUE;

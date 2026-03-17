@@ -37,8 +37,12 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function AdvisorPage() {
+
+
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,6 +51,9 @@ export default function AdvisorPage() {
   const [advisorBookings, setAdvisorBookings] = useState([]);
   const [advisorInfo, setAdvisorInfo] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
+    const { data: session } = useSession();
+    const router = useRouter();
+
 
   const fetchProfile = async () => {
     const res = await fetch("/api/Advisors/profile")
@@ -58,6 +65,12 @@ export default function AdvisorPage() {
   useEffect(() => {
     fetchProfile()
   }, [])
+
+    useEffect(() => {
+        if (session?.user?.mustChangePassword) {
+            router.push("/advisor-dashboard/changePassword");
+        }
+    }, [session]);
 
 
   const fetchAdvisorBookings = async () => {

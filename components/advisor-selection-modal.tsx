@@ -84,7 +84,7 @@ export default function AdvisorSelectionModal({
     }, [])
 
     const filteredAdvisors = advisors.filter((advisor) =>
-        advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        advisor.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
   return (

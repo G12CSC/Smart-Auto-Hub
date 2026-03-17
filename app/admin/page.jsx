@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import RightPanel from "@/components/branches/RightPanel";
+
 import {
   Search,
   Filter,
@@ -54,7 +55,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { vehicleAPI } from "@/lib/api/vehicles";
+
 import { toast } from "sonner";
 
 import {
@@ -65,32 +66,10 @@ import {
 } from "@/app/actions/videoActions";
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
+import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
+import {vehicleAPI} from "../../lib/api/vehicles.js";
 
 const stats = [
-  {
-    label: "Total Vehicles",
-    value: "150",
-    change: "+5 this month",
-    color:
-      "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-300",
-    icon: Car,
-  },
-  {
-    label: "Pending Requests",
-    value: "23",
-    change: "8 appointments, 15 inquiries",
-    color:
-      "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
-    icon: Clock,
-  },
-  {
-    label: "Newsletter Subscribers",
-    value: "1,247",
-    change: "+9 this week",
-    color:
-      "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
-    icon: Mail,
-  }
 ];
 
 
@@ -146,6 +125,7 @@ export default function AdminPage() {
 
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
+  const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
 
   const fetchBookings = async () => {
     try {
@@ -399,6 +379,7 @@ export default function AdminPage() {
 
 
   const handleTabChange = (tabId) => {
+
     setActiveTab(tabId);
 
     if (tabId === "requests") {
@@ -409,6 +390,8 @@ export default function AdminPage() {
       localStorageAPI.clearNotification("admin", "videos");
     } else if (tabId === "newsletter") {
       localStorageAPI.clearNotification("admin", "newsletter");
+    }else if (tabId === "advisors") {
+        localStorageAPI.clearNotification("admin", "advisors");
     }
 
     const notifs = localStorageAPI.getNotifications();
@@ -563,6 +546,12 @@ export default function AdminPage() {
                 icon: MapPin,
                 count: 0,
               },
+                {
+                    id: "advisors",
+                    label: "Create an advisor",
+                    icon: MapPin,
+                    count: 0,
+                },
             ].map((tab) => (
               <Button
                 key={tab.id}
@@ -1377,6 +1366,34 @@ export default function AdminPage() {
             </div>
           )}
 
+            {activeTab === "advisors" && (
+                <div>
+
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold">Advisor Management</h2>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Create and manage advisor accounts
+                            </p>
+                        </div>
+
+                        <Button onClick={() => setIsCreateAdvisorOpen(true)}>
+                            <UserCog size={18} className="mr-2" />
+                            Create Advisor
+                        </Button>
+
+                    </div>
+
+                    <div className="text-muted-foreground">
+                        Advisors created here will receive temporary credentials
+                        and will be required to change their password on first login.
+                    </div>
+
+                </div>
+            )}
+
+
+
           {/* Branch Inventory Tab */}
           {activeTab === "branches" && (
             <div>
@@ -1446,6 +1463,8 @@ export default function AdminPage() {
                   </div>
                 ))
                 }
+
+
               </div>
             </div>
           )}
@@ -1474,6 +1493,10 @@ export default function AdminPage() {
           setSelectedRequestForAdvisor(null);
         }}
       />
+        <CreateAdvisorModal
+            open={isCreateAdvisorOpen}
+            onClose={() => setIsCreateAdvisorOpen(false)}
+        />
     </div>
   );
 }
