@@ -9,7 +9,7 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { AlertCircle, Calendar, CheckCircle, Mail, Phone } from "lucide-react";
+import { Calendar, Mail, Phone } from "lucide-react";
 
 interface Advisor {
   id: string;
@@ -72,7 +72,8 @@ export default function AdvisorSelectionModal({
     useEffect(() => {
         const fetchAdvisors = async () => {
             const res = await fetch("/api/Advisors")
-            const data = await res.json()
+            const data = await res.json();
+            console.log("Fetched advisors", data)
             setAdvisors(data)
             setLoading(false)
 
@@ -84,7 +85,7 @@ export default function AdvisorSelectionModal({
     }, [])
 
     const filteredAdvisors = advisors.filter((advisor) =>
-        advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        advisor.name.toString().toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   return (
