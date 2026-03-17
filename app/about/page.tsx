@@ -21,7 +21,7 @@ export default function AboutPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full">
-          <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-balance animate-text-reveal">
+          <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold mb-4 text-balance animate-text-reveal">
             About Sameera Auto Traders
           </h1>
           <p className="text-xl lg:text-2xl opacity-95 text-balance max-w-2xl animate-text-reveal stagger-1">

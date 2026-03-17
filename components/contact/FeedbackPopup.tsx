@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./feedback.module.css";
-import { X } from "lucide-react";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
 } from "../ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 export default function FeedbackPopup() {
   const [showPopup, setShowPopup] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const feedbackShown = sessionStorage.getItem("contactFeedbackShown");
@@ -35,94 +34,82 @@ export default function FeedbackPopup() {
     sessionStorage.setItem("contactFeedbackShown", "true");
     setShowPopup(false);
   };
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      closePopup();
+    }
+  };
+
+  const handleExploreCars = () => {
+    closePopup();
+    router.push("/vehicles");
+  };
 
   if (!showPopup) return null;
 
   return (
-    <div className={` ${styles.container}`}>
-      <div className={styles.card}>
-        <h2 className="text-2xl font-bold mb-2">
-          Contact Sameera Auto Traders Today !
-        </h2>
+    <Dialog open={showPopup} onOpenChange={handleOpenChange}>
+      <DialogContent className="overflow-hidden border-border bg-card p-0 shadow-2xl sm:max-w-2xl">
+        <div className="bg-linear-to-br from-primary/15 via-background to-background p-6 sm:p-8">
+          <DialogHeader className="space-y-3 text-left">
+            <DialogTitle className="max-w-xl text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <h2>Contact Sameera Auto Traders Today !</h2>
+            </DialogTitle>
+            <DialogDescription className="max-w-xl text-base leading-7 text-muted-foreground">
+              <h3 className="text-lg font-semibold text-muted-foreground mb-4">
+                Looking for your dream car or need more information about our
+                vehicles?
+              </h3>
+              <p className="text-sm font-semibold text-foreground">
+                Our team is ready to help you with car inquiries, vehicle
+                availability, pricing, and consultation services.
+              </p>
 
-        <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-          Looking for your dream car or need more information about our
-          vehicles?
-        </h3>
-        <p className="mb-4">
-          Our team is ready to help you with car inquiries, vehicle
-          availability, pricing, and consultation services.
-        </p>
-
-        <ul className="list-disc list-inside mb-4">
-          <li>📞 Friendly customer support</li>
-          <li>🚗 Expert advice on buying vehicles</li>
-          <li>🤝 Trusted car dealers</li>
-          <li>💬 Quick responses to your questions</li>
-        </ul>
-        <p className="p-2">
-          Reach out to us anytime and let us help you drive away with
-          confidence.
-        </p>
-        <button
-          className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer"
-          onClick={() => {
-            window.location.href = "/contact";
-          }}
-        >
-          📩 Contact Sameera Auto Traders today
-        </button>
-        <button
-          type="button"
-          className={styles.closePopup}
-          onClick={closePopup}
-        >
-          <X size={18} />
-        </button>
-      </div>
-    </div>
+              <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    📞
+                  </span>{" "}
+                  Friendly customer support
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    🚗
+                  </span>{" "}
+                  Expert advice on buying vehicles
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    🤝
+                  </span>{" "}
+                  Trusted car dealers
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    💬
+                  </span>{" "}
+                  Quick responses to your questions
+                </li>
+              </ul>
+              <p className="p-2">
+                Reach out to us anytime and let us help you drive away with
+                confidence.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <DialogClose asChild>
+              <Button variant="outline" className="cursor-pointer">Close</Button>
+            </DialogClose>
+            <Button
+              onClick={handleExploreCars}
+              className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer"
+            >
+              📩 Contact Sameera Auto Traders today
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-  <Dialog>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          <h2 className="text-2xl font-bold mb-2">
-            Contact Sameera Auto Traders Today !
-          </h2>
-        </DialogTitle>
-        <DialogDescription>
-          <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-            Looking for your dream car or need more information about our
-            vehicles?
-          </h3>
-          <p className="mb-4">
-            Our team is ready to help you with car inquiries, vehicle
-            availability, pricing, and consultation services.
-          </p>
-
-          <ul className="list-disc list-inside mb-4">
-            <li>📞 Friendly customer support</li>
-            <li>🚗 Expert advice on buying vehicles</li>
-            <li>🤝 Trusted car dealers</li>
-            <li>💬 Quick responses to your questions</li>
-          </ul>
-          <p className="p-2">
-            Reach out to us anytime and let us help you drive away with
-            confidence.
-          </p>
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="outline">Close</Button>
-        </DialogClose>
-        <Button
-          onClick={() => (window.location.href = "/contact")}
-          className="bg-red-700 text-white px-4 py-2 rounded cursor-pointer"
-        >
-          📩 Contact Sameera Auto Traders today
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>;
 }

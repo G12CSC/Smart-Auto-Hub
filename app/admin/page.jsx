@@ -1494,7 +1494,6 @@ export default function AdminPage() {
         </div>
       </div>
       <ChatBot />
-      <Footer />
       <AdvisorSelectionModal
         open={isAdvisorModalOpen}
         onClose={() => setIsAdvisorModalOpen(false)}
