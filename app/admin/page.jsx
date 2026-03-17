@@ -17,7 +17,7 @@ import {
   Car,
   Mail,
   MapPin,
-  Clock,
+  User,
   FileText,
   Video,
   ExternalLink,
@@ -29,6 +29,8 @@ import {
   Sun,
   Moon,
   CircleX,
+  MessageCircle,
+  Trash
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -125,6 +127,8 @@ export default function AdminPage() {
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
+  const [advisors, setAdvisors] = useState([]);
+  const [showAdvisors, setShowAdvisors] = useState(false);
 
   const stats = [
 
@@ -259,6 +263,7 @@ export default function AdminPage() {
       return;
     }
 
+
     // Convert images string → array
     const images = vehicleForm.images
       ?.split(/,|\n/)
@@ -306,6 +311,55 @@ export default function AdminPage() {
     setIsSavingVehicle(false);
   };
 
+  const fetchAllAdvisors = async () => {
+    try {
+      const res = await fetch("/api/Advisors");
+      const data = await res.json();
+      console.log("Fetched Advisors:", data);
+
+      setAdvisors(data);
+    } catch (error) {
+      console.error("Failed to fetch advisors", error);
+    }
+  };
+
+
+  const handleDeleteAdvisors = async () => {
+    try {
+      fetchAllAdvisors();
+      setShowAdvisors(true);
+    } catch (error) {
+      console.error("Failed to delete advisors", error);
+    }
+  };
+
+  const handleDeleteAdvisor = async (advisorId) => {
+    if (!advisorId) {
+      toast.error("Invalid advisor ID ❌");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/Advisors/${advisorId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("Advisor deleted successfully ✅");
+        fetchAllAdvisors();
+      } else {
+        toast.error(data.message || "Failed to delete advisor ❌");
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete advisor ❌");
+    }
+  };
+
+
   const handleDeleteVehicle = async (vehicleId) => {
 
     try {
@@ -317,7 +371,7 @@ export default function AdminPage() {
       if (data.success) {
         toast.success("Vehicle deleted successfully");
 
-      } 
+      }
 
     } catch (error) {
       toast.error("Failed to delete vehicle");
@@ -1397,10 +1451,70 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                <Button onClick={() => setIsCreateAdvisorOpen(true)}>
-                  <UserCog size={18} className="mr-2" />
-                  Create Advisor
-                </Button>
+                <div className="gap-3 flex">
+                  <Button onClick={() => (handleDeleteAdvisors())} variant="outline" className="bg-red-600 text-white hover:bg-red-700">
+                    <UserCog size={18} className="mr-2" />
+                    Delete Advisors
+                  </Button>
+
+                  {
+                    showAdvisors && (
+                      <div className="bg-white dark:bg-black/90 rounded-lg border border-border p-4 absolute top-20 right-10 w-120 z-50">
+                        <h3 className="font-bold text-lg mb-3">Advisors List</h3>
+                        <button onClick={() => setShowAdvisors(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-muted-foreground/80">
+                          <CircleX size={16} />
+                        </button>
+                        <div className="max-h-150 overflow-y-auto">
+                          {advisors.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              No advisors found.
+                            </p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {advisors.map((advisor) => (
+                                <li key={advisor.id} className="border border-border rounded p-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-secondary rounded-full overflow-hidden">
+                                      {advisor.image ? (
+                                        <img
+                                          src={advisor.image}
+                                          alt={advisor.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <User size={16} className="text-muted-foreground" />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">{advisor.name}</p>
+                                      <p className="text-xs text-muted-foreground">{advisor.email}</p>
+                                    </div>
+
+                                    <div className="ml-auto">
+                                      <Button size="sm" variant="outline" onClick={() => {
+                                        if (confirm(`Are you sure you want to delete advisor ${advisor.name}? This action cannot be undone.`)) {
+                                          handleDeleteAdvisor(advisor.id);
+                                        }
+                                      }
+                                      }>
+                                        <Trash2 size={14} className="mr-1" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  <Button onClick={() => setIsCreateAdvisorOpen(true)}>
+                    <UserCog size={18} className="mr-2" />
+                    Create Advisor
+                  </Button>
+                </div>
 
               </div>
 

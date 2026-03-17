@@ -51,8 +51,8 @@ export default function AdvisorPage() {
   const [advisorBookings, setAdvisorBookings] = useState([]);
   const [advisorInfo, setAdvisorInfo] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
-    const { data: session } = useSession();
-    const router = useRouter();
+  const { data: session } = useSession();
+  const router = useRouter();
 
 
   const fetchProfile = async () => {
@@ -66,11 +66,11 @@ export default function AdvisorPage() {
     fetchProfile()
   }, [])
 
-    useEffect(() => {
-        if (session?.user?.mustChangePassword) {
-            router.push("/advisor-dashboard/changePassword");
-        }
-    }, [session]);
+  useEffect(() => {
+    if (session?.user?.mustChangePassword) {
+      router.push("/advisor-dashboard/changePassword");
+    }
+  }, [session]);
 
 
   const fetchAdvisorBookings = async () => {
@@ -152,6 +152,37 @@ export default function AdvisorPage() {
 
     return bookingDate >= today;
   });
+
+  const handleContactCustomer = async (bookingId, email, phone) => {
+    const message = prompt("Enter your message to the customer:");
+    console.log("Booking ID:", bookingId);
+    console.log("Customer Email:", email);
+    console.log("Customer Phone:", phone);
+    console.log("Message:", message);
+
+    if (!message) return;
+
+    try {
+      const res = await fetch("/api/Consultations/contactCustomer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId, message, email, phone }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to send message ❌");
+        return;
+      }
+
+      toast.success("Message sent successfully ✅");
+
+    } catch (err) {
+      toast.error("Failed to send message ❌");
+      console.error(err);
+    }
+  };
 
 
   const handleDecision = async (bookingId, decision) => {
@@ -368,6 +399,18 @@ export default function AdvisorPage() {
                       <p className="text-sm text-muted-foreground mb-4">
                         {booking.message}
                       </p>
+                      {
+                        booking.advisorMessage && (
+                          <>
+                            <p className="text-sm text-primary mb-1">
+                              <span className="font-medium">Your Message:</span>{" "}
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              {booking.advisorMessage}
+                            </p>
+                          </>
+                        )
+                      }
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 mt-3">
                           {booking.status === "FORWARDED" && (
@@ -402,7 +445,7 @@ export default function AdvisorPage() {
                           {booking.status}
                         </span>
 
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleContactCustomer(booking.id, booking.email, booking.phone)}>
                           <MessageCircle size={14} className="mr-1" />
                           Contact Customer
                         </Button>
