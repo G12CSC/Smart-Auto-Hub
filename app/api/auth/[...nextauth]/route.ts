@@ -71,6 +71,8 @@ export const authOptions = {
 
         if (!ok) return null;
 
+          console.log("LOGIN ATTEMPT:", credentials);
+
         return {
           id: admin.id,
           email: admin.email,
@@ -103,32 +105,79 @@ export const authOptions = {
 
     callbacks: {
 
-        async jwt({ token, user }) {
+        // async jwt({ token, user }) {
+        //     if (user) {
+        //         token.id = user.id;
+        //         token.userType = user.userType;
+        //         token.name = user.name;
+        //         token.adminRole = user.adminRole ?? null;
+        //         token.mustChangePassword = user.mustChangePassword ?? false;
+        //     }
+        //
+        //     if (!token.userType) token.userType = "user";
+        //
+        //     return token;
+        // },
+        //
+        // async session({ session, token }) {
+        //     session.user.id = token.id;
+        //     session.user.userType = token.userType;
+        //     session.user.name = token.name;
+        //     session.user.adminRole = token.adminRole;
+        //     session.user.mustChangePassword = token.mustChangePassword;
+        //     return session;
+        // },
+        //
+        // async redirect({ url, baseUrl }) {
+        //     return process.env.BASEURL;
+        // },
+
+        async jwt({ token, user,account }) {
+
             if (user) {
                 token.id = user.id;
-                token.userType = user.userType;
                 token.name = user.name;
                 token.adminRole = user.adminRole ?? null;
-                token.mustChangePassword = user.mustChangePassword ?? false;
+
+                // 🔥 KEY FIX
+                if (account?.provider === "google" || account?.provider === "github") {
+                    token.userType = "user"; // ✅ assign role for OAuth users
+                } else {
+                    token.userType = user.userType ?? "user";
+                }
             }
 
-            if (!token.userType) token.userType = "user";
+            // 🔥 ALWAYS GET LATEST VALUE FROM DB
+            if (token.userType === "advisor" || token.userType === "admin") {
+                const admin = await prisma.admin.findUnique({
+                    where: { id: token.id },
+                });
+
+                if (admin) {
+                    token.mustChangePassword = admin.mustChangePassword;
+                    token.name = admin.name;
+                    token.email = admin.email;
+                }
+            }
 
             return token;
         },
 
         async session({ session, token }) {
             session.user.id = token.id;
-            session.user.userType = token.userType;
+            session.user.userType = token.userType ?? "user";
             session.user.name = token.name;
             session.user.adminRole = token.adminRole;
             session.user.mustChangePassword = token.mustChangePassword;
+            session.user.email = token.email; // ✅ IMPORTANT
             return session;
         },
 
         async redirect({ url, baseUrl }) {
-            return process.env.BASEURL;
-        },
+            if (url.startsWith("/")) return baseUrl + url;
+            if (url.startsWith(baseUrl)) return url;
+            return baseUrl;
+        }
     },
 
   debug: true,

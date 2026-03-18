@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {signOut} from "next-auth/react";
+import {getSession, signIn, signOut} from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function ChangePasswordPage() {
 
@@ -15,8 +16,10 @@ export default function ChangePasswordPage() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const { data: session } = useSession();
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         if (!tempPassword || !newPassword || !confirmPassword) {
@@ -47,8 +50,27 @@ export default function ChangePasswordPage() {
         if (data.success) {
             toast.success("Password updated successfully");
 
+
             // Redirect to dashboard/login
-            await signOut({ callbackUrl: "/login" });
+            //await signOut({ callbackUrl: "/login" });
+            await signIn("admin-credentials", {
+                redirect: false,
+                email: session.user.email,
+                password: newPassword,
+            });
+
+            if (res?.ok) {
+                router.replace("/advisor-dashboard");
+            } else {
+                toast.error("Re-login failed");
+            }
+
+
+
+            // redirect to dashboard
+            router.replace("/advisor-dashboard");
+
+
         } else {
             toast.error(data.error || "Failed to update password");
         }

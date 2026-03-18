@@ -62,9 +62,12 @@ export default function AdvisorPage() {
     setAdvisorInfo(data)
   }
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
+    useEffect(() => {
+        if (session) {
+            fetchProfile();
+            fetchAdvisorBookings();
+        }
+    }, [session]);
 
   useEffect(() => {
     if (session?.user?.mustChangePassword) {
@@ -91,10 +94,6 @@ export default function AdvisorPage() {
     }
   };
 
-
-  useEffect(() => {
-    fetchAdvisorBookings();
-  }, []);
 
   const handleLogout = () => {
     signOut({
