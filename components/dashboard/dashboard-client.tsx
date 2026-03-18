@@ -40,7 +40,7 @@ type Appointment = {
   preferredTime?: string;
   branch?: string;
   vehicleType?: string;
-  adminMessage?: string;
+  advisorMessage?: string;
   message?: string;
 };
 
@@ -115,6 +115,10 @@ export default function DashboardClient({
     smsRemainers: localStorage.getItem("smsRemainers") === "true",
   });
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [writeReviewOpen, setWriteReviewOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [coupon, setCoupon] = useState("");
 
   useEffect(() => {
     setUpcomingAppointments(
@@ -465,6 +469,22 @@ export default function DashboardClient({
                                   <p>{apt.message}</p>
                                 </div>
                               )}
+                              {apt.advisorMessage && (
+                                <div className="mt-4 p-3 bg-green-500/10 rounded text-sm">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <MessageSquare
+                                      size={14}
+                                      className="text-green-600"
+                                    />
+                                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                                      Message from Advisor
+                                    </p>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {apt.advisorMessage}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -473,8 +493,13 @@ export default function DashboardClient({
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={apt.status !== "PENDING"}
                                 onClick={() => {
-                                  setNewDate(apt.preferredDate || "");
+                                  setNewDate(
+                                    new Date(apt.preferredDate)
+                                      .toISOString()
+                                      .split("T")[0] || "",
+                                  );
                                   setNewTime(apt.preferredTime || "");
                                   setRescheduleApt(apt);
                                   setRescheduleOpen(true);
@@ -500,13 +525,36 @@ export default function DashboardClient({
                                         setNewDate(e.target.value)
                                       }
                                     />
-                                    <Input
-                                      type="time"
+
+                                    <select
+                                      className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
                                       value={newTime}
                                       onChange={(e) =>
                                         setNewTime(e.target.value)
                                       }
-                                    />
+                                    >
+                                      <option value="">
+                                        Select a time slot
+                                      </option>
+                                      <option value="09:00-10:00">
+                                        09:00 - 10:00 AM
+                                      </option>
+                                      <option value="10:00-11:00">
+                                        10:00 - 11:00 AM
+                                      </option>
+                                      <option value="11:00-12:00">
+                                        11:00 - 12:00 PM
+                                      </option>
+                                      <option value="14:00-15:00">
+                                        02:00 - 03:00 PM
+                                      </option>
+                                      <option value="15:00-16:00">
+                                        03:00 - 04:00 PM
+                                      </option>
+                                      <option value="16:00-17:00">
+                                        04:00 - 05:00 PM
+                                      </option>
+                                    </select>
                                   </div>
 
                                   <div className="flex justify-end gap-3 mt-5">
@@ -528,7 +576,7 @@ export default function DashboardClient({
                                               newTime,
                                             );
 
-                                          // ðŸ”¥ Update UI instantly
+                                          // Update UI instantly
                                           setUpcomingAppointments((prev) =>
                                             prev.map((a) =>
                                               a.id === updated.id ? updated : a,
@@ -548,7 +596,12 @@ export default function DashboardClient({
                               </div>
                             )}
 
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={apt.status !== "ACCEPTED"}
+                              className="text-red-600 hover:text-red-700 bg-transparent cursor-pointer hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:text-muted-foreground disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                            >
                               <MessageSquare size={14} className="mr-2" />
                               Contact
                             </Button>
@@ -556,7 +609,8 @@ export default function DashboardClient({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 hover:text-red-700 bg-transparent"
+                              disabled={apt.status !== "PENDING"}
+                              className="text-red-600 hover:text-red-700 bg-transparent cursor-pointer hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:text-muted-foreground disabled:hover:bg-transparent disabled:cursor-not-allowed"
                               onClick={async () => {
                                 try {
                                   const cancelled = await cancelBookings(
@@ -657,11 +711,91 @@ export default function DashboardClient({
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">My Reviews</h2>
-                  <Button>
+                  <Button onClick={() => setWriteReviewOpen(!writeReviewOpen)}>
                     <Star size={18} className="mr-2" />
-                    Write Review
+                    {writeReviewOpen ? "Close Review Form" : "Write a Review"}
                   </Button>
                 </div>
+                {writeReviewOpen && (
+                  <div className="bg-card rounded-lg border border-border p-6 mb-6">
+                    <h3 className="text-lg font-bold mb-4">Write a Review</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Car size={16} />
+                          Vehicle
+                        </label>
+                        <Input type="text" placeholder="e.g. Toyota Camry" />
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                            <Star size={16} />
+                            Rating
+                          </label>
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                onMouseEnter={() => setHover(star)}
+                                onMouseLeave={() => setHover(0)}
+                                className="text-2xl"
+                              >
+                                <span
+                                  className={
+                                    (hover || rating) >= star
+                                      ? "text-yellow-400"
+                                      : "text-gray-400"
+                                  }
+                                >
+                                  ★
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block mb-1 text-sm">
+                            Coupon Code
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter coupon code"
+                              value={coupon}
+                              onChange={(e) => setCoupon(e.target.value)}
+                              className="w-full border rounded px-3 py-2 dark:bg-secondary/90"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <MessageSquare size={16} />
+                          Comment
+                        </label>
+                        <textarea
+                          className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
+                          rows={4}
+                          placeholder="Write your review here..."
+                        ></textarea>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button>
+                          <CheckCircle size={16} className="mr-2" />
+                          Submit Review
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {userReviews.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    You haven't written any reviews yet.
+                  </p>
+                )}
 
                 <div className="space-y-4">
                   {userReviews.map((review) => (
