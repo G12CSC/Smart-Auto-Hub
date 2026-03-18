@@ -558,6 +558,13 @@ export default function AdvisorPage() {
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
 
+            <Input
+                placeholder="User Name"
+                value={advisorInfo?.name || ""}
+                onChange={(e) =>
+                    setAdvisorInfo({ ...advisorInfo, name: e.target.value })
+                }
+            />
           <Input
             placeholder="Phone"
             value={advisorInfo?.phone || ""}

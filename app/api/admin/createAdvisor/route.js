@@ -24,7 +24,7 @@ export async function POST(req) {
             },
         });
 
-        await sendAdvisorTempID(email, tempPassword);
+        await sendAdvisorTempID(email, tempPassword,email);
 
         return Response.json({
             success: true,
