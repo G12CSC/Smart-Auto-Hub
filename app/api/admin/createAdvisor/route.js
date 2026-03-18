@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { sendAdvisorTempID } from "../../../../lib/emailForAdvisorCreation.js";
 
 export async function POST(req) {
     try {
@@ -23,6 +24,8 @@ export async function POST(req) {
             },
         });
 
+        await sendAdvisorTempID(email, tempPassword);
+
         return Response.json({
             success: true,
             email: advisor.email,
@@ -30,6 +33,8 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        return Response.json({ error: "Failed to create advisor" }, { status: 500 });
+            console.error("ERROR:", error); // 👈 ADD THIS
+            return Response.json({ error: "Failed to create advisor" }, { status: 500 });
+
     }
 }

@@ -326,7 +326,7 @@ export default function AdminPage() {
 
   const handleDeleteAdvisors = async () => {
     try {
-      fetchAllAdvisors();
+      await fetchAllAdvisors();
       setShowAdvisors(true);
     } catch (error) {
       console.error("Failed to delete advisors", error);
@@ -348,7 +348,7 @@ export default function AdminPage() {
 
       if (data.success) {
         toast.success("Advisor deleted successfully ✅");
-        fetchAllAdvisors();
+        await fetchAllAdvisors();
       } else {
         toast.error(data.message || "Failed to delete advisor ❌");
       }
