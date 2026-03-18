@@ -3,13 +3,13 @@
 import { handleConsultationRequests } from "@/app/APITriggers/handleConsultationRequests";
 import { Consultation } from "@/types";
 import { AlertCircle, Calendar, Loader2 } from "lucide-react";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import {useSession} from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function ConsultationForm() {
-
   const [formData, setFormData] = useState<Consultation>({
     fullName: "",
     email: "",
@@ -25,17 +25,18 @@ export default function ConsultationForm() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-    const { data: session } = useSession();
+  const { data: session } = useSession();
+  const router = useRouter();
 
-    useEffect(() => {
-        if (session?.user) {
-            setFormData((prev) => ({
-                ...prev,
-                fullName: session?.user?.name ?? "",
-                email: session?.user?.email ?? "",
-            }));
-        }
-    }, [session]);
+  useEffect(() => {
+    if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: session?.user?.name ?? "",
+        email: session?.user?.email ?? "",
+      }));
+    }
+  }, [session]);
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
@@ -112,11 +113,11 @@ export default function ConsultationForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-      // 🚨 BLOCK if not logged in
-      if (!session) {
-          toast.error("You must be logged in to book a consultation");
-          return;
-      }
+    // 🚨 BLOCK if not logged in
+    if (!session) {
+      toast.error("You must be logged in to book a consultation");
+      return;
+    }
 
     const newErrors = {} as { [key: string]: string };
     Object.keys(formData).forEach((key) => {
@@ -137,18 +138,18 @@ export default function ConsultationForm() {
       return;
     }
 
-
     try {
       setIsSubmitting(true);
 
-      await handleConsultationRequests(formData); // ✅ THIS IS CORRECT
+      await handleConsultationRequests(formData); 
 
-      toast("Booking submitted successfully!", {
+      toast.success("Booking submitted successfully!", {
         duration: 4000,
         icon: "📅",
       });
 
       setSubmitted(true);
+      router.push("/dashboard");
     } catch (error) {
       console.error(error);
       toast.error("Booking failed. Please try again.");
@@ -172,8 +173,6 @@ export default function ConsultationForm() {
       setSubmitted(false);
     }, 3000);
   };
-
-
 
   const getInputClassName = (fieldName: string, baseClassName: string) => {
     if ((submitted || touched[fieldName]) && errors[fieldName]) {
@@ -203,20 +202,20 @@ export default function ConsultationForm() {
           <label className="block text-sm font-semibold mb-2">
             Full Name *
           </label>
-            <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                readOnly={!!session}
-                className={`${
-                    session ? "bg-muted cursor-not-allowed" : ""
-                } ${getInputClassName(
-                    "fullName",
-                    "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
-                )}`}
-            />
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            readOnly={!!session}
+            className={`${
+              session ? "bg-muted cursor-not-allowed" : ""
+            } ${getInputClassName(
+              "fullName",
+              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition",
+            )}`}
+          />
 
           {errors.fullName && touched.fullName && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
@@ -231,20 +230,20 @@ export default function ConsultationForm() {
           <label className="block text-sm font-semibold mb-2">
             Email Address *
           </label>
-            <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                readOnly={!!session}
-                className={`${
-                    session ? "bg-muted cursor-not-allowed" : ""
-                } ${getInputClassName(
-                    "email",
-                    "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
-                )}`}
-            />
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            readOnly={!!session}
+            className={`${
+              session ? "bg-muted cursor-not-allowed" : ""
+            } ${getInputClassName(
+              "email",
+              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition",
+            )}`}
+          />
           {errors.email && touched.email && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
               <AlertCircle size={12} />
@@ -308,40 +307,43 @@ export default function ConsultationForm() {
           )}
         </div>
 
-          <div>
-              <label className="block text-sm font-semibold mb-2">
-                  Consultation Type *
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            Consultation Type *
+          </label>
+
+          <div className="space-y-2">
+            {[
+              "General Inquiry",
+              "Test Drive",
+              "Finance Options",
+              "Trade-in Valuation",
+            ].map((type) => (
+              <label
+                key={type}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  value={type}
+                  checked={formData.consultationType.includes(type)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      consultationType: checked
+                        ? [...prev.consultationType, type] // add
+                        : prev.consultationType.filter((t) => t !== type), // remove
+                    }));
+                  }}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{type}</span>
               </label>
-
-              <div className="space-y-2">
-                  {[
-                      "General Inquiry",
-                      "Test Drive",
-                      "Finance Options",
-                      "Trade-in Valuation",
-                  ].map((type) => (
-                      <label key={type} className="flex items-center gap-3 cursor-pointer">
-                          <input
-                              type="checkbox"
-                              value={type}
-                              checked={formData.consultationType.includes(type)}
-                              onChange={(e) => {
-                                  const checked = e.target.checked;
-
-                                  setFormData((prev) => ({
-                                      ...prev,
-                                      consultationType: checked
-                                          ? [...prev.consultationType, type] // add
-                                          : prev.consultationType.filter((t) => t !== type), // remove
-                                  }));
-                              }}
-                              className="w-4 h-4"
-                          />
-                          <span className="text-sm">{type}</span>
-                      </label>
-                  ))}
-              </div>
+            ))}
           </div>
+        </div>
 
         {/* Preferred Date */}
         <div>

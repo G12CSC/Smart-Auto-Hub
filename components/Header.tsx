@@ -144,7 +144,7 @@ export function Header() {
 
           {!user ? (
             <>
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     className="hover:opacity-80 transition"
@@ -167,7 +167,7 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
 
               <Button variant="outline" className="hidden lg:block" asChild>
                 <Link href="/login">Login</Link>
