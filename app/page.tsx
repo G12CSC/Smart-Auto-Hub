@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 
 import { getVideoReviews } from "@/app/actions/videoActions";
 import UserWelcome from "@/components/home/user-welcome";
-import HomeSearchbar from "@/components/home/home-searchbar";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
 import FeedbackPopup from "@/components/advertisements/findVehicle/FeedbackPopup";

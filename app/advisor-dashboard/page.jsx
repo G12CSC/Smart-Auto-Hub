@@ -97,7 +97,7 @@ export default function AdvisorPage() {
 
   const handleLogout = () => {
     signOut({
-      callbackUrl: "/login"
+      callbackUrl: "/admin/login"
     });
   };
 
@@ -271,7 +271,7 @@ export default function AdvisorPage() {
             </div>
             <div>
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: "/admin/login" })}
                 className="flex items-center gap-2 text-white/80 py-2 cursor-pointer bg-red-600 p-2 rounded-md hover:text-white pl-2 w-full text-left"
               >
                 <LogOut className="h-4 w-4" />

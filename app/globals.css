@@ -187,6 +187,7 @@
     filter: blur(10px);
     opacity: 0;
   }
+
   to {
     filter: blur(0);
     opacity: 1;
@@ -197,6 +198,7 @@
   from {
     transform: scale(1);
   }
+
   to {
     transform: scale(1.05);
   }
@@ -207,6 +209,7 @@
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -241,6 +244,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -252,6 +256,7 @@
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -263,6 +268,7 @@
     opacity: 0;
     transform: translateX(-40px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -274,6 +280,7 @@
     opacity: 0;
     transform: translateX(40px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -285,13 +292,45 @@
     opacity: 0;
     transform: scale(0.8);
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes carMove {
+  0% {
+    transform: translateX(150%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-car-move {
+  animation: carMove 1.8s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out;
 }
 
 @keyframes bounceInUp {
@@ -299,30 +338,36 @@
     opacity: 0;
     transform: translateY(40px);
   }
+
   60% {
     opacity: 1;
     transform: translateY(-10px);
   }
+
   100% {
     transform: translateY(0);
   }
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(227, 30, 36, 0.7);
   }
+
   50% {
     box-shadow: 0 0 0 10px rgba(227, 30, 36, 0);
   }
@@ -377,6 +422,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -388,11 +434,13 @@
 }
 
 @keyframes glow {
+
   0%,
   100% {
     opacity: 0.7;
     filter: blur(6px);
   }
+
   50% {
     opacity: 1;
     filter: blur(10px);
@@ -423,11 +471,13 @@
 
 /* ---------- KEYFRAMES ---------- */
 @keyframes avatar-pulse {
+
   0%,
   100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
@@ -438,6 +488,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -457,6 +508,7 @@ html {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -472,6 +524,7 @@ html {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -484,6 +537,7 @@ html {
     opacity: 0;
     transform: translateX(-40px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -495,6 +549,7 @@ html {
     opacity: 0;
     transform: translateX(40px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -507,6 +562,7 @@ html {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -595,16 +651,20 @@ html {
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-5px);
   }
+
   50% {
     transform: translateX(5px);
   }
+
   75% {
     transform: translateX(-5px);
   }
@@ -614,6 +674,7 @@ html {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

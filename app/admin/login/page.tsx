@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    await update(); 
+    await update();
   };
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        {/* <p className="mt-6 text-center text-sm text-gray-600">
           Dont have an account yet?
           <Link href="/admin/register" className="font-semibold text-primary">
             Create A Staff Account
@@ -122,7 +122,21 @@ export default function AdminLoginPage() {
           <Link href="/login" className="font-semibold text-primary">
             User login
           </Link>
-        </p>
+        </p> */}
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          <span>•</span>
+          <span>
+            <Link
+              href="/privacy"
+              className="hover:text-primary transition-colors"
+            >
+              Read our privacy policy{" "}
+            </Link>
+          </span>
+          <span>•</span>
+          <span className="ml-1">© {new Date().getFullYear()} Sameera Auto Traders</span>
+        </div>
       </div>
     </main>
   );
