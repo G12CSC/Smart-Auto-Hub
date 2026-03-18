@@ -11,12 +11,21 @@ export async function POST(req) {
             return Response.json({ error: "Email required" }, { status: 400 });
         }
 
+        const existing = await prisma.admin.findUnique({ where: { email } });
+
+        if (existing) {
+            return Response.json({ error: "Advisor already exists" }, { status: 400 });
+        }
+
         const tempPassword = crypto.randomBytes(6).toString("hex");
 
         const hashed = await bcrypt.hash(tempPassword, 10);
 
+        const newAdvisorName = email.split("@")[0].toString().charAt(0).toUpperCase() + email.split("@")[0].slice(1);
+
         const advisor = await prisma.admin.create({
             data: {
+                name: newAdvisorName,
                 email,
                 passwordHash: hashed,
                 role: "advisor",

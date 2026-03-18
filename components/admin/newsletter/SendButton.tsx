@@ -32,7 +32,7 @@ export default function SendButton({
     <button
       onClick={handleSend}
       disabled={isSending || disabled}
-      className={`px-5 py-1 rounded text-white cursor-pointer ${
+      className={`bg-yellow-500 hover:bg-yellow-600 p-2 rounded-lg text-white cursor-pointer ${
         disabled ? "bg-gray-400" : "bg-yellow-600"
       }`}
     >

@@ -9,6 +9,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function CreateAdvisorModal({ open, onClose }) {
     const [email, setEmail] = useState("");
@@ -16,29 +17,37 @@ export default function CreateAdvisorModal({ open, onClose }) {
     const [loading, setLoading] = useState(false);
 
     const createAdvisor = async () => {
-        setLoading(true);
+        try {
+            setLoading(true);
 
-        const res = await fetch("/api/admin/createAdvisor", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email }),
-        });
+            const res = await fetch("/api/admin/createAdvisor", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (data.success) {
-            setGenerated(data);
+            if (data.success) {
+                setGenerated(data);
+            }
+            else {
+                toast.error(data.error || "Failed to create advisor");
+            }
+
+            setLoading(false);
         }
-
+        catch (error) {
+        console.error("Error creating advisor:", error);
         setLoading(false);
-    };
+    }
+  } 
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent>
-
                 <DialogHeader>
                     <DialogTitle>Create Advisor</DialogTitle>
                 </DialogHeader>
@@ -61,7 +70,6 @@ export default function CreateAdvisorModal({ open, onClose }) {
                     </>
                 ) : (
                     <div className="space-y-3">
-
                         <p className="font-semibold text-green-600">
                             Advisor profile created
                         </p>
@@ -70,7 +78,6 @@ export default function CreateAdvisorModal({ open, onClose }) {
                             <p>
                                 <strong>Email:</strong> {generated.email}
                             </p>
-
                             <p>
                                 <strong>Temporary Password:</strong>{" "}
                                 {generated.temporaryPassword}
@@ -81,13 +88,15 @@ export default function CreateAdvisorModal({ open, onClose }) {
                             Share these credentials with the advisor.
                         </p>
 
-                        <Button onClick={onClose} className="w-full">
+                        <Button onClick={() => {
+                            setGenerated(null);
+                            setEmail("");
+                            onClose();
+                        }} className="w-full">
                             Close
                         </Button>
-
                     </div>
                 )}
-
             </DialogContent>
         </Dialog>
     );

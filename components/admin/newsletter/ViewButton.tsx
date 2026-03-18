@@ -15,7 +15,7 @@ const ViewButton = ({
     <button 
         onClick={handleView}
         disabled={disabled}
-        className={`px-5 py-1 rounded text-white cursor-pointer ${
+        className={`bg-green-600 hover:bg-green-700 p-2 rounded-lg text-white cursor-pointer ${
             disabled ? "bg-gray-400" : "bg-green-600"
         }`}
     >

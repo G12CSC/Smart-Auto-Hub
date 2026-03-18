@@ -24,7 +24,7 @@ const DeleteButton = ({
     <button 
         onClick={handleDelete}
         disabled={disabled}
-        className={`px-5 py-1 rounded text-white cursor-pointer ${
+        className={`bg-red-600 hover:bg-red-700 p-2 rounded-lg cursor-pointer text-white ${
             disabled ? "bg-gray-400" : "bg-red-600"
         }`}
     >

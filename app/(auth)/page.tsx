@@ -21,7 +21,7 @@ export default function AuthPage({ initialTab = "login" }: AuthPageProps) {
       {/* Left Panel - Branding & Decoration (Hidden on Mobile) */}
       <div className="hidden md:flex md:w-[45%] lg:w-[40%] relative bg-secondary flex-col justify-between p-12 overflow-hidden">
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary to-primary/30 z-0" />
+        <div className="absolute inset-0 bg-linear-to-br from-secondary via-secondary to-primary/30 z-0" />
 
         {/* Animated Particles / Floating Elements */}
         <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
@@ -82,13 +82,6 @@ export default function AuthPage({ initialTab = "login" }: AuthPageProps) {
 
         <div className="relative z-10 flex items-center space-x-4 text-sm text-secondary-foreground/60 animate-slide-up-3">
           <span>© {new Date().getFullYear()} Sameera Auto Traders</span>
-          <span>•</span>
-          <Link
-            href="/support"
-            className="hover:text-primary transition-colors"
-          >
-            Support
-          </Link>
           <span>•</span>
           <Link
             href="/privacy"

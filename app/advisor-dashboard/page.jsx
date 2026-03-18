@@ -46,8 +46,8 @@ export default function AdvisorPage() {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [contactMethod, setContactMethod] = useState("email");
+  // const [selectedBooking, setSelectedBooking] = useState(null);
+  // const [contactMethod, setContactMethod] = useState("email");
   const [advisorBookings, setAdvisorBookings] = useState([]);
   const [advisorInfo, setAdvisorInfo] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
@@ -103,18 +103,25 @@ export default function AdvisorPage() {
 
   const updateProfile = async () => {
 
-    const res = await fetch("/api/Advisors/profile", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(advisorInfo),
-    })
+    try {
+      const res = await fetch("/api/Advisors/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(advisorInfo),
+      })
 
-    if (res.ok) {
-      toast.success("Profile updated")
-      await fetchProfile()   // reload profile
-      setOpenEdit(false)
+      if (res.ok) {
+        toast.success("Profile updated")
+        setOpenEdit(false);
+        await fetchProfile()   // reload profile
+
+      }
+    }
+    catch (err) {
+      toast.error("Failed to update profile")
+      console.error(err);
     }
   }
   const filteredBookings = advisorBookings.filter(
@@ -125,22 +132,28 @@ export default function AdvisorPage() {
 
   const handleImageUpload = (e) => {
 
-    const file = e.target.files[0];
+    try {
+      const file = e.target.files[0];
 
-    if (!file) return;
+      if (!file) return;
 
-    const reader = new FileReader();
+      const reader = new FileReader();
 
-    reader.onloadend = () => {
+      reader.onloadend = () => {
 
-      setAdvisorInfo({
-        ...advisorInfo,
-        avatar: reader.result
-      });
+        setAdvisorInfo({
+          ...advisorInfo,
+          avatar: reader.result
+        });
 
-    };
+      };
 
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    }
+    catch (err) {
+      toast.error("Failed to upload image");
+      console.error(err);
+    }
   };
 
   const upcomingBookings = advisorBookings.filter((booking) => {
@@ -328,7 +341,7 @@ export default function AdvisorPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition whitespace-nowrap ${activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition cursor-pointer whitespace-nowrap ${activeTab === tab.id
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
@@ -518,7 +531,7 @@ export default function AdvisorPage() {
               </div>
 
               <div className="space-y-3">
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => setOpenEdit(true)}>
+                <Button variant="outline" className="w-full bg-transparent cursor-pointer" onClick={() => setOpenEdit(true)}>
                   <Settings size={16} className="mr-2" />
                   Edit Profile
                 </Button>
@@ -526,7 +539,7 @@ export default function AdvisorPage() {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full" onClick={handleLogout}>
+                    <Button variant="destructive" className="w-full cursor-pointer" onClick={handleLogout}>
                       <LogOut size={16} className="mr-2" />
                       Logout
                     </Button>
@@ -565,6 +578,13 @@ export default function AdvisorPage() {
                 }
             />
           <Input
+            placeholder="User Name"
+            value={advisorInfo?.name || ""}
+            onChange={(e) =>
+              setAdvisorInfo({ ...advisorInfo, name: e.target.value })
+            }
+          />
+          <Input
             placeholder="Phone"
             value={advisorInfo?.phone || ""}
             onChange={(e) =>
@@ -589,9 +609,10 @@ export default function AdvisorPage() {
           />
 
           <Input
-            type="number"
+            type="text"
             placeholder="Rating"
             value={advisorInfo?.rating || ""}
+            disabled
             onChange={(e) =>
               setAdvisorInfo({ ...advisorInfo, rating: Number(e.target.value) })
             }
@@ -599,14 +620,13 @@ export default function AdvisorPage() {
 
           <Input type="file" onChange={handleImageUpload} />
 
-          <Button onClick={updateProfile}>
+          <Button onClick={updateProfile} className="cursor-pointer">
             Save Changes
           </Button>
 
         </DialogContent>
       </Dialog>
 
-      <Footer />
     </div>
   );
 }

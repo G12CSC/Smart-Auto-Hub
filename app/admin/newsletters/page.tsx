@@ -4,7 +4,7 @@ import NewsletterTable from "@/components/admin/newsletter/NewsletterTable";
 export default function NewslettersPage() {
   return (
     <div className="p-8 dark:text-white">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-red-600">Newsletters</h1>
         <div className="flex gap-4 items-center">
           <button
@@ -23,7 +23,9 @@ export default function NewslettersPage() {
         </div>
       </div>
 
-      <NewsletterTable />
+      <div className="max-w-7xl mx-auto">
+        <NewsletterTable />
+      </div>
     </div>
   );
 }
