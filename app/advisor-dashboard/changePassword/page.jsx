@@ -49,7 +49,6 @@ export default function ChangePasswordPage() {
 
         if (data.success) {
             toast.success("Password updated successfully");
-<<<<<<< Updated upstream
 
 
             // Redirect to dashboard/login
@@ -72,11 +71,6 @@ export default function ChangePasswordPage() {
             router.replace("/advisor-dashboard");
 
 
-=======
-            
-            // Redirect to dashboard/login
-            await signOut({ redirect: true,callbackUrl: "/admin/login" });
->>>>>>> Stashed changes
         } else {
             toast.error(data.error || "Failed to update password");
         }
