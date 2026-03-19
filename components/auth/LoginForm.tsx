@@ -273,15 +273,6 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             Create an account
           </button>
         </p>
-        <p className="text-center text-sm text-muted-foreground animate-slide-up-3 delay-500 mt-4">
-          If you're an admin or an advisor
-          <Link
-            href="/admin/login"
-            className="font-semibold text-primary hover:underline transition-all ml-1"
-          >
-            Go to Admin Portal Login
-          </Link>
-        </p>
       </form>
     </div>
   );
