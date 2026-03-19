@@ -31,6 +31,7 @@ import { localStorageAPI } from "@/lib/storage/localStorage";
 import { cancelBookings } from "@/app/APITriggers/cancelBookings.js";
 import { rescheduleBooking } from "@/app/APITriggers/rescheduleBooking.js";
 import { toast } from "sonner";
+import { Avatar, AvatarImage } from "../ui/avatar";
 
 type Appointment = {
   id: string | number;
@@ -281,13 +282,26 @@ export default function DashboardClient({
         {/* User Welcome Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 animate-slide-in-down">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
+            {/* <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
               {session?.user?.name
                 ?.split(" ")
                 .map((n) => n[0])
                 .join("")
                 .toUpperCase() || "U"}
-            </div>
+            </div> */}
+            <Avatar className="h-16 w-16">
+              <AvatarImage
+                src={
+                  session?.user?.image ||
+                  session?.user?.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase() ||
+                  "U"
+                }
+              />
+            </Avatar>
             <div>
               <h1 className="text-3xl font-bold animate-text-reveal">
                 Welcome back, {session?.user?.name || "User"}!
@@ -852,13 +866,26 @@ export default function DashboardClient({
 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold">
+                    {/* <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold">
                       {session?.user?.name
                         ?.split(" ")
                         .map((n) => n[0])
                         .join("")
                         .toUpperCase() || "U"}
-                    </div>
+                    </div> */}
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage
+                        src={
+                          session?.user?.image ||
+                          session?.user?.name
+                            ?.split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase() ||
+                          "U"
+                        }
+                      />
+                    </Avatar>
                     {isEditingProfile && (
                       <Button variant="outline" size="sm">
                         Change Photo
