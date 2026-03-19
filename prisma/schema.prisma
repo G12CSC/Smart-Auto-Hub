@@ -290,3 +290,24 @@ enum StaffRole {
   advisor
   superadmin
 }
+
+model AuditLog {
+  id       String  @id @default(uuid())
+  action   String // e.g. "CREATE_ADVISOR", "BOOKING_CREATED"
+  entity   String // e.g. "Advisor", "Booking"
+  entityId String? // ID of affected record
+
+  userId   String? // who performed the action
+  userRole String? // ADMIN, ADVISOR, USER
+
+  metadata Json? // extra details (before/after changes)
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+}
