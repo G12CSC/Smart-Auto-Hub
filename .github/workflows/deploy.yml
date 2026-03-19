@@ -1,0 +1,62 @@
+name: deploy.yml
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build Next.js
+        run: npm run build
+
+    deploy:
+      needs: build
+      runs-on: ubuntu-latest
+
+      steps:
+
+        - name: Deploy to EC2 using SSH
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+
+            script: |
+              
+              cd project
+              
+              echo "Pull latest code"
+              git pull origin master
+              
+              echo "Install dependencies"
+              npm install
+              
+              echo "Generate Prisma Client"
+              npx prisma generate
+              
+              echo "Run Prisma migrations"
+              DATABASE_URL=${{ secrets.DATABASE_URL }} npx prisma migrate deploy
+              
+              echo "Build project"
+              npm run build
+              
+              echo "Restart application"
+              pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
