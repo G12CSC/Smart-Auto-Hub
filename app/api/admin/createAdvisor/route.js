@@ -43,7 +43,7 @@ export async function POST(req) {
       action: "CREATE_ADVISOR",
       entity: "Advisor",
       entityId: advisor.id,
-      userId: "admin-id",
+      userId: "admin",
       userRole: "ADMIN",
       metadata: {
         email: advisor.email,
