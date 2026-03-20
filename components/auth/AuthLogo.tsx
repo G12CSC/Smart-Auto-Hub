@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export function AuthLogo() {
@@ -24,13 +25,15 @@ export function AuthLogo() {
       : "/images/LogoBG_Removed-light.png";
 
   return (
-    <Image
-      src={logoSrc}
-      alt="Sameera Auto Traders Logo"
-      width={200}
-      height={96}
-      priority
-      className="h-24 w-auto object-contain mb-8 drop-shadow-xl"
-    />
+    <Link href="/" aria-label="Go to home page" className="inline-block mb-8">
+      <Image
+        src={logoSrc}
+        alt="Sameera Auto Traders Logo"
+        width={200}
+        height={96}
+        priority
+        className="h-24 w-auto object-contain drop-shadow-xl"
+      />
+    </Link>
   );
 }
