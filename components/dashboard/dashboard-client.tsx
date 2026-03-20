@@ -273,7 +273,6 @@ export default function DashboardClient({
 
         await updateSession({
           name: data.data?.name,
-          email: data.data?.email,
         });
 
         toast.success("Profile updated successfully");
