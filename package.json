@@ -11,6 +11,10 @@
     "test": "jest",
     "test:watch": "jest --watchAll"
   },
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@next-auth/prisma-adapter": "^1.0.7",
