@@ -146,12 +146,10 @@ export const authOptions = {
       }
 
       // Apply client-side session.update(...) payload immediately.
+      // Only allow updating display name — never trust client-provided email.
       if (trigger === "update" && session) {
         if (typeof session.name === "string") {
           token.name = session.name;
-        }
-        if (typeof session.email === "string") {
-          token.email = session.email;
         }
       }
 
@@ -165,6 +163,17 @@ export const authOptions = {
           token.mustChangePassword = admin.mustChangePassword;
           token.name = admin.name;
           token.email = admin.email;
+        }
+      } else if (token.userType === "user" && token.id) {
+        const user = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { email: true },
+        });
+
+        if (user) {
+          token.email = user.email;
+        } else {
+          console.warn(`JWT: no user found for id=${token.id}; token may be stale`);
         }
       }
 
