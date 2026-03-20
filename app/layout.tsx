@@ -7,6 +7,8 @@ import Providers from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import ChatBot from "@/components/ChatBot";
+import PWARegister from "@/components/PWARegister";
+import PWAInstallButton from "@/components/PWAInstallButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,9 +21,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart AutoHub - Sameera Auto Traders",
+  title: "Sameera Auto Traders",
   description:
     "Find your perfect vehicle at Sameera Auto Traders. Browse our complete inventory, book consultations, and get expert guidance.",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#0b1220",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Sameera Auto Traders",
+  },
   icons: {
     icon: [
       {
@@ -33,7 +42,7 @@ export const metadata: Metadata = {
         media: "(prefers-color-scheme: dark)",
       },
     ],
-    apple: "/favicon128x128.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -47,6 +56,8 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <PWARegister />
+            <PWAInstallButton />
             {children}
             <ChatBot />
             <Toaster />
