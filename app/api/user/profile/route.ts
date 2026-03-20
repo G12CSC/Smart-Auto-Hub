@@ -6,12 +6,12 @@ export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user?.id) {
       return new Response("Unauthorized", { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email || undefined },
+      where: { id: session.user.id },
       select: {
         name: true,
         email: true,
@@ -39,30 +39,36 @@ export async function PATCH(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || !session.user?.id) {
       return new Response("Unauthorized", { status: 401 });
     }
 
     const body = await request.json();
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email || undefined },
+      where: { id: session.user.id },
     });
 
     if (!user) {
       return new Response("User not found", { status: 404 });
     }
 
-    await prisma.user.update({
-      where: { email: session.user?.email || undefined },
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
       data: {
         name: body.name,
         phone: body.phone,
       },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+      },
     });
     return Response.json({
       success: true,
-      data: user,
+      data: updatedUser,
     });
   } catch (error) {
     return new Response("An error occurred while updating the profile", {
@@ -70,4 +76,3 @@ export async function PATCH(request: Request) {
     });
   }
 }
-
