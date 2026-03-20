@@ -53,16 +53,22 @@ export async function PATCH(request: Request) {
       return new Response("User not found", { status: 404 });
     }
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { email: session.user?.email || undefined },
       data: {
         name: body.name,
         phone: body.phone,
       },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+      },
     });
     return Response.json({
       success: true,
-      data: user,
+      data: updatedUser,
     });
   } catch (error) {
     return new Response("An error occurred while updating the profile", {
@@ -70,4 +76,3 @@ export async function PATCH(request: Request) {
     });
   }
 }
-

@@ -39,7 +39,7 @@ export const authOptions = {
 
         return {
           id: user.id,
-            name: user.name,
+          name: user.name,
           email: user.email,
           userType: "user",
         };
@@ -55,7 +55,6 @@ export const authOptions = {
       },
 
       async authorize(credentials) {
-
         if (!credentials?.email || !credentials?.password) return null;
 
         const admin = await prisma.admin.findUnique({
@@ -71,14 +70,14 @@ export const authOptions = {
 
         if (!ok) return null;
 
-          console.log("LOGIN ATTEMPT:", credentials);
+        console.log("LOGIN ATTEMPT:", credentials);
 
         return {
           id: admin.id,
           email: admin.email,
           userType: admin.role === "advisor" ? "advisor" : "admin",
           adminRole: admin.role,
-            mustChangePassword: admin.mustChangePassword
+          mustChangePassword: admin.mustChangePassword,
         };
       },
     }),
@@ -103,82 +102,91 @@ export const authOptions = {
     maxAge: 30 * 60, // 30 minutes
   },
 
-    callbacks: {
+  callbacks: {
+    // async jwt({ token, user }) {
+    //     if (user) {
+    //         token.id = user.id;
+    //         token.userType = user.userType;
+    //         token.name = user.name;
+    //         token.adminRole = user.adminRole ?? null;
+    //         token.mustChangePassword = user.mustChangePassword ?? false;
+    //     }
+    //
+    //     if (!token.userType) token.userType = "user";
+    //
+    //     return token;
+    // },
+    //
+    // async session({ session, token }) {
+    //     session.user.id = token.id;
+    //     session.user.userType = token.userType;
+    //     session.user.name = token.name;
+    //     session.user.adminRole = token.adminRole;
+    //     session.user.mustChangePassword = token.mustChangePassword;
+    //     return session;
+    // },
+    //
+    // async redirect({ url, baseUrl }) {
+    //     return process.env.BASEURL;
+    // },
 
-        // async jwt({ token, user }) {
-        //     if (user) {
-        //         token.id = user.id;
-        //         token.userType = user.userType;
-        //         token.name = user.name;
-        //         token.adminRole = user.adminRole ?? null;
-        //         token.mustChangePassword = user.mustChangePassword ?? false;
-        //     }
-        //
-        //     if (!token.userType) token.userType = "user";
-        //
-        //     return token;
-        // },
-        //
-        // async session({ session, token }) {
-        //     session.user.id = token.id;
-        //     session.user.userType = token.userType;
-        //     session.user.name = token.name;
-        //     session.user.adminRole = token.adminRole;
-        //     session.user.mustChangePassword = token.mustChangePassword;
-        //     return session;
-        // },
-        //
-        // async redirect({ url, baseUrl }) {
-        //     return process.env.BASEURL;
-        // },
+    async jwt({ token, user, account, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.adminRole = user.adminRole ?? null;
 
-        async jwt({ token, user,account }) {
-
-            if (user) {
-                token.id = user.id;
-                token.name = user.name;
-                token.adminRole = user.adminRole ?? null;
-
-                // 🔥 KEY FIX
-                if (account?.provider === "google" || account?.provider === "github") {
-                    token.userType = "user"; // ✅ assign role for OAuth users
-                } else {
-                    token.userType = user.userType ?? "user";
-                }
-            }
-
-            // 🔥 ALWAYS GET LATEST VALUE FROM DB
-            if (token.userType === "advisor" || token.userType === "admin") {
-                const admin = await prisma.admin.findUnique({
-                    where: { id: token.id },
-                });
-
-                if (admin) {
-                    token.mustChangePassword = admin.mustChangePassword;
-                    token.name = admin.name;
-                    token.email = admin.email;
-                }
-            }
-
-            return token;
-        },
-
-        async session({ session, token }) {
-            session.user.id = token.id;
-            session.user.userType = token.userType ?? "user";
-            session.user.name = token.name;
-            session.user.adminRole = token.adminRole;
-            session.user.mustChangePassword = token.mustChangePassword;
-            session.user.email = token.email; // ✅ IMPORTANT
-            return session;
-        },
-
-        async redirect({ url, baseUrl }) {
-            if (url.startsWith("/")) return baseUrl + url;
-            if (url.startsWith(baseUrl)) return url;
-            return baseUrl;
+        // 🔥 KEY FIX
+        if (account?.provider === "google" || account?.provider === "github") {
+          token.userType = "user"; // ✅ assign role for OAuth users
+        } else {
+          token.userType = user.userType ?? "user";
         }
+      }
+
+      // Apply client-side session.update(...) payload immediately.
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") {
+          token.name = session.name;
+        }
+        if (typeof session.email === "string") {
+          token.email = session.email;
+        }
+      }
+
+      // 🔥 ALWAYS GET LATEST VALUE FROM DB
+      if (token.userType === "advisor" || token.userType === "admin") {
+        const admin = await prisma.admin.findUnique({
+          where: { id: token.id },
+        });
+
+        if (admin) {
+          token.mustChangePassword = admin.mustChangePassword;
+          token.name = admin.name;
+          token.email = admin.email;
+        }
+      }
+
+      return token;
     },
+
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.userType = token.userType ?? "user";
+      session.user.name = token.name;
+      session.user.adminRole = token.adminRole;
+      session.user.mustChangePassword = token.mustChangePassword;
+      session.user.email = token.email; // ✅ IMPORTANT
+      return session;
+    },
+
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return baseUrl + url;
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
+    },
+  },
 
   debug: true,
 

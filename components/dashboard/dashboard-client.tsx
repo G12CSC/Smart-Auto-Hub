@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,7 +31,7 @@ import { localStorageAPI } from "@/lib/storage/localStorage";
 import { cancelBookings } from "@/app/APITriggers/cancelBookings.js";
 import { rescheduleBooking } from "@/app/APITriggers/rescheduleBooking.js";
 import { toast } from "sonner";
-import { Avatar, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Appointment = {
   id: string | number;
@@ -41,6 +41,7 @@ type Appointment = {
   preferredTime?: string;
   branch?: string;
   vehicleType?: string;
+  adminMessage?: string;
   advisorMessage?: string;
   message?: string;
 };
@@ -88,6 +89,8 @@ export default function DashboardClient({
   initialUpcoming,
   initialHistory,
 }: DashboardClientProps) {
+  const { data: liveSession, update: updateSession } = useSession();
+  const displaySession = liveSession ?? session;
   const [activeTab, setActiveTab] = useState("appointments");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [upcomingAppointments, setUpcomingAppointments] = useState<
@@ -246,11 +249,16 @@ export default function DashboardClient({
     }
   };
 
-  const handleSaveProfileChanges = () => {
+  const handleSaveProfileChanges = async () => {
+    if (!userProfile) {
+      toast.error("Profile data is not loaded yet");
+      return;
+    }
+
     try {
       console.log("Saving profile changes:", userProfile);
 
-      const res = fetch("/api/user/profile", {
+      const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -258,22 +266,25 @@ export default function DashboardClient({
         body: JSON.stringify(userProfile),
       });
 
-      const data = res.then((r) => r.json());
+      const data = await res.json();
 
-      data.then((d) => {
-        if (d.success) {
-          toast.success("Profile updated successfully");
-          fetchUserProfileDetails();
-          setUserProfile(d.data);
-        } else {
-          toast.error("Failed to update profile");
-        }
-      });
+      if (data.success) {
+        setUserProfile(data.data);
+
+        await updateSession({
+          name: data.data?.name,
+          email: data.data?.email,
+        });
+
+        toast.success("Profile updated successfully");
+        setIsEditingProfile(false);
+      } else {
+        toast.error(data.message || "Failed to update profile");
+      }
     } catch (error) {
       console.error("Error saving profile changes:", error);
       toast.error("An error occurred while saving profile changes");
     }
-    setIsEditingProfile(false);
   };
 
   return (
@@ -290,21 +301,18 @@ export default function DashboardClient({
                 .toUpperCase() || "U"}
             </div> */}
             <Avatar className="h-16 w-16">
-              <AvatarImage
-                src={
-                  session?.user?.image ||
-                  session?.user?.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase() ||
-                  "U"
-                }
-              />
+              <AvatarImage src={displaySession?.user?.image || ""} />
+              <AvatarFallback>
+                {displaySession?.user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase() || "U"}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold animate-text-reveal">
-                Welcome back, {session?.user?.name || "User"}!
+                Welcome back, {displaySession?.user?.name || "User"}!
               </h1>
 
               <p className="text-muted-foreground animate-text-reveal stagger-1">
@@ -510,9 +518,11 @@ export default function DashboardClient({
                                 disabled={apt.status !== "PENDING"}
                                 onClick={() => {
                                   setNewDate(
-                                    new Date(apt.preferredDate)
-                                      .toISOString()
-                                      .split("T")[0] || "",
+                                    apt.preferredDate
+                                      ? new Date(apt.preferredDate)
+                                          .toISOString()
+                                          .split("T")[0]
+                                      : "",
                                   );
                                   setNewTime(apt.preferredTime || "");
                                   setRescheduleApt(apt);
@@ -541,6 +551,7 @@ export default function DashboardClient({
                                     />
 
                                     <select
+                                      aria-label="Reschedule time slot"
                                       className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
                                       value={newTime}
                                       onChange={(e) =>
@@ -874,17 +885,14 @@ export default function DashboardClient({
                         .toUpperCase() || "U"}
                     </div> */}
                     <Avatar className="h-24 w-24">
-                      <AvatarImage
-                        src={
-                          session?.user?.image ||
-                          session?.user?.name
-                            ?.split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase() ||
-                          "U"
-                        }
-                      />
+                      <AvatarImage src={displaySession?.user?.image || ""} />
+                      <AvatarFallback>
+                        {displaySession?.user?.name
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase() || "U"}
+                      </AvatarFallback>
                     </Avatar>
                     {isEditingProfile && (
                       <Button variant="outline" size="sm">
@@ -902,13 +910,11 @@ export default function DashboardClient({
                       <Input
                         type="text"
                         value={userProfile?.name || ""}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            name: e.target.value,
-                          })
-                        }
-                        defaultValue="John Doe"
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev ? { ...prev, name: e.target.value } : prev,
+                          );
+                        }}
                         disabled={!isEditingProfile}
                       />
                     </div>
@@ -920,12 +926,11 @@ export default function DashboardClient({
                       <Input
                         type="email"
                         value={userProfile?.email || ""}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            email: e.target.value,
-                          })
-                        }
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev ? { ...prev, email: e.target.value } : prev,
+                          );
+                        }}
                         disabled={true}
                       />
                     </div>
@@ -937,13 +942,16 @@ export default function DashboardClient({
                       <Input
                         type="tel"
                         value={userProfile?.phone || ""}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            phone: e.target.value || undefined,
-                          })
-                        }
-                        defaultValue="+94 77 123 4567"
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  phone: e.target.value || undefined,
+                                }
+                              : prev,
+                          );
+                        }}
                         disabled={!isEditingProfile}
                       />
                     </div>
