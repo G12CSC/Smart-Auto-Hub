@@ -885,7 +885,7 @@ export default function DashboardClient({
                         .toUpperCase() || "U"}
                     </div> */}
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src={displaySession?.user?.image || ""} />
+                      <AvatarImage src={displaySession?.user?.image || undefined} />
                       <AvatarFallback>
                         {displaySession?.user?.name
                           ?.split(" ")
