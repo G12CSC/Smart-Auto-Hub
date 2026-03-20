@@ -62,8 +62,7 @@ export default function FeedbackPopup() {
           </DialogHeader>
           <div className="mt-4">
             <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-              Looking for your dream car or need more information about our
-              vehicles?
+              How we can help you
             </h3>
             <p className="text-sm font-semibold text-foreground">
               Our team is ready to help you with car inquiries, vehicle
