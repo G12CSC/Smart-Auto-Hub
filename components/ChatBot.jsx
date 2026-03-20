@@ -216,6 +216,7 @@ export default function ChatBot() {
             <div className="flex items-center gap-2">
               <input
                 type="text"
+                aria-label="Chat message input"
                 placeholder="Ask about vehicles, booking, or features..."
                 className="flex-1 bg-input/90 border border-cyan-300/30 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all"
                 value={input}
