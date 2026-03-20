@@ -70,8 +70,6 @@ export const authOptions = {
 
         if (!ok) return null;
 
-        console.log("LOGIN ATTEMPT:", credentials);
-
         return {
           id: admin.id,
           email: admin.email,
