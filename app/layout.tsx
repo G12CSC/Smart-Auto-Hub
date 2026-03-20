@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
