@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { logAudit } from "@/lib/audit/auditLogger";
 
 export async function POST(req) {
     try {
@@ -55,6 +56,18 @@ export async function POST(req) {
                 passwordHash: hashed,
                 mustChangePassword: false,
             },
+        });
+
+        await logAudit({
+            action: "CHANGE_PASSWORD",
+            entity: "Advisor",
+            entityId: advisor.id,
+            metadata: {
+                email: advisor.email,
+            },
+            userRole: "ADVISOR",
+            userId: advisor.id,
+            
         });
 
         return Response.json({ success: true });
