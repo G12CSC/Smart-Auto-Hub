@@ -41,7 +41,7 @@ jobs:
 
           script: |
             
-            cd project
+            cd Smart-Auto-Hub
             
             echo "Pull latest code"
             git pull origin master

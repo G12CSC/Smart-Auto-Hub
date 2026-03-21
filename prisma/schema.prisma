@@ -23,6 +23,7 @@ model User {
   newsletters          NewsletterEntry[]
   reviews              Review[]
   sessions             Session[]
+  Transactions         Transactions[]
 }
 
 model Account {
@@ -93,6 +94,7 @@ model Car {
   updatedBy      Admin?         @relation("UpdatedBy", fields: [updatedById], references: [id])
   reviews        Review[]
   CarVector      CarVector[]
+  Transactions   Transactions[]
 
   @@map("Car")
 }
@@ -124,9 +126,45 @@ model Review {
   rating     Int
   comment    String
   adminReply String?
+  location   String
   createdAt  DateTime @default(now())
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id])
   car        Car      @relation(fields: [carId], references: [id])
   user       User     @relation(fields: [userId], references: [id])
+}
+
+model Transactions {
+  id         String @id @default(uuid())
+  buyerName  String
+  buyerEmail String
+  phone      String
+  location   String
+  price      Float
+
+  carId  String
+  userId String
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+
+  car  Car  @relation(fields: [carId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  couponCode String   @unique
+  expireAt   DateTime
+
+  // Relations
+  transactions Transactions[]
+  reviews      Review[]
+
+  createdAt DateTime @default(now())
 }
 
 model NewsletterEntry {
@@ -310,4 +348,12 @@ model AuditLog {
   @@index([userId])
   @@index([entity])
   @@index([createdAt])
+}
+
+model PasswordResetOTP {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

@@ -5,6 +5,7 @@ export async function GET(
     req: Request,
     { params }: { params: { carId: string } }
 ) {
+
     try {
 
         const reviews = await prisma.review.findMany({

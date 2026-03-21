@@ -145,7 +145,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             <button
               type="button"
               className="text-sm font-medium text-primary hover:underline transition-all"
-              onClick={() => router.push("/forgot-password")}
+              onClick={() => router.push("/forgotPassword")}
             >
               Forgot Password?
             </button>

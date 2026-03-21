@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import RightPanel from "@/components/branches/RightPanel";
+import InputBox from "@/components/Input";
 
 import {
   Search,
@@ -28,9 +29,8 @@ import {
   LogOut,
   Sun,
   Moon,
-  CircleX,
-  MessageCircle,
-  Trash
+  CircleX
+
 } from "lucide-react";
 
 import NewsletterTable from "./NewsletterTable";
@@ -70,9 +70,6 @@ import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
 import { vehicleAPI } from "../../lib/api/vehicles.js";
 
-const stats = [
-];
-
 
 const vehicleFormDefaults = {
   companyName: "",
@@ -88,6 +85,7 @@ const vehicleFormDefaults = {
   images: "",
   status: "Available",
 };
+
 
 
 export default function AdminPage() {
@@ -129,6 +127,25 @@ export default function AdminPage() {
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
   const [advisors, setAdvisors] = useState([]);
   const [showAdvisors, setShowAdvisors] = useState(false);
+
+  const [form, setForm] = useState({
+    id: "",
+    buyerName: "",
+    buyerEmail: "",
+    phone: "",
+    location: "",
+    price: "",
+    brand: "",
+    model: "",
+    year: 0
+  });
+
+  const [brands, setBrands] = useState([]);
+  const [models, setModels] = useState([]);
+  const [years, setYears] = useState([]);
+
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingYears, setLoadingYears] = useState(false);
 
   const stats = [
 
@@ -511,6 +528,98 @@ export default function AdminPage() {
 
   };
 
+  useEffect(() => {
+    fetch("/api/cars/brands")
+      .then(res => res.json())
+      .then(setBrands);
+  }, []);
+
+  // 🔹 Load models when brand changes
+  useEffect(() => {
+    if (!form.brand) return;
+
+    setLoadingModels(true);
+    fetch(`/api/cars/models?brand=${form.brand}`)
+      .then(res => res.json())
+      .then(data => setModels(data))
+      .finally(() => setLoadingModels(false));
+  }, [form.brand]);
+
+  useEffect(() => {
+    if (!form.brand || !form.model) return;
+
+    setLoadingYears(true);
+    fetch(`/api/cars/years?brand=${form.brand}&model=${form.model}`)
+      .then(res => res.json())
+      .then(data => setYears(data))
+      .finally(() => setLoadingYears(false));
+  }, [form.model]);
+
+  const handleBrandChange = (e) => {
+    setForm({
+      ...form,
+      brand: e.target.value,
+      model: "",
+      year: ""
+    });
+    setModels([]);
+    setYears([]);
+  };
+
+  const handleModelChange = (e) => {
+    setForm({
+      ...form,
+      model: e.target.value,
+      year: ""
+    });
+    setYears([]);
+  };
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  const handleTransactionSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("/api/admin/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(form)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setForm({
+          id: "",
+          buyerName: "",
+          buyerEmail: "",
+          phone: "",
+          location: "",
+          price: "",
+          brand: "",
+          model: "",
+          year: 0
+        });
+
+        toast.success("Transaction saved successfully");
+      }
+
+
+    }
+    catch (error) {
+      console.error("Error saving transaction:", error);
+      toast.error(error.message || "Failed to save transaction");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -623,9 +732,15 @@ export default function AdminPage() {
               {
                 id: "advisors",
                 label: "Create an advisor",
-                icon: MapPin,
+                icon: UserCog,
                 count: 0,
               },
+              {
+                id: "transactions",
+                label: "Transactions",
+                icon: FileText,
+                count: 0,
+              }
             ].map((tab) => (
               <Button
                 key={tab.id}
@@ -750,22 +865,7 @@ export default function AdminPage() {
                         <td className="px-4 py-2 flex gap-2">
                           {request.status === "PENDING" && (
                             <>
-                              {/* <button
-                                className="bg-green-600 text-white px-2 py-1 rounded text-xs"
-                                onClick={() =>
-                                  approveBookings(request.id, "ACCEPTED")
-                                }
-                              >
-                                Approve
-                              </button>
-                              <button
-                                className="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                                onClick={() =>
-                                  approveBookings(request.id, "REJECTED")
-                                }
-                              >
-                                Decline
-                              </button> */}
+
                               <Button
                                 size="sm"
                                 className="text-xs bg-primary hover:bg-primary/90"
@@ -779,47 +879,6 @@ export default function AdminPage() {
                               </Button>
                             </>
                           )}
-
-                          {/* Uncommet this for Custom dialog box for message input */}
-
-                          {/* <Dialog>
-                            <DialogTrigger asChild>
-                              <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-                                Send Message
-                              </button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Send an Admin Message</DialogTitle>
-                                <DialogDescription>
-                                  Enter the Admin Message for the booking
-                                  request: {request.id}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <Input
-                                placeholder="Message"
-                                value={adminMessage}
-                                onChange={(e) => setAdminMessage}
-                              ></Input>
-                              <DialogFooter>
-                                <div className="flex justify-end gap-4">
-                                  <Button type="reset">Clear</Button>
-                                  <Buton
-                                    onClick={() =>
-                                      sendAdminMessagesForBookings(
-                                        request.id,
-                                        adminMessage
-                                      )
-                                    }
-                                  >
-                                    Send
-                                  </Buton>
-                                </div>
-                                <DialogClose></DialogClose>
-                                
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog> */}
                           <Button
                             size="sm"
                             className="bg-blue-600 text-white text-xs hover:bg-blue-900"
@@ -1600,6 +1659,89 @@ export default function AdminPage() {
 
 
               </div>
+            </div>
+          )}
+
+          {activeTab === "transactions" && (
+            <div>
+              <div>
+                <h2 className="text-2xl font-bold mb-6">Transaction Management</h2>
+              </div>
+              <form
+                name="sumitTransaction"
+                onSubmit={handleTransactionSubmit}
+                className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 shadow rounded-2xl space-y-6"
+              >
+                <h2 className="text-xl font-bold">Transaction Form</h2>
+
+                {/* 🔹 Basic Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <InputBox name="id" placeholder="Transaction ID" onChange={handleChange} value={form.id} />
+                  <InputBox name="buyerName" placeholder="Buyer Name" onChange={handleChange} value={form.buyerName} />
+
+                  <InputBox name="buyerEmail" placeholder="Email" onChange={handleChange} value={form.buyerEmail} />
+                  <InputBox name="phone" placeholder="Phone" onChange={handleChange} value={form.phone} />
+
+                  <InputBox name="location" placeholder="Location" onChange={handleChange} value={form.location} />
+                  <InputBox name="price" placeholder="Price" onChange={handleChange} value={form.price} />
+                </div>
+
+                {/* 🔹 Car Selection */}
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Brand */}
+                  <select
+                    value={form.brand}
+                    onChange={handleBrandChange}
+                    className="input p-2 dark:bg-black/80 text-white"
+                    required
+                  >
+                    <option value="">Select Brand</option>
+                    {brands.map(b => (
+                      <option key={b}>{b}</option>
+                    ))}
+                  </select>
+
+                  {/* Model */}
+                  <select
+                    value={form.model}
+                    onChange={handleModelChange}
+                    disabled={!form.brand || loadingModels}
+                    className="input disabled:bg-gray-100 p-2 bg-gray-600 dark:bg-black/80 text-white"
+                    required
+                  >
+                    <option value="">
+                      {loadingModels ? "Loading..." : "Select Model"}
+                    </option>
+                    {models.map(m => (
+                      <option key={m}>{m}</option>
+                    ))}
+                  </select>
+
+                  {/* Year */}
+                  <select
+                    value={form.year}
+                    onChange={handleChange}
+                    name="year"
+                    required
+                    disabled={!form.model || loadingYears}
+                    className="input disabled:bg-gray-100 dark:disabled:bg-gray-300 p-2 dark:bg-black/80 text-white"
+                  >
+                    <option value="">
+                      {loadingYears ? "Loading..." : "Select Year"}
+                    </option>
+                    {years.map(y => (
+                      <option key={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                >
+                  Save Transaction
+                </button>
+              </form>
             </div>
           )}
         </div>
