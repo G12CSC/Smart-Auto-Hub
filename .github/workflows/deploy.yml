@@ -23,8 +23,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Build Next.js
-        run: npm run build
+      # - name: Build Next.js
+      #   run: npm run build
 
   deploy:
     needs: build
