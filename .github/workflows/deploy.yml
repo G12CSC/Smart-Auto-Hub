@@ -53,7 +53,7 @@ jobs:
             npx prisma generate
             
             echo "Run Prisma migrations"
-            DATABASE_URL=${{ secrets.DATABASE_URL }} npx prisma migrate deploy
+            DATABASE_URL=${{ secrets.EC2_DB_URL }} npx prisma migrate deploy
             
             echo "Build project"
             npm run build
