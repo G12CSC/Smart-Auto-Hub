@@ -574,7 +574,7 @@ export default function AdminPage() {
     });
     setYears([]);
   };
-  
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -582,7 +582,7 @@ export default function AdminPage() {
     });
   }
 
-  const handleSubmit = async (e) => {
+  const handleTransactionSubmit = async (e) => {
     e.preventDefault();
 
     try {
@@ -609,11 +609,15 @@ export default function AdminPage() {
           model: "",
           year: 0
         });
+
+        toast.success("Transaction saved successfully");
       }
+
+
     }
     catch (error) {
-      console.error("Error saving transaction:", error);  
-      toast.error("Failed to save transaction");
+      console.error("Error saving transaction:", error);
+      toast.error(error.message || "Failed to save transaction");
     }
   };
 
@@ -1665,21 +1669,22 @@ export default function AdminPage() {
                 <h2 className="text-2xl font-bold mb-6">Transaction Management</h2>
               </div>
               <form
-                onSubmit={handleSubmit}
+                name="sumitTransaction"
+                onSubmit={handleTransactionSubmit}
                 className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 shadow rounded-2xl space-y-6"
               >
                 <h2 className="text-xl font-bold">Transaction Form</h2>
 
                 {/* 🔹 Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Input name="id" placeholder="Transaction ID" onChange={handleChange} />
-                  <Input name="buyerName" placeholder="Buyer Name" onChange={handleChange} />
+                  <InputBox name="id" placeholder="Transaction ID" onChange={handleChange} />
+                  <InputBox name="buyerName" placeholder="Buyer Name" onChange={handleChange} />
 
-                  <Input name="buyerEmail" placeholder="Email" onChange={handleChange} />
-                  <Input name="phone" placeholder="Phone" onChange={handleChange} />
+                  <InputBox name="buyerEmail" placeholder="Email" onChange={handleChange} />
+                  <InputBox name="phone" placeholder="Phone" onChange={handleChange} />
 
-                  <Input name="location" placeholder="Location" onChange={handleChange} />
-                  <Input name="price" placeholder="Price" onChange={handleChange} />
+                  <InputBox name="location" placeholder="Location" onChange={handleChange} />
+                  <InputBox name="price" placeholder="Price" onChange={handleChange} />
                 </div>
 
                 {/* 🔹 Car Selection */}
@@ -1689,6 +1694,7 @@ export default function AdminPage() {
                     value={form.brand}
                     onChange={handleBrandChange}
                     className="input p-2"
+                    required
                   >
                     <option value="">Select Brand</option>
                     {brands.map(b => (
@@ -1702,6 +1708,7 @@ export default function AdminPage() {
                     onChange={handleModelChange}
                     disabled={!form.brand || loadingModels}
                     className="input disabled:bg-gray-100 p-2"
+                    required
                   >
                     <option value="">
                       {loadingModels ? "Loading..." : "Select Model"}
@@ -1716,6 +1723,7 @@ export default function AdminPage() {
                     value={form.year}
                     onChange={handleChange}
                     name="year"
+                    required
                     disabled={!form.model || loadingYears}
                     className="input disabled:bg-gray-100 p-2"
                   >

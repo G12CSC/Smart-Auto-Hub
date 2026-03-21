@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
     await tx.transactions.create({
       data: {
-        id: crypto.randomUUID(),
+        id: body.id || crypto.randomUUID(),
         buyerName: body.buyerName,
         buyerEmail: body.buyerEmail,
         phone: body.phone,
