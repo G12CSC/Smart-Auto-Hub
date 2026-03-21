@@ -597,7 +597,6 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Transaction saved!");
         setForm({
           id: "",
           buyerName: "",
@@ -1677,14 +1676,14 @@ export default function AdminPage() {
 
                 {/* 🔹 Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
-                  <InputBox name="id" placeholder="Transaction ID" onChange={handleChange} />
-                  <InputBox name="buyerName" placeholder="Buyer Name" onChange={handleChange} />
+                  <InputBox name="id" placeholder="Transaction ID" onChange={handleChange} value={form.id} />
+                  <InputBox name="buyerName" placeholder="Buyer Name" onChange={handleChange} value={form.buyerName} />
 
-                  <InputBox name="buyerEmail" placeholder="Email" onChange={handleChange} />
-                  <InputBox name="phone" placeholder="Phone" onChange={handleChange} />
+                  <InputBox name="buyerEmail" placeholder="Email" onChange={handleChange} value={form.buyerEmail} />
+                  <InputBox name="phone" placeholder="Phone" onChange={handleChange} value={form.phone} />
 
-                  <InputBox name="location" placeholder="Location" onChange={handleChange} />
-                  <InputBox name="price" placeholder="Price" onChange={handleChange} />
+                  <InputBox name="location" placeholder="Location" onChange={handleChange} value={form.location} />
+                  <InputBox name="price" placeholder="Price" onChange={handleChange} value={form.price} />
                 </div>
 
                 {/* 🔹 Car Selection */}
@@ -1693,7 +1692,7 @@ export default function AdminPage() {
                   <select
                     value={form.brand}
                     onChange={handleBrandChange}
-                    className="input p-2"
+                    className="input p-2 dark:bg-black/80 text-white"
                     required
                   >
                     <option value="">Select Brand</option>
@@ -1707,7 +1706,7 @@ export default function AdminPage() {
                     value={form.model}
                     onChange={handleModelChange}
                     disabled={!form.brand || loadingModels}
-                    className="input disabled:bg-gray-100 p-2"
+                    className="input disabled:bg-gray-100 p-2 bg-gray-600 dark:bg-black/80 text-white"
                     required
                   >
                     <option value="">
@@ -1725,7 +1724,7 @@ export default function AdminPage() {
                     name="year"
                     required
                     disabled={!form.model || loadingYears}
-                    className="input disabled:bg-gray-100 p-2"
+                    className="input disabled:bg-gray-100 dark:disabled:bg-gray-300 p-2 dark:bg-black/80 text-white"
                   >
                     <option value="">
                       {loadingYears ? "Loading..." : "Select Year"}

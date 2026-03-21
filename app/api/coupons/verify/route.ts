@@ -42,6 +42,7 @@ export async function GET(req: Request) {
         car: true,
       },
     });
+    console.log(transaction);
 
     if (!transaction) {
       return NextResponse.json(
@@ -50,6 +51,19 @@ export async function GET(req: Request) {
       );
     }
 
+    const user = await prisma.user.findUnique({
+        where: { email: transaction.buyerEmail },
+    });
+
+    if (!user) {
+        return NextResponse.json(
+          { success: false, message: "User not found" },
+          { status: 404 },
+        );
+    }
+
+    console.log("Coupon valid for transaction:", transaction.id);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -57,12 +71,16 @@ export async function GET(req: Request) {
         carId: transaction.car.id,
         brand: transaction.car.brand,
         model: transaction.car.model,
+        year: transaction.car.year,
+        image: transaction.car.images ? transaction.car.images?.[0]: null,
       },
     });
   } catch (err) {
+    console.error("Error verifying coupon:", err);
+
     return NextResponse.json(
-      { success: false, message: "Invalid token" },
-      { status: 401 },
+      { success: false, message: "Invalid or expired coupon" },
+      { status: 400 },
     );
   }
 }
