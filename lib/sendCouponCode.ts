@@ -30,7 +30,7 @@ export async function sendCouponCode({
       
       <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 18px; text-align: center;">
         Thank you for your recent purchase! Use the coupon code to review our services.
-        <a href="https://localhost:3000/review?code=${couponCode}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">Write a Review</a>
+        <a href="http://localhost:3000/review?code=${couponCode}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">Write a Review</a>
       </div>
 
     <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px;">

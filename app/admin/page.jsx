@@ -598,6 +598,17 @@ export default function AdminPage() {
 
       if (data.success) {
         alert("Transaction saved!");
+        setForm({
+          id: "",
+          buyerName: "",
+          buyerEmail: "",
+          phone: "",
+          location: "",
+          price: "",
+          brand: "",
+          model: "",
+          year: 0
+        });
       }
     }
     catch (error) {
