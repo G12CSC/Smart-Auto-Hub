@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
-import {prisma} from "../../../../lib/prisma.ts";
+import { prisma } from "../../../../lib/prisma.ts";
 
+export async function PATCH(req) {
+  const { id } = await req.json();
 
-export async function PATCH(req){
+  const updatedBooking = await prisma.consultationBooking.update({
+    where: {
+      id,
+    },
 
-    const {id}=await req.json();
+    data: {
+      status: "CANCELLED",
+    },
+  });
 
-    const updatedBooking=await prisma.consultationBooking.update({
-        where:{
-            id
-        },
-
-        data:{
-            status:"CANCELLED"
-        }
-    })
-
-    return NextResponse.json(updatedBooking);
-
+  return NextResponse.json(updatedBooking);
 }

@@ -49,7 +49,7 @@ export default function ViewNewsletterPage({
   };
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-8 max-w-3xl dark:text-white">
       <h1 className="text-2xl font-semibold mb-6">View Newsletter</h1>
       <form className="space-y-4" onSubmit={handleUpdateNewsletter}>
         <div className="flex flex-col gap-4">

@@ -10,13 +10,12 @@ import {
   MessageCircle,
 } from "lucide-react";
 //import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
 import { getVideoReviews } from "@/app/actions/videoActions";
 import UserWelcome from "@/components/home/user-welcome";
-import HomeSearchbar from "@/components/home/home-searchbar";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
 import FeedbackPopup from "@/components/advertisements/findVehicle/FeedbackPopup";
@@ -26,7 +25,7 @@ interface Vehicle {
   name: string;
   price: string;
   status: "Available" | "Shipped" | "Not Available";
-  image: string;
+  images: string[];
   location: string;
 }
 
@@ -39,46 +38,18 @@ interface VideoReview {
   createdAt: Date;
 }
 
-const featuredVehicles: Vehicle[] = [
-  {
-    id: 1,
-    name: "2022 Toyota Prius",
-    price: "LKR 17,500,000",
-    status: "Available",
-    image: "/toyota-prius-2022.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 2,
-    name: "2021 Honda Civic",
-    price: "LKR 15,200,000",
-    status: "Available",
-    image: "/honda-civic-2021.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 3,
-    name: "2023 Suzuki Swift",
-    price: "LKR 12,800,000",
-    status: "Shipped",
-    image: "/suzuki-swift-2023.jpg",
-    location: "Nugegoda Branch",
-  },
-  {
-    id: 4,
-    name: "2021 Suzuki Wagon R",
-    price: "LKR 6,800,000",
-    status: "Available",
-    image: "/suzuki-wagon-r-2021.jpg",
-    location: "Nugegoda Branch",
-  },
-];
-
 export default async function Home() {
   const videoData = await getVideoReviews();
   const videoReviews = videoData.success
     ? (videoData.data as VideoReview[])
     : [];
+
+    const featuredVehicles = await prisma.car.findMany({
+        take: 4,
+        orderBy: {
+            createdAt: "desc",
+        }
+    });
 
   return (
     <div className="min-h-screen bg-background ">
@@ -138,20 +109,20 @@ export default async function Home() {
                   size="lg"
                   className="border-primary/40 text-primary hover:bg-primary/10 font-semibold px-8 py-6 text-lg rounded-lg bg-transparent"
                 >
-                  <Link href="/consultation">Book Consultation</Link>
+                  <Link href="/consultation">Book An Appointment</Link>
                 </Button>
               </div>
 
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border/40">
                 <div className="space-y-2">
-                  <p className="text-3xl font-bold text-primary">500+</p>
+                  <p className="text-3xl font-bold text-primary">30+</p>
                   <p className="text-sm text-muted-foreground">
                     Vehicles Available
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-3xl font-bold text-primary">98%</p>
+                  <p className="text-3xl font-bold text-primary">95%</p>
                   <p className="text-sm text-muted-foreground">
                     Customer Satisfaction
                   </p>
@@ -168,12 +139,12 @@ export default async function Home() {
             {/* Right side - Showroom Image */}
             <div className="relative h-[500px] animate-slide-in-right">
               <div className="absolute inset-0 bg-linear-to-br from-primary/40 to-primary/20 rounded-2xl blur-3xl opacity-60" />
-              <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xl">
+              <div className="relative h-full rounded-2xl border-2 border-primary/30 overflow-hidden shadow-2xlgroup hover-glow transition-shadow duration-300">
                 <Image
                   src="/showroom-exterior1.jpeg"
                   alt="Premium Auto Showroom"
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-[105] transition-transform duration-500"
                   priority
                 />
                 {/* Overlay gradient for text readability */}
@@ -194,13 +165,13 @@ export default async function Home() {
       </section>
 
       {/* Quick Search Bar */}
-      <section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">
-        <HomeSearchbar />
-      </section>
+      {/*<section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">*/}
+      {/*  <HomeSearchbar />*/}
+      {/*</section>*/}
 
       {/* Featured Vehicles */}
       <section className="max-w-7xl mx-auto px-4 mb-24">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between my-10">
           <div>
             <h2 className="text-4xl font-bold mb-2">Featured Vehicles</h2>
             <p className="text-muted-foreground text-lg">
@@ -232,27 +203,19 @@ export default async function Home() {
             >
               <div className="relative h-52 bg-muted overflow-hidden">
                 <img
-                  src={vehicle.image || "/placeholder.svg"}
-                  alt={vehicle.name}
+                  src={vehicle.images?.[0]|| "/placeholder.svg"}
+                  alt={vehicle.brand}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <span
-                  className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-sm ${
-                    vehicle.status === "Available"
-                      ? "bg-green-500/90 text-white"
-                      : "bg-yellow-500/90 text-white"
-                  }`}
-                >
-                  {vehicle.status}
-                </span>
+
               </div>
 
               <div className="p-5">
                 <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-                  {vehicle.name}
+                  {vehicle.brand} {vehicle.model}
                 </h3>
                 <p className="text-primary font-bold text-xl mb-3">
-                  {vehicle.price}
+                    LKR {vehicle.price.toLocaleString()}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
                   <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
@@ -358,31 +321,31 @@ export default async function Home() {
               {[
                 {
                   icon: "🏆",
-                  number: "20+",
+                  number: "10+",
                   label: "Years in Business",
                   description: "Two decades of excellence",
                 },
                 {
                   icon: "😊",
-                  number: "500+",
+                  number: "50+",
                   label: "Happy Customers",
                   description: "Customers trust us annually",
                 },
                 {
                   icon: "🚗",
-                  number: "100+",
+                  number: "30+",
                   label: "Vehicles Available",
                   description: "Curated selection",
                 },
                 {
                   icon: "👨‍🔧",
-                  number: "15+",
+                  number: "5+",
                   label: "Expert Team",
                   description: "Certified specialists",
                 },
                 {
                   icon: "⭐",
-                  number: "4.9/5",
+                  number: "4.6/5",
                   label: "Customer Rating",
                   description: "Based on verified reviews",
                 },
@@ -496,7 +459,7 @@ export default async function Home() {
             className="self-start md:self-auto bg-transparent"
           >
             <a
-              href="https://www.youtube.com/@SameeraAutoTraders"
+              href="https://www.youtube.com/@SAMEERAAUTOENTERTAINMENT"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
@@ -512,57 +475,52 @@ export default async function Home() {
         {/* Featured Video */}
         {videoReviews.length > 0 ? (
           <>
-            <div className="mb-12">
-              <a
-                href={`https://www.youtube.com/watch?v=${videoReviews[0].videoId}`}
-                className="relative h-80 md:h-96 lg:h-[112] rounded-2xl overflow-hidden group cursor-pointer bg-muted border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-300 animate-slide-in-down"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  src={`https://img.youtube.com/vi/${videoReviews[0].videoId}/maxresdefault.jpg`}
-                  alt={videoReviews[0].title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
-
-                {/* Play button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-24 w-24 rounded-full bg-primary group-hover:bg-accent transition-transform flex items-center justify-center shadow-2xl group-hover:scale-110">
-                    <Play className="text-white fill-white ml-2" size={48} />
+            <div className="rounded-md">
+              <h3 className="text-2xl font-bold mb-4">Latest Review</h3>
+              <a href={`https://www.youtube.com/watch?v=${videoReviews[0].youtubeId}`} target="_blank" rel="noopener noreferrer"
+                className="relative rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up">
+                <div className="relative aspect-video bg-muted overflow-hidden">
+                  <img
+                    src={`https://img.youtube.com/vi/${videoReviews[0].youtubeId}/maxresdefault.jpg`}
+                    alt={videoReviews[0].title}
+                    className="w-full h-full object-cover transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
+                    <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                      <Play
+                        className="text-white fill-white ml-1"
+                        size={28}
+                      />
+                    </div>
                   </div>
+                  <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
+                    <svg
+                      className="w-3 h-3 fill-white"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3
+                      .015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                    YouTube
+                  </Badge>
                 </div>
-
-                {/* Featured badge */}
-                <Badge className="absolute top-6 left-6 px-4 py-2 bg-primary/90 text-white text-sm font-semibold">
-                  Featured Review
-                </Badge>
-
-                {/* Content at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
-                    {videoReviews[0].title}
-                  </h3>
-                  <p className="text-sm md:text-base text-white/90 mb-4 line-clamp-2">
-                    {videoReviews[0].description}
-                  </p>
-                  <p className="text-sm text-white/70 flex items-center gap-2">
-                    <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-                    {videoReviews[0]?.uploadDate}
-                  </p>
-                </div>
+                
               </a>
+              <div className="p-5">
+                <h3 className="font-bold text-2xl mb-2 group-hover:text-primary transition-colors leading-snug">
+                  {videoReviews[0].title}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                  {videoReviews[0].description}
+                </p>
+              </div>
             </div>
-
             {/* Video Grid - Remaining videos */}
             {videoReviews.length > 1 && (
               <div>
                 <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {videoReviews.slice(1).map((video, index) => (
+                  {videoReviews.slice(1,4).map((video, index) => (
                     <a
                       key={video.id}
                       className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
@@ -570,13 +528,13 @@ export default async function Home() {
                         opacity: 0,
                         animationDelay: `${(index + 1) * 0.1}s`,
                       }}
-                      href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                      href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <div className="relative h-48 bg-muted overflow-hidden">
                         <img
-                          src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                           alt={video.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -605,10 +563,6 @@ export default async function Home() {
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                           {video.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                          {video.uploadDate}
                         </p>
                       </div>
                     </a>

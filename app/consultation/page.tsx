@@ -21,7 +21,7 @@ export default function ConsultationPage() {
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/60"></div>
         <div className="relative max-w-7xl mx-auto px-4 w-full animate-slide-in-down delay-500">
-          <h1 className="text-6xl font-bold mb-4 text-balance animate-text-reveal">
+          <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold mb-4 text-balance animate-text-reveal">
             Book an Appointment
           </h1>
           <p className="text-xl opacity-90 text-balance max-w-2xl animate-text-reveal stagger-1">

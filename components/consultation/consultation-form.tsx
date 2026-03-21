@@ -3,9 +3,11 @@
 import { handleConsultationRequests } from "@/app/APITriggers/handleConsultationRequests";
 import { Consultation } from "@/types";
 import { AlertCircle, Calendar, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function ConsultationForm() {
   const [formData, setFormData] = useState<Consultation>({
@@ -18,11 +20,23 @@ export default function ConsultationForm() {
     preferredTime: "",
     message: "",
   });
+
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: session?.user?.name ?? "",
+        email: session?.user?.email ?? "",
+      }));
+    }
+  }, [session]);
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return "Email is required";
@@ -99,6 +113,12 @@ export default function ConsultationForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // 🚨 BLOCK if not logged in
+    if (!session) {
+      toast.error("You must be logged in to book a consultation");
+      return;
+    }
+
     const newErrors = {} as { [key: string]: string };
     Object.keys(formData).forEach((key) => {
       if (key !== "message") {
@@ -121,14 +141,15 @@ export default function ConsultationForm() {
     try {
       setIsSubmitting(true);
 
-      await handleConsultationRequests(formData); // ✅ THIS IS CORRECT
+      await handleConsultationRequests(formData); 
 
-      toast("Booking submitted successfully!", {
+      toast.success("Booking submitted successfully!", {
         duration: 4000,
         icon: "📅",
       });
 
       setSubmitted(true);
+      router.push("/dashboard");
     } catch (error) {
       console.error(error);
       toast.error("Booking failed. Please try again.");
@@ -187,12 +208,15 @@ export default function ConsultationForm() {
             value={formData.fullName}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="John Doe"
-            className={getInputClassName(
+            readOnly={!!session}
+            className={`${
+              session ? "bg-muted cursor-not-allowed" : ""
+            } ${getInputClassName(
               "fullName",
-              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition",
-            )}
+              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition",
+            )}`}
           />
+
           {errors.fullName && touched.fullName && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
               <AlertCircle size={12} />
@@ -212,11 +236,13 @@ export default function ConsultationForm() {
             value={formData.email}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="john@example.com"
-            className={getInputClassName(
+            readOnly={!!session}
+            className={`${
+              session ? "bg-muted cursor-not-allowed" : ""
+            } ${getInputClassName(
               "email",
-              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition",
-            )}
+              "w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition",
+            )}`}
           />
           {errors.email && touched.email && (
             <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
@@ -281,11 +307,11 @@ export default function ConsultationForm() {
           )}
         </div>
 
-        {/* Consultation Type */}
         <div>
           <label className="block text-sm font-semibold mb-2">
             Consultation Type *
           </label>
+
           <div className="space-y-2">
             {[
               "General Inquiry",
@@ -298,24 +324,25 @@ export default function ConsultationForm() {
                 className="flex items-center gap-3 cursor-pointer"
               >
                 <input
-                  type="radio"
-                  name="consultationType"
+                  type="checkbox"
                   value={type}
-                  checked={formData.consultationType === type}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                  checked={formData.consultationType.includes(type)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      consultationType: checked
+                        ? [...prev.consultationType, type] // add
+                        : prev.consultationType.filter((t) => t !== type), // remove
+                    }));
+                  }}
                   className="w-4 h-4"
                 />
                 <span className="text-sm">{type}</span>
               </label>
             ))}
           </div>
-          {errors.consultationType && touched.consultationType && (
-            <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
-              <AlertCircle size={12} />
-              <span>{errors.consultationType}</span>
-            </div>
-          )}
         </div>
 
         {/* Preferred Date */}

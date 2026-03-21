@@ -58,6 +58,7 @@ export default function VehicleDetailsClient({
   vehicle: initialVehicle,
   vehicleId,
 }: VehicleDetailsClientProps) {
+
   const [vehicle, setVehicle] = useState<Vehicle | null>(initialVehicle || null)
   const [monthlyPayment, setMonthlyPayment] = useState(0)
   const [loanAmount, setLoanAmount] = useState(initialVehicle?.price || 0)
@@ -156,6 +157,7 @@ export default function VehicleDetailsClient({
   }, [lightboxOpen])
 
   const validateReviewForm = () => {
+
     const errors: ReviewErrors = {}
 
     if (!reviewForm.name.trim()) {
@@ -182,45 +184,58 @@ export default function VehicleDetailsClient({
     return Object.keys(errors).length === 0
   }
 
-  const handleReviewSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    const handleReviewSubmit = async (e: FormEvent<HTMLFormElement>) => {
 
-    if (!validateReviewForm()) {
-      toast.error("Please fix the errors in the form")
-      return
-    }
+        e.preventDefault();
 
-    setSubmittingReview(true)
+        if (!validateReviewForm()) {
+            toast.error("Please fix the errors");
+            return;
+        }
 
-    // Simulate API call delay
-    setTimeout(() => {
-      if (!resolvedVehicleId) {
-        setSubmittingReview(false)
-        return
-      }
+        setSubmittingReview(true);
 
-      const newReview = localStorageAPI.addReview(resolvedVehicleId, {
-        name: reviewForm.name,
-        email: reviewForm.email,
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-      })
+        const res = await fetch("/api/reviews/create", {
 
-      setReviews([newReview, ...reviews])
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
 
-      // Reset form
-      setReviewForm({
-        name: "",
-        email: "",
-        rating: 0,
-        comment: "",
-      })
-      setReviewErrors({})
-      setSubmittingReview(false)
+            body: JSON.stringify({
+                carId: resolvedVehicleId,
+                rating: reviewForm.rating,
+                comment: reviewForm.comment,
+            }),
 
-      toast.success("Thank you for your review!")
-    }, 1000)
-  }
+        });
+
+        const newReview = await res.json();
+
+        setReviews([newReview, ...reviews]);
+
+        setSubmittingReview(false);
+
+        toast.success("Review added!");
+
+    };
+
+    useEffect(() => {
+
+        if (!resolvedVehicleId) return;
+
+        const fetchReviews = async () => {
+
+            const res = await fetch(`/api/reviews/${resolvedVehicleId}`);
+            const data = await res.json();
+
+            setReviews(data);
+
+        };
+
+        fetchReviews();
+
+    }, [resolvedVehicleId]);
 
   if (!vehicle) {
     return (

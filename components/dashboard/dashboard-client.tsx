@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Calendar,
   CalendarIcon,
@@ -25,11 +24,14 @@ import {
   LogOut,
   Settings,
   FileText,
+  Bell,
 } from "lucide-react";
 import ChatBot from "@/components/ChatBot";
 import { localStorageAPI } from "@/lib/storage/localStorage";
 import { cancelBookings } from "@/app/APITriggers/cancelBookings.js";
 import { rescheduleBooking } from "@/app/APITriggers/rescheduleBooking.js";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Appointment = {
   id: string | number;
@@ -40,6 +42,7 @@ type Appointment = {
   branch?: string;
   vehicleType?: string;
   adminMessage?: string;
+  advisorMessage?: string;
   message?: string;
 };
 
@@ -62,11 +65,32 @@ type DashboardClientProps = {
   initialHistory: Appointment[];
 };
 
+type ChangePasswordData = {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
+type UserNotification = {
+  emailForAppointments: boolean;
+  emailForPromotions: boolean;
+  smsRemainers: boolean;
+};
+
+interface UserProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  createdAt: string;
+}
+
 export default function DashboardClient({
   session,
   initialUpcoming,
   initialHistory,
 }: DashboardClientProps) {
+  const { data: liveSession, update: updateSession } = useSession();
+  const displaySession = liveSession ?? session;
   const [activeTab, setActiveTab] = useState("appointments");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [upcomingAppointments, setUpcomingAppointments] = useState<
@@ -80,9 +104,30 @@ export default function DashboardClient({
   const [rescheduleApt, setRescheduleApt] = useState<Appointment | null>(null);
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
+  const [changePasswordData, setChangePasswordData] =
+    useState<ChangePasswordData>({
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+
+  const [manageNotifications, setManageNotifications] = useState(false);
+  const [userNotifications, setUserNotifications] = useState<UserNotification>({
+    emailForAppointments:
+      localStorage.getItem("emailForAppointments") === "true",
+    emailForPromotions: localStorage.getItem("emailForPromotions") === "true",
+    smsRemainers: localStorage.getItem("smsRemainers") === "true",
+  });
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [writeReviewOpen, setWriteReviewOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [coupon, setCoupon] = useState("");
 
   useEffect(() => {
-    setUpcomingAppointments(Array.isArray(initialUpcoming) ? initialUpcoming : []);
+    setUpcomingAppointments(
+      Array.isArray(initialUpcoming) ? initialUpcoming : [],
+    );
     setAppointmentHistory(Array.isArray(initialHistory) ? initialHistory : []);
   }, [initialUpcoming, initialHistory]);
 
@@ -109,9 +154,137 @@ export default function DashboardClient({
     setNotifications(notifs.dashboard);
   };
 
-  //const dateForInput = (date) =>
-  //new Date(date).toISOString().split("T")[0];
-  //changes the date value of the rescheduling input box into dateTime object since preferredDate is of dateTime
+  const fetchUserProfileDetails = useCallback(async () => {
+    try {
+      const response = await fetch("/api/user/profile");
+      if (response.ok) {
+        const data = await response.json();
+        toast.success("User profile details fetched successfully");
+
+        if (data.success) {
+          setUserProfile(data.data);
+          toast.success("User profile details set successfully");
+        }
+      } else {
+        toast.error("Failed to fetch user profile details");
+      }
+    } catch (error) {
+      console.error("Error fetching user profile details:", error);
+      toast.error("An error occurred while fetching user profile details");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "profile" && !userProfile) {
+      fetchUserProfileDetails();
+    }
+  }, [activeTab, userProfile, fetchUserProfileDetails]);
+
+  const changeUserPasswords = async () => {
+    try {
+      if (
+        changePasswordData.newPassword !== changePasswordData.confirmNewPassword
+      ) {
+        toast.error("New passwords do not match");
+        return;
+      }
+
+      const response = await fetch("/api/user/change-password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(changePasswordData),
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Password changed successfully");
+        setChangePasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmNewPassword: "",
+        });
+      } else {
+        toast.error(data.message || "Failed to change password");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("An error occurred while changing the password");
+    }
+  };
+
+  const handleUserAccountDeletion = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const password = prompt(
+        "Please enter your password to confirm account deletion:",
+      );
+      if (!password) {
+        toast.error("Password is required to delete account");
+        return;
+      }
+      const response = await fetch("/api/user/delete-account", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+      if (response.ok) {
+        toast.success("Account deleted successfully");
+        signOut({ callbackUrl: "/login" });
+      } else {
+        toast.error("Failed to delete account");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("An error occurred while deleting the account");
+    }
+  };
+
+  const handleSaveProfileChanges = async () => {
+    if (!userProfile) {
+      toast.error("Profile data is not loaded yet");
+      return;
+    }
+
+    try {
+      console.log("Saving profile changes:", userProfile);
+
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userProfile),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setUserProfile(data.data);
+
+        await updateSession({
+          name: data.data?.name,
+        });
+
+        toast.success("Profile updated successfully");
+        setIsEditingProfile(false);
+      } else {
+        toast.error(data.message || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile changes:", error);
+      toast.error("An error occurred while saving profile changes");
+    }
+  };
 
   return (
     <>
@@ -119,12 +292,26 @@ export default function DashboardClient({
         {/* User Welcome Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 animate-slide-in-down">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
-              JD
-            </div>
+            {/* <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
+              {session?.user?.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase() || "U"}
+            </div> */}
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={displaySession?.user?.image || undefined} />
+              <AvatarFallback>
+                {displaySession?.user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h1 className="text-3xl font-bold animate-text-reveal">
-                Welcome back, {session?.user?.name || "User"}!
+                Welcome back, {displaySession?.user?.name || "User"}!
               </h1>
 
               <p className="text-muted-foreground animate-text-reveal stagger-1">
@@ -137,8 +324,8 @@ export default function DashboardClient({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1 animate-slide-in-left">
-            <nav className="bg-card rounded-lg border border-border overflow-hidden sticky top-24">
-              <div className="divide-y divide-border">
+            <nav className="rounded-lg border border-border overflow-hidden sticky top-28 p-2">
+              <div className="divide-y divide-border mb-4">
                 {[
                   {
                     label: "My Appointments",
@@ -169,7 +356,7 @@ export default function DashboardClient({
                     key={item.id}
                     //onClick={() => setActiveTab(item.id)}
                     onClick={() => handleTabChange(item.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-4 font-medium transition relative ${
+                    className={`w-full flex items-center gap-3 px-6 py-4 font-medium transition relative rounded-lg my-2 bg-card ${
                       activeTab === item.id
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-secondary/50"
@@ -185,16 +372,15 @@ export default function DashboardClient({
                   </button>
                 ))}
               </div>
+              <Button
+                className="w-full my-4 bg-transparent"
+                variant="outline"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+              >
+                <LogOut size={18} className="mr-2" />
+                Logout
+              </Button>
             </nav>
-
-            <Button
-              className="w-full mt-4 bg-transparent"
-              variant="outline"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-            >
-              <LogOut size={18} className="mr-2" />
-              Logout
-            </Button>
           </div>
 
           {/* Main Content Area */}
@@ -304,6 +490,22 @@ export default function DashboardClient({
                                   <p>{apt.message}</p>
                                 </div>
                               )}
+                              {apt.advisorMessage && (
+                                <div className="mt-4 p-3 bg-green-500/10 rounded text-sm">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <MessageSquare
+                                      size={14}
+                                      className="text-green-600"
+                                    />
+                                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                                      Message from Advisor
+                                    </p>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {apt.advisorMessage}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -312,8 +514,15 @@ export default function DashboardClient({
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={apt.status !== "PENDING"}
                                 onClick={() => {
-                                  setNewDate(apt.preferredDate || "");
+                                  setNewDate(
+                                    apt.preferredDate
+                                      ? new Date(apt.preferredDate)
+                                          .toISOString()
+                                          .split("T")[0]
+                                      : "",
+                                  );
                                   setNewTime(apt.preferredTime || "");
                                   setRescheduleApt(apt);
                                   setRescheduleOpen(true);
@@ -339,13 +548,37 @@ export default function DashboardClient({
                                         setNewDate(e.target.value)
                                       }
                                     />
-                                    <Input
-                                      type="time"
+
+                                    <select
+                                      aria-label="Reschedule time slot"
+                                      className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
                                       value={newTime}
                                       onChange={(e) =>
                                         setNewTime(e.target.value)
                                       }
-                                    />
+                                    >
+                                      <option value="">
+                                        Select a time slot
+                                      </option>
+                                      <option value="09:00-10:00">
+                                        09:00 - 10:00 AM
+                                      </option>
+                                      <option value="10:00-11:00">
+                                        10:00 - 11:00 AM
+                                      </option>
+                                      <option value="11:00-12:00">
+                                        11:00 - 12:00 PM
+                                      </option>
+                                      <option value="14:00-15:00">
+                                        02:00 - 03:00 PM
+                                      </option>
+                                      <option value="15:00-16:00">
+                                        03:00 - 04:00 PM
+                                      </option>
+                                      <option value="16:00-17:00">
+                                        04:00 - 05:00 PM
+                                      </option>
+                                    </select>
                                   </div>
 
                                   <div className="flex justify-end gap-3 mt-5">
@@ -367,7 +600,7 @@ export default function DashboardClient({
                                               newTime,
                                             );
 
-                                          // ðŸ”¥ Update UI instantly
+                                          // Update UI instantly
                                           setUpcomingAppointments((prev) =>
                                             prev.map((a) =>
                                               a.id === updated.id ? updated : a,
@@ -387,7 +620,12 @@ export default function DashboardClient({
                               </div>
                             )}
 
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={apt.status !== "ACCEPTED"}
+                              className="text-red-600 hover:text-red-700 bg-transparent cursor-pointer hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:text-muted-foreground disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                            >
                               <MessageSquare size={14} className="mr-2" />
                               Contact
                             </Button>
@@ -395,7 +633,8 @@ export default function DashboardClient({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 hover:text-red-700 bg-transparent"
+                              disabled={apt.status !== "PENDING"}
+                              className="text-red-600 hover:text-red-700 bg-transparent cursor-pointer hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:text-muted-foreground disabled:hover:bg-transparent disabled:cursor-not-allowed"
                               onClick={async () => {
                                 try {
                                   const cancelled = await cancelBookings(
@@ -496,11 +735,91 @@ export default function DashboardClient({
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">My Reviews</h2>
-                  <Button>
+                  <Button onClick={() => setWriteReviewOpen(!writeReviewOpen)}>
                     <Star size={18} className="mr-2" />
-                    Write Review
+                    {writeReviewOpen ? "Close Review Form" : "Write a Review"}
                   </Button>
                 </div>
+                {writeReviewOpen && (
+                  <div className="bg-card rounded-lg border border-border p-6 mb-6">
+                    <h3 className="text-lg font-bold mb-4">Write a Review</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Car size={16} />
+                          Vehicle
+                        </label>
+                        <Input type="text" placeholder="e.g. Toyota Camry" />
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                            <Star size={16} />
+                            Rating
+                          </label>
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                onMouseEnter={() => setHover(star)}
+                                onMouseLeave={() => setHover(0)}
+                                className="text-2xl"
+                              >
+                                <span
+                                  className={
+                                    (hover || rating) >= star
+                                      ? "text-yellow-400"
+                                      : "text-gray-400"
+                                  }
+                                >
+                                  ★
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block mb-1 text-sm">
+                            Coupon Code
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter coupon code"
+                              value={coupon}
+                              onChange={(e) => setCoupon(e.target.value)}
+                              className="w-full border rounded px-3 py-2 dark:bg-secondary/90"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <MessageSquare size={16} />
+                          Comment
+                        </label>
+                        <textarea
+                          className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
+                          rows={4}
+                          placeholder="Write your review here..."
+                        ></textarea>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button>
+                          <CheckCircle size={16} className="mr-2" />
+                          Submit Review
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {userReviews.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    You haven't written any reviews yet.
+                  </p>
+                )}
 
                 <div className="space-y-4">
                   {userReviews.map((review) => (
@@ -557,9 +876,23 @@ export default function DashboardClient({
 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold">
-                      JD
-                    </div>
+                    {/* <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold">
+                      {session?.user?.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase() || "U"}
+                    </div> */}
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={displaySession?.user?.image || undefined} />
+                      <AvatarFallback>
+                        {displaySession?.user?.name
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     {isEditingProfile && (
                       <Button variant="outline" size="sm">
                         Change Photo
@@ -569,74 +902,65 @@ export default function DashboardClient({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <User size={16} />
                         Full Name
                       </label>
                       <Input
                         type="text"
-                        defaultValue="John Doe"
+                        value={userProfile?.name || ""}
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev ? { ...prev, name: e.target.value } : prev,
+                          );
+                        }}
                         disabled={!isEditingProfile}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Mail size={16} />
                         Email Address
                       </label>
                       <Input
                         type="email"
-                        defaultValue="john.doe@example.com"
-                        disabled={!isEditingProfile}
+                        value={userProfile?.email || ""}
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev ? { ...prev, email: e.target.value } : prev,
+                          );
+                        }}
+                        disabled={true}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Phone size={16} />
                         Phone Number
                       </label>
                       <Input
                         type="tel"
-                        defaultValue="+94 77 123 4567"
+                        value={userProfile?.phone || ""}
+                        onChange={(e) => {
+                          setUserProfile((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  phone: e.target.value || undefined,
+                                }
+                              : prev,
+                          );
+                        }}
                         disabled={!isEditingProfile}
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                        <MapPin size={16} />
-                        City
-                      </label>
-                      <Input
-                        type="text"
-                        defaultValue="Colombo"
-                        disabled={!isEditingProfile}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                      <MapPin size={16} />
-                      Address
-                    </label>
-                    <Textarea
-                      defaultValue="123 Main Street, Colombo 03, Sri Lanka"
-                      disabled={!isEditingProfile}
-                      rows={3}
-                    />
                   </div>
 
                   {isEditingProfile && (
                     <div className="flex gap-3 pt-4">
-                      <Button>
+                      <Button onClick={handleSaveProfileChanges}>
                         <CheckCircle size={18} className="mr-2" />
                         Save Changes
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsEditingProfile(false)}
-                      >
-                        Cancel
                       </Button>
                     </div>
                   )}
@@ -647,51 +971,168 @@ export default function DashboardClient({
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="bg-card rounded-lg border border-border p-8">
-                <h2 className="text-2xl font-bold mb-6">Settings</h2>
-
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold mb-6">Settings</h2>
+                  {!manageNotifications ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mb-4"
+                      onClick={() =>
+                        setManageNotifications(!manageNotifications)
+                      }
+                    >
+                      <Bell size={16} className="mr-2" />
+                      Manage Notifications
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mb-4"
+                      onClick={() =>
+                        setManageNotifications(!manageNotifications)
+                      }
+                    >
+                      <Bell size={16} className="mr-2" />
+                      Hide Notifications
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Manage your notification preferences and account settings
+                </p>
                 <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold mb-4">
-                      Notification Preferences
-                    </h3>
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm">
-                          Email notifications for appointments
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm">
-                          Newsletter and promotional emails
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="h-4 w-4" />
-                        <span className="text-sm">SMS reminders</span>
-                      </label>
+                  {manageNotifications && (
+                    <div>
+                      <h3 className="font-semibold mb-4">
+                        Notification Preferences
+                      </h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={userNotifications.emailForAppointments}
+                            onChange={(e) => {
+                              const updated = {
+                                ...userNotifications,
+                                emailForAppointments: e.target.checked,
+                              };
+                              setUserNotifications(updated);
+                              localStorage.setItem(
+                                "emailForAppointments",
+                                e.target.checked.toString(),
+                              );
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <span className="text-sm">
+                            Email notifications for appointments
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={userNotifications.emailForPromotions}
+                            onChange={(e) => {
+                              const updated = {
+                                ...userNotifications,
+                                emailForPromotions: e.target.checked,
+                              };
+                              setUserNotifications(updated);
+                              localStorage.setItem(
+                                "emailForPromotions",
+                                e.target.checked.toString(),
+                              );
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <span className="text-sm">
+                            Newsletter and promotional emails
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={userNotifications.smsRemainers}
+                            onChange={(e) => {
+                              const updated = {
+                                ...userNotifications,
+                                smsRemainers: e.target.checked,
+                              };
+                              setUserNotifications(updated);
+                              localStorage.setItem(
+                                "smsRemainers",
+                                e.target.checked.toString(),
+                              );
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <span className="text-sm">SMS reminders</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="pt-6 border-t border-border">
                     <h3 className="font-semibold mb-4">Change Password</h3>
+                    <div className="w-full mb-4 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded">
+                      If you are{" "}
+                      <span className="font-bold text-green-400">
+                        Google-Auth
+                      </span>{" "}
+                      user, you cannot change your password here. Please visit{" "}
+                      <a
+                        href="https://myaccount.google.com/security"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Google Account Security
+                      </a>{" "}
+                      to manage your password and security settings.
+                    </div>
                     <div className="space-y-4 max-w-md">
-                      <Input type="password" placeholder="Current Password" />
-                      <Input type="password" placeholder="New Password" />
+                      <Input
+                        type="password"
+                        placeholder="Current Password"
+                        value={changePasswordData.currentPassword}
+                        onChange={(e) =>
+                          setChangePasswordData((prev) => ({
+                            ...prev,
+                            currentPassword: e.target.value,
+                          }))
+                        }
+                      />
+                      <Input
+                        type="password"
+                        placeholder="New Password"
+                        value={changePasswordData.newPassword}
+                        onChange={(e) =>
+                          setChangePasswordData((prev) => ({
+                            ...prev,
+                            newPassword: e.target.value,
+                          }))
+                        }
+                      />
                       <Input
                         type="password"
                         placeholder="Confirm New Password"
+                        value={changePasswordData.confirmNewPassword}
+                        onChange={(e) =>
+                          setChangePasswordData((prev) => ({
+                            ...prev,
+                            confirmNewPassword: e.target.value,
+                          }))
+                        }
                       />
-                      <Button>Update Password</Button>
+                      <Button
+                        onClick={() => {
+                          changeUserPasswords();
+                        }}
+                      >
+                        Update Password
+                      </Button>
                     </div>
                   </div>
 
@@ -706,6 +1147,9 @@ export default function DashboardClient({
                     <Button
                       variant="outline"
                       className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950 bg-transparent"
+                      onClick={() => {
+                        handleUserAccountDeletion();
+                      }}
                     >
                       Delete Account
                     </Button>

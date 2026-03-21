@@ -2,9 +2,11 @@ name: Multiple OS CI/CD Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
   pull_request:
-    branches: [ master ]
+    branches: 
+      - master
   workflow_dispatch:
 
 
@@ -18,7 +20,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Setup Node.js
       uses: actions/setup-node@v4

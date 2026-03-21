@@ -48,26 +48,24 @@ model Admin {
   name                String?
   email               String                @unique
   passwordHash        String
-  role                StaffRole             @default(admin)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
+  role                StaffRole             @default(admin)
+  mustChangePassword  Boolean               @default(true)
+  advisor             Advisor?
+  AdvisorAvailability AdvisorAvailability[]
+  advisorProfile      AdvisorProfile?
   createdCars         Car[]                 @relation("CreatedBy")
   updatedCars         Car[]                 @relation("UpdatedBy")
   sessions            Session[]
-  AdvisorAvailability AdvisorAvailability[]
-  advisor             Advisor?
-  advisorProfile      AdvisorProfile?
 }
 
 model Advisor {
-  advisorId String @id @default(uuid())
-
-  adminId String @unique
-  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
-
-  isActive Boolean @default(true)
-
+  advisorId String   @id @default(uuid())
+  adminId   String   @unique
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
 }
 
 model Car {
@@ -102,10 +100,10 @@ model Car {
 model Branch {
   id            String         @id @default(uuid())
   name          String
-  location      String
   contactNumber String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @default(now())
+  location      String
   availability  Availability[]
 }
 
@@ -151,15 +149,15 @@ model ConsultationBooking {
   email            String
   phone            String
   vehicleType      String
-  advisorId        String?
   consultationType String
   preferredDate    DateTime
   preferredTime    String
   message          String?
   status           BookingStatus @default(PENDING)
-  advisorMessage   String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  advisorMessage   String?
+  advisorId        String?
   user             User?         @relation(fields: [userId], references: [id])
 }
 
@@ -217,33 +215,51 @@ model AdvisorAvailability {
   date      DateTime
   timeSlot  String
   isBusy    Boolean  @default(false)
-
-  advisor Admin @relation(fields: [advisorId], references: [id])
+  advisor   Admin    @relation(fields: [advisorId], references: [id])
 }
 
 model AdvisorProfile {
-  id String @id @default(uuid())
-
-  adminId String @unique
-  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
-
+  id             String   @id @default(uuid())
+  adminId        String   @unique
   phone          String?
   specialization String?
   experience     String?
-  rating         Float   @default(0)
+  rating         Float    @default(0)
   avatar         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  admin          Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model VideoReview {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  youtubeId   String    @unique
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
+model CarVector {
+  id          String                @id @default(uuid()) @db.Uuid
+  car_id      String
+  chunk_index Int
+  content     String
+  embedding   Unsupported("vector")
+  created_at  DateTime              @default(now())
+  car         Car                   @relation(fields: [car_id], references: [id], onDelete: Cascade)
+
+  @@index([car_id])
+  @@map("car_vector")
 }
 
 enum BookingStatus {
   PENDING
-  FORWARDED
   ACCEPTED
   REJECTED
   COMPLETED
   CANCELLED
+  FORWARDED
 }
 
 enum BroadcastStatus {
@@ -275,18 +291,23 @@ enum StaffRole {
   superadmin
 }
 
-model CarVector {
-  id String @id @default(uuid()) @db.Uuid
+model AuditLog {
+  id       String  @id @default(uuid())
+  action   String // e.g. "CREATE_ADVISOR", "BOOKING_CREATED"
+  entity   String // e.g. "Advisor", "Booking"
+  entityId String? // ID of affected record
 
-  car_id String
-  car    Car    @relation(fields: [car_id], references: [id], onDelete: Cascade)
+  userId   String? // who performed the action
+  userRole String? // ADMIN, ADVISOR, USER
 
-  chunk_index Int
-  content     String
-  embedding   Unsupported("vector(384)")
+  metadata Json? // extra details (before/after changes)
 
-  created_at DateTime @default(now())
+  ipAddress String?
+  userAgent String?
 
-  @@index([car_id])
-  @@map("car_vector")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
 }

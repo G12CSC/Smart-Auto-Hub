@@ -38,10 +38,11 @@ export function Header() {
 
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [tabMenuOpen, setTabMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   // ✅ Dynamic role check (from NextAuth session)
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.userType === "admin";
   // const isAdmin = useState(true)
 
   const getInitials = (name: string) =>
@@ -98,7 +99,7 @@ export function Header() {
               href={item?.href}
               className={`relative text-foreground font-medium hover:text-primary transition group ${
                 pathname === item?.href && "text-primary"
-              }`}
+              } ${item?.title === "Home" ? "hidden lg:block" : ""}`}
             >
               {item?.title}
               <span
@@ -134,7 +135,7 @@ export function Header() {
             variant="outline"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="relative"
+            className="relative hidden lg:flex"
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -143,7 +144,7 @@ export function Header() {
 
           {!user ? (
             <>
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     className="hover:opacity-80 transition"
@@ -166,12 +167,12 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
 
-              <Button variant="outline" asChild>
+              <Button variant="outline" className="hidden lg:block" asChild>
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild>
+              <Button className="hidden lg:block" asChild>
                 <Link href="/register">Register</Link>
               </Button>
             </>
@@ -190,13 +191,9 @@ export function Header() {
                       {/* RING */}
                       <span
                         className={`
-                                                    absolute inset-0 avatar-ring
-                                                    ${
-                                                      isAdmin
-                                                        ? "avatar-ring-admin"
-                                                        : "avatar-ring-user"
-                                                    }
-                                                    `}
+                          absolute inset-0 avatar-ring
+                          ${isAdmin ? "avatar-ring-admin" : "avatar-ring-user"}
+                        `}
                       />
 
                       {/* AVATAR */}
@@ -277,6 +274,17 @@ export function Header() {
               </DropdownMenu>
             </>
           )}
+          <button
+            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md hover:bg-muted"
+            onClick={() => setTabMenuOpen((prev) => !prev)}
+            aria-label="Toggle menu"
+          >
+            {tabMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
         </div>
       </nav>
 
@@ -336,13 +344,9 @@ export function Header() {
                   <div className="relative flex items-center justify-center">
                     <span
                       className={`
-                                            absolute inset-0 avatar-ring
-                                            ${
-                                              isAdmin
-                                                ? "avatar-ring-admin"
-                                                : "avatar-ring-user"
-                                            }
-                                            `}
+                        absolute inset-0 avatar-ring
+                        ${isAdmin ? "avatar-ring-admin" : "avatar-ring-user"}
+                      `}
                       style={{ filter: "blur(6px)" }}
                     />
 
@@ -425,6 +429,118 @@ export function Header() {
                       <span>Dark Mode</span>
                     </>
                   )}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {tabMenuOpen && (
+        <div className="hidden md:block lg:hidden bg-card border-t border-border">
+          <div className="px-4 py-4 space-y-4">
+            {!user ? (
+              <>
+                {/* <div className="border-t border-border my-4" /> */}
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                    className="relative "
+                  >
+                    <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-transparent"
+                    asChild
+                  >
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button className="flex-1" asChild>
+                    <Link href="/register">Register</Link>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="border-t border-border my-4" />
+                <div className="flex items-center gap-2 py-2">
+                  <div className="relative flex items-center justify-center">
+                    <span
+                      className={`
+                        absolute inset-0 avatar-ring
+                        ${isAdmin ? "avatar-ring-admin" : "avatar-ring-user"}
+                      `}
+                      style={{ filter: "blur(6px)" }}
+                    />
+
+                    <Avatar className="relative z-10 h-8 w-8 bg-background">
+                      <AvatarImage src={user.image || ""} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {getInitials(user.name || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <span className="font-medium text-foreground">
+                    {user.name}
+                    {isAdmin && (
+                      <span className="text-destructive ml-1">(Admin)</span>
+                    )}
+                  </span>
+                </div>
+
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2 relative"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Dashboard</span>
+                  {(() => {
+                    const notifications = localStorageAPI.getNotifications();
+                    const dashCount = Object.values(
+                      notifications.dashboard,
+                    ).reduce((a: number, b: number) => a + b, 0);
+                    return dashCount > 0 ? (
+                      <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                        {dashCount > 9 ? "9+" : dashCount}
+                      </span>
+                    ) : null;
+                  })()}
+                </Link>
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 text-foreground hover:text-primary py-2 pl-2 relative"
+                  >
+                    <Shield className="h-4 w-4" />
+                    <span>Admin Panel</span>
+                    {(() => {
+                      const notifications = localStorageAPI.getNotifications();
+                      const adminCount = Object.values(
+                        notifications.admin,
+                      ).reduce((a: number, b: number) => a + b, 0);
+                      return adminCount > 0 ? (
+                        <span className="ml-auto h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                          {adminCount > 9 ? "9+" : adminCount}
+                        </span>
+                      ) : null;
+                    })()}
+                  </Link>
+                )}
+
+                {/* -------- MOBILE LOGOUT -------- */}
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="flex items-center gap-2 text-foreground hover:text-destructive py-2 pl-2 w-full text-left"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
                 </button>
               </>
             )}

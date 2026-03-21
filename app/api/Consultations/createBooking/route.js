@@ -17,7 +17,7 @@ export async function POST(req) {
                 email: body.email,
                 phone: body.phone,
                 vehicleType: body.vehicleType,
-                consultationType: body.consultationType,
+                consultationType:body.consultationType.join(", "),
                 preferredDate: new Date(body.preferredDate),
                 preferredTime: body.preferredTime,
                 message: body.message,

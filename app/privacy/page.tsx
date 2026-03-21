@@ -4,9 +4,21 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <section className="max-w-4xl mx-auto ">
+        {/* Back Link */}
+        <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
+          <Link
+            href="/"
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+      </section>
+      <section className="max-w-4xl mx-auto bg-linear-to-r from-black to-black/60 text-black/30 py-20 mt-4">
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             Privacy Policy
           </h1>
           <p className="text-xl text-blue-100">
@@ -22,7 +34,7 @@ export default function PrivacyPolicyPage() {
 
       {/* Content */}
       <section className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto ">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-8 space-y-8">
             {/* Introduction */}
             <div>
@@ -51,8 +63,7 @@ export default function PrivacyPolicyPage() {
                   </h3>
                   <p className="leading-relaxed">
                     We may collect personally identifiable information such as
-                    your name, email address, phone number, mailing address, and
-                    payment information when you register, make inquiries, or
+                    your name, email address, phone number, and mailing address when you register, make inquiries, or
                     conduct transactions on our website.
                   </p>
                 </div>
@@ -89,7 +100,6 @@ export default function PrivacyPolicyPage() {
                 We use the information we collect to:
               </p>
               <ul className="list-disc list-inside space-y-2 text-slate-600 dark:text-slate-400 ml-4">
-                <li>Process transactions and send related information</li>
                 <li>Respond to inquiries and provide customer support</li>
                 <li>Send marketing communications and promotional offers</li>
                 <li>Improve our website and services</li>
@@ -109,7 +119,6 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc list-inside space-y-2 text-slate-600 dark:text-slate-400 ml-4">
                 <li>Service providers who assist in our operations</li>
-                <li>Financial institutions for payment processing</li>
                 <li>Legal authorities when required by law</li>
                 <li>Business partners with your consent</li>
               </ul>
@@ -145,7 +154,6 @@ export default function PrivacyPolicyPage() {
                 <li>Correct inaccurate data</li>
                 <li>Request deletion of your data</li>
                 <li>Opt-out of marketing communications</li>
-                <li>Withdraw consent at any time</li>
               </ul>
             </div>
 
@@ -187,16 +195,6 @@ export default function PrivacyPolicyPage() {
                 <p>Phone: +94 77 123 4567</p>
                 <p>Address: 123 Main Street, Colombo, Sri Lanka</p>
               </div>
-            </div>
-
-            {/* Back Link */}
-            <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
-              <Link
-                href="/"
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
-                ← Back to Home
-              </Link>
             </div>
           </div>
         </div>

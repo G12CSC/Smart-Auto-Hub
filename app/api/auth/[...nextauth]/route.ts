@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -39,6 +38,7 @@ export const authOptions = {
 
         return {
           id: user.id,
+          name: user.name,
           email: user.email,
           userType: "user",
         };
@@ -66,6 +66,7 @@ export const authOptions = {
           credentials.password,
           admin.passwordHash,
         );
+
         if (!ok) return null;
 
         return {
@@ -73,6 +74,7 @@ export const authOptions = {
           email: admin.email,
           userType: admin.role === "advisor" ? "advisor" : "admin",
           adminRole: admin.role,
+          mustChangePassword: admin.mustChangePassword,
         };
       },
     }),
@@ -98,43 +100,101 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      //this function creates the jwt token for specific user type(user/admin/advisor)
+    // async jwt({ token, user }) {
+    //     if (user) {
+    //         token.id = user.id;
+    //         token.userType = user.userType;
+    //         token.name = user.name;
+    //         token.adminRole = user.adminRole ?? null;
+    //         token.mustChangePassword = user.mustChangePassword ?? false;
+    //     }
+    //
+    //     if (!token.userType) token.userType = "user";
+    //
+    //     return token;
+    // },
+    //
+    // async session({ session, token }) {
+    //     session.user.id = token.id;
+    //     session.user.userType = token.userType;
+    //     session.user.name = token.name;
+    //     session.user.adminRole = token.adminRole;
+    //     session.user.mustChangePassword = token.mustChangePassword;
+    //     return session;
+    // },
+    //
+    // async redirect({ url, baseUrl }) {
+    //     return process.env.BASEURL;
+    // },
+
+    async jwt({ token, user, account, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.adminRole = user.adminRole ?? null;
 
-        // If admin credentials login, userType/adminRole will exist
-        if (user.userType === "admin") {
-          token.userType = "admin";
-          token.adminRole = user.adminRole;
+        // 🔥 KEY FIX
+        if (account?.provider === "google" || account?.provider === "github") {
+          token.userType = "user"; // ✅ assign role for OAuth users
         } else {
-          // Any other login method => USER
-          token.userType = "user";
-          token.adminRole = undefined;
+          token.userType = user.userType ?? "user";
         }
       }
 
-      // IMPORTANT: OAuth logins may not provide userType later
-      // Ensure default always exists:
-      if (!token.userType) token.userType = "user";
+      // Apply client-side session.update(...) payload immediately.
+      // Only allow updating display name — never trust client-provided email.
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") {
+          token.name = session.name;
+        }
+      }
+
+      // 🔥 ALWAYS GET LATEST VALUE FROM DB
+      if (token.userType === "advisor" || token.userType === "admin") {
+        const admin = await prisma.admin.findUnique({
+          where: { id: token.id },
+        });
+
+        if (admin) {
+          token.mustChangePassword = admin.mustChangePassword;
+          token.name = admin.name;
+          token.email = admin.email;
+        }
+      } else if (token.userType === "user" && token.id) {
+        const user = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { email: true },
+        });
+
+        if (user) {
+          token.email = user.email;
+        } else {
+          console.warn(`JWT: no user found for id=${token.id}; token may be stale`);
+        }
+      }
 
       return token;
     },
 
     async session({ session, token }) {
       session.user.id = token.id;
-      session.user.userType = token.userType;
+      session.user.userType = token.userType ?? "user";
+      session.user.name = token.name;
       session.user.adminRole = token.adminRole;
+      session.user.mustChangePassword = token.mustChangePassword;
+      session.user.email = token.email; // ✅ IMPORTANT
       return session;
     },
 
     async redirect({ url, baseUrl }) {
-      // Always redirect to root after login
-      return process.env.BASEURL;
+      if (url.startsWith("/")) return baseUrl + url;
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
     },
   },
 
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
 
   secret: process.env.NEXTAUTH_SECRET,
 };

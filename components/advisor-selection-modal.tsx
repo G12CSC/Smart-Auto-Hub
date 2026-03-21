@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -35,15 +35,11 @@ export default function AdvisorSelectionModal({
   bookingSlot,
   onConfirm,
 }: AdvisorSelectionModalProps) {
-
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [advisors, setAdvisors] = useState<Advisor[]>([])
-    const [loading, setLoading] = useState(true)
-
-
+  const [advisors, setAdvisors] = useState<Advisor[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleSelectAdvisor = (advisor: Advisor) => {
     setSelectedAdvisor(advisor);
@@ -51,7 +47,6 @@ export default function AdvisorSelectionModal({
   };
 
   const handleConfirm = () => {
-
     if (selectedAdvisor) {
       onConfirm(selectedAdvisor);
       toast.success(`Booking sent to ${selectedAdvisor.name}`);
@@ -69,23 +64,22 @@ export default function AdvisorSelectionModal({
     }
   };
 
-    useEffect(() => {
-        const fetchAdvisors = async () => {
-            const res = await fetch("/api/Advisors")
-            const data = await res.json()
-            setAdvisors(data)
-            setLoading(false)
+  useEffect(() => {
+    const fetchAdvisors = async () => {
+      const res = await fetch("/api/Advisors");
+      const data = await res.json();
+      setAdvisors(data);
+      setLoading(false);
 
-            console.log("advisors data",data)
-        }
+      console.log("advisors data", data);
+    };
 
-        fetchAdvisors()
+    fetchAdvisors();
+  }, []);
 
-    }, [])
-
-    const filteredAdvisors = advisors.filter((advisor) =>
-        advisor.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+  const filteredAdvisors = advisors.filter((advisor) =>
+    advisor.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -156,7 +150,6 @@ export default function AdvisorSelectionModal({
                               ({advisor.experience})
                             </span>
                           </div>
-
                         </div>
                       </div>
                     ))}
@@ -206,28 +199,7 @@ export default function AdvisorSelectionModal({
                     <p className="text-sm font-semibold text-muted-foreground mb-3">
                       Available Times
                     </p>
-                    <div className="space-y-2">
-                        {/*{selectedAdvisor?.availableTimes?.length ? (*/}
-                        {/*    selectedAdvisor.availableTimes.map((time, index) => (*/}
-                        {/*        <div key={index}>{time}</div>*/}
-                        {/*    ))*/}
-                        {/*) : (*/}
-                        {/*    <p className="text-sm text-muted-foreground">*/}
-                        {/*        No available times configured*/}
-                        {/*    </p>*/}
-                        {/*)}*/}
-
-                    </div>
                   </div>
-
-                  {/*{!selectedAdvisor.isAvailable && (*/}
-                  {/*  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 flex gap-2">*/}
-                  {/*    <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />*/}
-                  {/*    <p className="text-sm text-yellow-800 dark:text-yellow-200">*/}
-                  {/*      Showing this advisor not available at this moment*/}
-                  {/*    </p>*/}
-                  {/*  </div>*/}
-                  {/*)}*/}
                 </div>
               </div>
 

@@ -3,7 +3,7 @@ import CreateNewsletterForm from "@/components/admin/newsletter/CreateNewsletter
 
 export default function CreateNewsletterPage() {
   return (
-    <div className="p-8 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 mx-auto">
+    <div className="p-8 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 mx-auto dark:text-white">
       <div>
         <CreateNewsletterForm />
       </div>
@@ -17,7 +17,7 @@ export default function CreateNewsletterPage() {
           <h2 className="text-2xl font-semibold mb-4">
             Newsletter Creation Tips
           </h2>
-          <ul className="list-disc list-inside space-y-2 text-gray-700">
+          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
             <li>
               <strong>Compelling Title:</strong> Craft a title that grabs
               attention and reflects the content of your newsletter.

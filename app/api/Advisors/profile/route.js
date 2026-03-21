@@ -7,6 +7,7 @@ import {NextResponse} from "next/server";
 export async function GET() {
 
     const session = await getServerSession(authOptions);
+
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -35,6 +36,13 @@ export async function PATCH(req) {
 
     const session = await getServerSession(authOptions);
     const body = await req.json()
+
+    await prisma.admin.update({
+        where: { id: session.user.id },
+        data: {
+            name: body.name
+        }
+    });
 
     const profile = await prisma.advisorProfile.upsert({
         where: {
