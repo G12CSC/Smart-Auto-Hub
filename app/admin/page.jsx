@@ -69,6 +69,7 @@ import {
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
 import { vehicleAPI } from "../../lib/api/vehicles.js";
+import { set } from "date-fns/set";
 
 
 const vehicleFormDefaults = {
@@ -146,6 +147,7 @@ export default function AdminPage() {
 
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingYears, setLoadingYears] = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const stats = [
 
@@ -582,8 +584,10 @@ export default function AdminPage() {
     });
   }
 
+
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
+    setLoadingTransactions(true);
 
     try {
       const res = await fetch("/api/admin/transactions", {
@@ -617,6 +621,9 @@ export default function AdminPage() {
     catch (error) {
       console.error("Error saving transaction:", error);
       toast.error(error.message || "Failed to save transaction");
+    }
+    finally {
+      setLoadingTransactions(false);
     }
   };
 
@@ -1692,7 +1699,7 @@ export default function AdminPage() {
                   <select
                     value={form.brand}
                     onChange={handleBrandChange}
-                    className="input p-2 dark:bg-black/80 text-white"
+                    className="input disabled:bg-gray-100 p-2 bg-gray-200 text-black dark:bg-black/80 dark:text-white"
                     required
                   >
                     <option value="">Select Brand</option>
@@ -1706,7 +1713,7 @@ export default function AdminPage() {
                     value={form.model}
                     onChange={handleModelChange}
                     disabled={!form.brand || loadingModels}
-                    className="input disabled:bg-gray-100 p-2 bg-gray-600 dark:bg-black/80 text-white"
+                    className="input disabled:bg-gray-100 p-2 bg-gray-200 text-black dark:bg-black/80 dark:text-white"
                     required
                   >
                     <option value="">
@@ -1724,7 +1731,7 @@ export default function AdminPage() {
                     name="year"
                     required
                     disabled={!form.model || loadingYears}
-                    className="input disabled:bg-gray-100 dark:disabled:bg-gray-300 p-2 dark:bg-black/80 text-white"
+                    className="input disabled:bg-gray-100 p-2 bg-gray-200 text-black dark:bg-black/80 dark:text-white"
                   >
                     <option value="">
                       {loadingYears ? "Loading..." : "Select Year"}
@@ -1737,9 +1744,9 @@ export default function AdminPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                  className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg ${loadingTransactions ? "cursor-not-allowed" : ""}`}
                 >
-                  Save Transaction
+                  {loadingTransactions ? "Saving..." : "Save Transaction"}
                 </button>
               </form>
             </div>
