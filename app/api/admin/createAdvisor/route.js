@@ -4,6 +4,8 @@ import crypto from "crypto";
 import { sendAdvisorTempID } from "../../../../lib/emailForAdvisorCreation.js";
 import { logAudit } from "@/lib/audit/auditLogger";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const { email } = await req.json();
