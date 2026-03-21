@@ -88,12 +88,10 @@ export default function VehicleDetailsClient({
     vehicleId ?? (vehicle?.id !== undefined && vehicle?.id !== null ? String(vehicle.id) : null)
 
   // Mock images array for gallery - in production, this would come from vehicle data
-  const vehicleImages: string[] = [
-    vehicle?.image || "/placeholder.svg",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle front angle",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle side angle",
-    "/vehicle-angle-.jpg?height=400&width=600&query=vehicle interior",
-  ]
+    const vehicleImages: string[] =
+        vehicle?.images && vehicle.images.length > 0
+            ? vehicle.images
+            : [vehicle?.image || "/placeholder.svg"];
 
   useEffect(() => {
     if (!initialVehicle) return
@@ -318,7 +316,7 @@ export default function VehicleDetailsClient({
               onClick={() => openLightbox(0)}
             >
               <img
-                src={vehicle.image || "/placeholder.svg"}
+                  src={vehicleImages[0] || "/placeholder.svg"}
                 alt={vehicle?.name || "Vehicle"}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -329,7 +327,7 @@ export default function VehicleDetailsClient({
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {vehicleImages.slice(1, 4).map((img, i) => (
+              {vehicleImages.slice(1).map((img, i) => (
                 <div
                   key={`${img}-${i}`}
                   className="bg-muted rounded h-20 cursor-pointer hover:ring-2 hover:ring-primary transition"
