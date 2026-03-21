@@ -6,11 +6,20 @@ import DeleteButton from "./DeleteButton";
 
 export default function NewsletterTable() {
   const [data, setData] = useState<any[]>([]);
+  const [newslettersBroadcasts, setNewslettersBroadcasts] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/newsletter")
       .then((res) => res.json())
-      .then(setData);
+      .then(
+        (result) => {
+          console.log("Fetched newsletters:", result);
+          setData(result.data.newsletters);
+          setNewslettersBroadcasts(result.data.newslettersWithStatus);
+        }
+      )
+      .catch((err) => console.error("Error fetching newsletters:", err)
+      );
   }, []);
 
   return (
@@ -26,7 +35,7 @@ export default function NewsletterTable() {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-800">
-          {data.map((n) => (
+          {data.map((n, index) => (
             <tr
               className="hover:bg-gray-200 dark:hover:bg-[#1a1a1a] transition"
               key={n.id}
@@ -43,11 +52,11 @@ export default function NewsletterTable() {
               </td>
               <td className="px-6 py-4">
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500/20 text-yellow-400">
-                  {n.broadcasts?.[0]?.status ?? "NOT SENT"}
+                  {newslettersBroadcasts.find((nb) => nb.id === n.id)?.broadcasts?.[0]?.status ?? "NOT SENT"}
                 </span>
               </td>
               <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center">
-                {n?.sentAt ? new Date(n.sentAt).toLocaleDateString() : "-"}
+                {newslettersBroadcasts.find((nb) => nb.id === n.id)?.sentAt ? new Date(newslettersBroadcasts.find((nb) => nb.id === n.id)?.sentAt).toLocaleDateString() : "-"}
               </td>
               <td className="px-6 py-4">
                 <div className="flex gap-2 justify-center">
