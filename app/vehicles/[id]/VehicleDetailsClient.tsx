@@ -40,11 +40,13 @@ type ReviewForm = {
   email: string
   rating: number
   comment: string
+    couponId: string
 }
 
 type Review = ReviewForm & {
   id: string
   timestamp: string
+    location:string
 }
 
 type ReviewErrors = Partial<Record<keyof ReviewForm, string>>
@@ -55,6 +57,7 @@ type VehicleDetailsClientProps = {
 }
 
 export default function VehicleDetailsClient({
+
   vehicle: initialVehicle,
   vehicleId,
 }: VehicleDetailsClientProps) {
@@ -76,6 +79,7 @@ export default function VehicleDetailsClient({
     email: "",
     rating: 0,
     comment: "",
+      couponId: "",
   })
   const [reviewErrors, setReviewErrors] = useState<ReviewErrors>({})
   const [submittingReview, setSubmittingReview] = useState(false)
@@ -206,6 +210,7 @@ export default function VehicleDetailsClient({
                 carId: resolvedVehicleId,
                 rating: reviewForm.rating,
                 comment: reviewForm.comment,
+                couponId:reviewForm.couponId,
             }),
 
         });
@@ -508,137 +513,195 @@ export default function VehicleDetailsClient({
           </div>
 
           {/* Review Form */}
-          <div className="bg-muted/50 rounded-lg p-6 mb-8">
-            <h4 className="font-semibold text-lg mb-4">Write a Review</h4>
-            <form onSubmit={handleReviewSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Your Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={reviewForm.name}
-                    onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
-                    className={`w-full px-4 py-2 rounded bg-background border ${
-                      reviewErrors.name ? "border-red-500" : "border-border"
-                    } focus:outline-none focus:ring-2 focus:ring-primary`}
-                    placeholder="John Doe"
-                  />
-                  {reviewErrors.name && (
-                    <p className="text-red-500 text-sm mt-1">{reviewErrors.name}</p>
-                  )}
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Your Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={reviewForm.email}
-                    onChange={(e) => setReviewForm({ ...reviewForm, email: e.target.value })}
-                    className={`w-full px-4 py-2 rounded bg-background border ${
-                      reviewErrors.email ? "border-red-500" : "border-border"
-                    } focus:outline-none focus:ring-2 focus:ring-primary`}
-                    placeholder="john@example.com"
-                  />
-                  {reviewErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">{reviewErrors.email}</p>
-                  )}
-                </div>
-              </div>
+            <div className="bg-muted/50 rounded-lg p-6 mb-8">
+                <h4 className="font-semibold text-lg mb-6">Write a Review</h4>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Rating <span className="text-red-500">*</span>
-                </label>
-                <StarRating
-                  rating={reviewForm.rating}
-                  onRatingChange={(rating) => setReviewForm({ ...reviewForm, rating })}
-                  size={32}
-                />
-                {reviewErrors.rating && (
-                  <p className="text-red-500 text-sm mt-1">{reviewErrors.rating}</p>
-                )}
-              </div>
+                <form onSubmit={handleReviewSubmit} className="space-y-5">
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Your Review <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={reviewForm.comment}
-                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                  rows={4}
-                  className={`w-full px-4 py-2 rounded bg-background border ${
-                    reviewErrors.comment ? "border-red-500" : "border-border"
-                  } focus:outline-none focus:ring-2 focus:ring-primary resize-none`}
-                  placeholder="Share your experience with this vehicle..."
-                />
-                <div className="flex justify-between mt-1">
-                  {reviewErrors.comment ? (
-                    <p className="text-red-500 text-sm">{reviewErrors.comment}</p>
-                  ) : (
-                    <p className="text-muted-foreground text-sm">Minimum 10 characters</p>
-                  )}
-                  <p className="text-muted-foreground text-sm">
-                    {reviewForm.comment.length} characters
-                  </p>
-                </div>
-              </div>
+                    {/* NAME + EMAIL */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              <Button type="submit" disabled={submittingReview} className="w-full md:w-auto">
-                {submittingReview ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Review"
-                )}
-              </Button>
-            </form>
-          </div>
+                        {/* NAME */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Your Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={reviewForm.name}
+                                onChange={(e) =>
+                                    setReviewForm({ ...reviewForm, name: e.target.value })
+                                }
+                                className={`input ${reviewErrors.name && "input-error"}`}
+                                placeholder="John Doe"
+                            />
+                            {reviewErrors.name && (
+                                <p className="error-text">{reviewErrors.name}</p>
+                            )}
+                        </div>
+
+                        {/* EMAIL */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Your Email <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                value={reviewForm.email}
+                                onChange={(e) =>
+                                    setReviewForm({ ...reviewForm, email: e.target.value })
+                                }
+                                className={`input ${reviewErrors.email && "input-error"}`}
+                                placeholder="john@example.com"
+                            />
+                            {reviewErrors.email && (
+                                <p className="error-text">{reviewErrors.email}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* COUPON */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Coupon Code
+                        </label>
+                        <input
+                            type="text"
+                            value={reviewForm.couponId}
+                            onChange={(e) =>
+                                setReviewForm({ ...reviewForm, couponId: e.target.value })
+                            }
+                            className={`input ${reviewErrors.couponId && "input-error"}`}
+                            placeholder="Enter coupon code"
+                        />
+                        {reviewErrors.couponId && (
+                            <p className="error-text">{reviewErrors.couponId}</p>
+                        )}
+                    </div>
+
+                    {/* RATING */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Rating <span className="text-red-500">*</span>
+                        </label>
+                        <StarRating
+                            rating={reviewForm.rating}
+                            onRatingChange={(rating) =>
+                                setReviewForm({ ...reviewForm, rating })
+                            }
+                            size={32}
+                        />
+                        {reviewErrors.rating && (
+                            <p className="error-text">{reviewErrors.rating}</p>
+                        )}
+                    </div>
+
+                    {/* COMMENT */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Your Review <span className="text-red-500">*</span>
+                        </label>
+
+                        <textarea
+                            value={reviewForm.comment}
+                            onChange={(e) =>
+                                setReviewForm({ ...reviewForm, comment: e.target.value })
+                            }
+                            rows={4}
+                            className={`textarea ${reviewErrors.comment && "textarea-error"}`}
+                            placeholder="Share your experience with this vehicle..."
+                        />
+
+                        <div className="flex justify-between mt-1">
+                            {reviewErrors.comment ? (
+                                <p className="error-text">{reviewErrors.comment}</p>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">
+                                    Minimum 10 characters
+                                </p>
+                            )}
+                            <p className="text-muted-foreground text-sm">
+                                {reviewForm.comment.length} characters
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* SUBMIT */}
+                    <Button
+                        type="submit"
+                        disabled={submittingReview}
+                        className="w-full md:w-auto"
+                    >
+                        {submittingReview ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Submitting...
+                            </>
+                        ) : (
+                            "Submit Review"
+                        )}
+                    </Button>
+                </form>
+            </div>
+
 
           {/* Reviews List */}
-          {reviews.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No reviews yet. Be the first to review this vehicle!</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="border-b border-border pb-6 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="bg-primary/10 rounded-full p-3">
-                      <User className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <h5 className="font-semibold">{review.name}</h5>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(review.timestamp).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
-                        </div>
-                        <StarRating rating={review.rating} readOnly size={18} />
-                      </div>
-                      <p className="text-foreground leading-relaxed">{review.comment}</p>
-                    </div>
-                  </div>
+            {reviews.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                    <p>No reviews yet. Be the first to review this vehicle!</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+            ) : (
+                <div className="space-y-6">
+                    {reviews.map((review) => (
+                        <div
+                            key={review.id}
+                            className="border-b border-border pb-6 last:border-b-0 last:pb-0"
+                        >
+                            <div className="flex items-start gap-4">
+
+                                {/* Avatar */}
+                                <div className="bg-primary/10 rounded-full p-3">
+                                    <User className="w-6 h-6 text-primary" />
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1">
+
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h5 className="font-semibold">{review.name}</h5>
+
+                                            {/* Location + Date */}
+                                            <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                                {review.location && (
+                                                    <>
+                                                        📍 {review.location}
+                                                        <span>•</span>
+                                                    </>
+                                                )}
+                                                {new Date(review.timestamp).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                })}
+                                            </p>
+                                        </div>
+
+                                        <StarRating rating={review.rating} readOnly size={18} />
+                                    </div>
+
+                                    {/* Comment */}
+                                    <p className="text-foreground leading-relaxed">
+                                        {review.comment}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 
         {/* Similar Vehicles Section */}
         <div className="mb-12">
@@ -655,5 +718,5 @@ export default function VehicleDetailsClient({
         </div>
       </div>
     </div>
-  )
-}
+    </div>
+  )}

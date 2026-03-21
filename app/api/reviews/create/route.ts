@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { carId, rating, comment } = body;
+    const { carId, rating, comment ,couponId} = body;
 
     try {
 

@@ -52,6 +52,7 @@ type Review = {
   date: string;
   rating: number;
   comment: string;
+  location: string;
 };
 
 type DashboardNotifications = {
@@ -89,6 +90,7 @@ export default function DashboardClient({
   initialUpcoming,
   initialHistory,
 }: DashboardClientProps) {
+
   const { data: liveSession, update: updateSession } = useSession();
   const displaySession = liveSession ?? session;
   const [activeTab, setActiveTab] = useState("appointments");
@@ -99,6 +101,7 @@ export default function DashboardClient({
   const [appointmentHistory, setAppointmentHistory] = useState<Appointment[]>(
     Array.isArray(initialHistory) ? initialHistory : [],
   );
+
   const [userReviews] = useState<Review[]>([]);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleApt, setRescheduleApt] = useState<Appointment | null>(null);
