@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getResendClient } from "@/lib/resend";
+import { sendNewsletterEmail } from "@/lib/emailForNewsletterSending";
 
 export const dynamic = "force-dynamic";
 
@@ -28,11 +29,10 @@ export async function POST(req: Request) {
   // 4. Send emails
   for (const sub of subscribers) {
     try {
-      await resend.emails.send({
-        from: "Sameera Auto Hub <onboarding@resend.dev>",
-        to: sub.email,
+      await sendNewsletterEmail({
+        email: sub.email,
         subject: broadcast.Newsletter.subject,
-        html: broadcast.Newsletter.content,
+        content: broadcast.Newsletter.content,
       });
 
       await prisma.newsletterDeliveryLog.create({
