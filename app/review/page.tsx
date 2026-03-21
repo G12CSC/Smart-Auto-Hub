@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ReviewPage() {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ export default function ReviewPage() {
   const [rating, setRating] = useState(0);
 
   const [transaction, setTransaction] = useState<any>(null);
+  const [loadingReview, setLoadingReview] = useState(false);
 
   useEffect(() => {
     if (!code) return;
@@ -34,6 +36,8 @@ export default function ReviewPage() {
   }, [code]);
 
   const handleSubmit = async () => {
+    try {
+      setLoadingReview(true);
     console.log(transaction);
     const res = await fetch("/api/reviews/create", {
       method: "POST",
@@ -51,7 +55,18 @@ export default function ReviewPage() {
     const data = await res.json();
 
     if (data.success) {
-      alert("Review submitted!");
+      toast.success("Review submitted successfully!");
+      setReview("");
+      setRating(0);
+      setLocation("");
+    }
+    }
+    catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review. Please try again.");
+    }
+    finally {
+      setLoadingReview(false);
     }
   };
 
@@ -67,9 +82,7 @@ export default function ReviewPage() {
               Your coupon has expired. Please contact support for assistance.
             </p>
           ) : (
-            <p>
-              {error}. Please check your link or contact support.
-            </p>
+            <p>{error}. Please check your link or contact support.</p>
           )}
         </div>
         <div className="mt-5">
@@ -92,10 +105,11 @@ export default function ReviewPage() {
         <div className="space-y-4">
           {/* Image Section */}
           <div className="h-56 flex items-center justify-center border rounded-xl bg-gray-100 dark:bg-gray-800 dark:border-gray-700">
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-gray-500 dark:text-gray-400 overflow-hidden h-full flex items-center justify-center">
               <img
                 src={transaction.image}
                 alt={`${transaction.brand} ${transaction.model}`}
+                className="h-full object-contain"
               />
             </span>
           </div>
@@ -145,7 +159,13 @@ export default function ReviewPage() {
           </div>
 
           <div className="">
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location" className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full mb-4" />
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Location"
+              className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full mb-4"
+            />
           </div>
 
           {/* ✍️ Message Box */}
@@ -165,8 +185,9 @@ export default function ReviewPage() {
           {/* 🚀 Submit */}
           <button
             onClick={handleSubmit}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 
-        text-white font-semibold transition"
+            className={`w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 
+        text-white font-semibold transition ${loadingReview ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={loadingReview}
           >
             Submit Review
           </button>
