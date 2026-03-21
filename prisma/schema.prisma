@@ -128,6 +128,8 @@ model Review {
   adminReply String?
   location   String
   createdAt  DateTime @default(now())
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id])
   car        Car      @relation(fields: [carId], references: [id])
   user       User     @relation(fields: [userId], references: [id])
 }
@@ -146,8 +148,23 @@ model Transactions {
   createdAt DateTime @default(now())
 
   // Relations
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+
   car  Car  @relation(fields: [carId], references: [id])
   user User @relation(fields: [userId], references: [id])
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  couponCode String   @unique
+  expireAt   DateTime
+
+  // Relations
+  transactions Transactions[]
+  reviews      Review[]
+
+  createdAt DateTime @default(now())
 }
 
 model NewsletterEntry {
