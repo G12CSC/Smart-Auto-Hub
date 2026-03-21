@@ -311,3 +311,11 @@ model AuditLog {
   @@index([entity])
   @@index([createdAt])
 }
+
+model PasswordResetOTP {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

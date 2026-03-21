@@ -17,6 +17,7 @@ export default function AuthPage({ initialTab = "login" }: AuthPageProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
 
   return (
+
     <div className="min-h-screen w-full flex bg-background overflow-hidden">
       {/* Left Panel - Branding & Decoration (Hidden on Mobile) */}
       <div className="hidden md:flex md:w-[45%] lg:w-[40%] relative bg-secondary flex-col justify-between p-12 overflow-hidden">
