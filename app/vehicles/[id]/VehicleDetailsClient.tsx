@@ -540,10 +540,6 @@ export default function VehicleDetailsClient({
             )}
           </div>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 712fbc0 (Remove review form from VehicleDetailsClient component)
           {/* Reviews List */}
           {reviews.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
