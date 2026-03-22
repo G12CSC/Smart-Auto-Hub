@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { logAudit } from "@/lib/audit/auditLogger";
+
+export const dynamic = "force-dynamic";
 
 export async function DELETE(
   request: Request,
@@ -19,6 +22,15 @@ export async function DELETE(
   try {
     await prisma.admin.delete({
       where: { id: id },
+    });
+
+    await logAudit({
+      action: "DELETE_ADVISOR",
+      entity: "advisor",
+      entityId: id,
+      userId: "admin", 
+      userRole: "admin",
+      metadata: { advisorId: id },
     });
 
     return Response.json({

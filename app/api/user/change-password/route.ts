@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { logAudit } from "@/lib/audit/auditLogger";
 
 export async function PATCH(request: Request) {
   try {
@@ -35,6 +36,15 @@ export async function PATCH(request: Request) {
     await prisma.user.update({
       where: { email: session.user?.email || undefined },
       data: { passwordHash: hashedNewPassword },
+    });
+
+    await logAudit({
+      action: "change_password",
+      entity: "user",
+      entityId: session.user?.email || undefined,
+      userId: session.user?.email || undefined,
+      userRole: "user",
+      metadata: { email: session.user?.email },
     });
 
     return Response.json({

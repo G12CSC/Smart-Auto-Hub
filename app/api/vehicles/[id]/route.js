@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma.ts";
 
 export async function GET(req, context) {
+
   const params = await context.params;
   const id = params.id;
 

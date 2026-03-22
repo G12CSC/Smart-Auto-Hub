@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { logAudit } from "@/lib/audit/auditLogger";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
@@ -66,6 +69,16 @@ export async function PATCH(request: Request) {
         createdAt: true,
       },
     });
+
+    await logAudit({
+      action: "update_profile",
+      entity: "user",
+      entityId: session?.user?.id || undefined,
+      userId: session?.user?.id || undefined,
+      userRole: "user",
+      metadata: { email: session?.user?.email || undefined },
+    });
+
     return Response.json({
       success: true,
       data: updatedUser,

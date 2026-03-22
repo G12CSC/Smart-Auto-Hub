@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { logAudit } from "@/lib/audit/auditLogger";
 
 export async function DELETE(request: Request) {
   try {
@@ -30,6 +31,16 @@ export async function DELETE(request: Request) {
     await prisma.user.delete({
       where: { email: session.user?.email || undefined },
     });
+
+    await logAudit({
+      action: "delete_account",
+      entity: "user",
+      entityId: session.user?.email || undefined,
+      userId: session.user?.email || undefined,
+      userRole: "user",
+      metadata: { email: session.user?.email },
+    });
+
     return Response.json({
       success: true,
       message: "Account deleted successfully",
