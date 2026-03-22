@@ -12,10 +12,12 @@ export async function GET() {
   const transactions = await prisma.transactions.findMany({
     orderBy: { createdAt: "desc" },
   });
+
   return NextResponse.json({ success: true, transactions });
 }
 
 export async function POST(req: Request) {
+
   try {
     const body = await req.json();
 
