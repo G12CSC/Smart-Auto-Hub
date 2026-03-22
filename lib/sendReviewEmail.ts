@@ -33,7 +33,7 @@ transporter.verify()
     .catch(err => console.error("ERROR:", err));
 
 export const sendReviewEmail = async (to: string, token: string) => {
-  const reviewLink = `http://localhost:3000/customer-reviews?token=${token}`;
+  const reviewLink = `https://smartautohub.live/customer-reviews?token=${token}`;
 
   await transporter.sendMail({
     from: `"Sameera Auto Traders" <${process.env.EMAIL_USER}>`,
