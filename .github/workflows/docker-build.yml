@@ -10,6 +10,7 @@ env:
   DOCKER_IMAGE_NAME: smart-auto-hub
   DOCKER_REGISTRY: docker.io
   DOCKER_TAG: latest
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   push_to_registry:
