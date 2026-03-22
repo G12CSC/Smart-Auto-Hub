@@ -1,11 +1,13 @@
+import json
 from typing import List, Dict
+from sqlalchemy import text
 
-from app.database.supabase_client import supabase_client
+from app.database.azure_database import get_engine
 from app.core.embeddings import embed_text
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
+engine = get_engine()
 
 # --------------------------------------------------
 # 1. Embed user query
@@ -13,115 +15,79 @@ logger = get_logger(__name__)
 
 def embed_query(query: str) -> List[float]:
     """
-    Convert a user query into an embedding vector.
+    Converts text query into a 384-dimensional vector.
     """
     if not isinstance(query, str) or not query.strip():
         raise ValueError("Query must be a non-empty string")
 
-    return embed_text(query)
+    embedding = embed_text(query)
+    
+    # Safety check for the specific model dimension
+    if len(embedding) != 384:
+        logger.error(f"Dimension mismatch: Expected 384, got {len(embedding)}")
+        
+    return embedding
 
 
 # --------------------------------------------------
-# 2. Vector similarity search (pgvector RPC)
+# 2. Vector search + car metadata (The Fix)
 # --------------------------------------------------
 
-def search_car_vectors(query_embedding: List[float], top_k: int = 5) -> List[Dict]:
+def search_relevant_cars(query_embedding: List[float], top_k: int = 5):
     """
-    Call the pgvector SQL function to retrieve
-    the best-matching chunk per car.
+    Performs Cosine Similarity search in Azure SQL using the VECTOR type.
     """
     try:
-        response = supabase_client.rpc(
-            "match_car_vectors_new",
-            {
-                "query_embedding": query_embedding,
-                "match_count": top_k
-            }
-        ).execute()
+        # Convert the list of floats into a string: "[0.12, 0.45, ...]"
+        vector_json = json.dumps(query_embedding)
 
-        if not response.data:
-            logger.info("No vector matches found")
-            return []
+        # The Fix: Double CAST (NVARCHAR(MAX) -> VECTOR(384))
+        # This prevents the 'ntext' conversion error for long vectors.
+        sql = text("""
+            SELECT TOP (:limit)
+                c.*,
+                cv.chunk_text AS match_reason,
+                VECTOR_DISTANCE(
+                    'cosine', 
+                    cv.embedding, 
+                    CAST(CAST(:vec AS NVARCHAR(MAX)) AS VECTOR(384))
+                ) AS distance
+            FROM CarVectors cv
+            JOIN Car c ON c.id = cv.car_id
+            ORDER BY distance ASC
+        """)
 
-        return response.data
+        with engine.connect() as conn:
+            result = conn.execute(sql, {
+                "limit": top_k,
+                "vec": vector_json
+            })
+            
+            # Map results to a list of dictionaries for easy use
+            return [dict(row) for row in result.mappings()]
 
     except Exception as e:
-        logger.exception("Vector search failed")
-        raise RuntimeError("Vector search error") from e
+        logger.error(f"Database vector search failed: {e}")
+        raise
 
 
 # --------------------------------------------------
-# 3. Fetch structured car metadata
+# 3. Main retrieval pipeline
 # --------------------------------------------------
 
-def fetch_car_details(car_ids: List[int]) -> List[Dict]:
+def retrieve_cars_for_query(query: str, top_k: int = 10) -> List[Dict]:
     """
-    Fetch car details from the Car table using car IDs.
+    Entry point for the RAG system to get relevant car data.
     """
-    if not car_ids:
-        return []
-
     try:
-        response = (
-            supabase_client
-            .table("Car")
-            .select("*")
-            .in_("id", car_ids)
-            .execute()
+        query_embedding = embed_query(query)
+        
+        results = search_relevant_cars(
+            query_embedding=query_embedding,
+            top_k=top_k
         )
-
-        return response.data or []
-
+        
+        return results
     except Exception as e:
-        logger.exception("Failed to fetch car metadata")
-        raise RuntimeError("Car metadata fetch failed") from e
-
-
-# --------------------------------------------------
-# 4. Merge semantic + structured data
-# --------------------------------------------------
-
-def merge_results(vector_results: List[Dict],car_records: List[Dict]) -> List[Dict]:
-    """
-    Combine vector similarity results with car metadata.
-    """
-    car_map = {car["id"]: car for car in car_records}
-
-    merged: List[Dict] = []
-
-    for row in vector_results:
-        car = car_map.get(row["car_id"])
-        if not car:
-            continue
-
-        merged.append({
-            **car,
-            "match_reason": row["content"],
-            "similarity": row["similarity"]
-        })
-
-    return merged
-
-
-# --------------------------------------------------
-# 5. Main retrieval pipeline (ENTRY POINT)
-# --------------------------------------------------
-
-def retrieve_cars_for_query(query: str, top_k: int = 10) -> list[dict]:
-    query_embedding = embed_query(query)
-
-    vector_results = search_car_vectors(
-        query_embedding=query_embedding,
-        top_k=top_k
-    )
-
-    if not vector_results:
+        logger.error(f"Retrieval pipeline error: {e}")
         return []
-
-    car_ids = [row["car_id"] for row in vector_results]
-    car_records = fetch_car_details(car_ids)
-
-    merged = merge_results(vector_results, car_records)
-
-    return merged
-
