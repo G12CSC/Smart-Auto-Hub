@@ -49,7 +49,7 @@ type Appointment = {
 type Review = {
   id: string | number;
   vehicle: string;
-  date: string;
+  createdAt: string;
   rating: number;
   comment: string;
   location: string;
@@ -102,7 +102,7 @@ export default function DashboardClient({
     Array.isArray(initialHistory) ? initialHistory : [],
   );
 
-  const [userReviews] = useState<Review[]>([]);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleApt, setRescheduleApt] = useState<Appointment | null>(null);
   const [newDate, setNewDate] = useState("");
@@ -122,10 +122,6 @@ export default function DashboardClient({
     smsRemainers: localStorage.getItem("smsRemainers") === "true",
   });
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [writeReviewOpen, setWriteReviewOpen] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [coupon, setCoupon] = useState("");
 
   useEffect(() => {
     setUpcomingAppointments(
@@ -138,6 +134,38 @@ export default function DashboardClient({
     appointments: 0,
     reviews: 0,
   });
+
+  useEffect(() => {
+      const fetchUserReviews = async () => {
+        try {
+          const response = await fetch("/api/user/reviews", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          });
+          console.log("Fetch user reviews response:", response);
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Fetch Data", data);
+            if (data.success) {
+              // Assuming the API returns an array of reviews in data.data
+              setUserReviews(data.data);
+              console.log(data.data);
+            } else {
+              toast.error(data.message || "Failed to fetch user reviews");
+            }
+          } else {
+            toast.error("Failed to fetch user reviews");
+          }
+        } catch (error) {
+          console.error("Error fetching user reviews:", error);
+          toast.error("An error occurred while fetching user reviews");
+        }
+      };
+      fetchUserReviews();
+  }, []);
 
   useEffect(() => {
     const notifs = localStorageAPI.getNotifications();
@@ -738,86 +766,8 @@ export default function DashboardClient({
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">My Reviews</h2>
-                  <Button onClick={() => setWriteReviewOpen(!writeReviewOpen)}>
-                    <Star size={18} className="mr-2" />
-                    {writeReviewOpen ? "Close Review Form" : "Write a Review"}
-                  </Button>
+                  
                 </div>
-                {writeReviewOpen && (
-                  <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                    <h3 className="text-lg font-bold mb-4">Write a Review</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
-                          <Car size={16} />
-                          Vehicle
-                        </label>
-                        <Input type="text" placeholder="e.g. Toyota Camry" />
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-semibold mb-2 flex items-center gap-2">
-                            <Star size={16} />
-                            Rating
-                          </label>
-                          <div className="flex gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRating(star)}
-                                onMouseEnter={() => setHover(star)}
-                                onMouseLeave={() => setHover(0)}
-                                className="text-2xl"
-                              >
-                                <span
-                                  className={
-                                    (hover || rating) >= star
-                                      ? "text-yellow-400"
-                                      : "text-gray-400"
-                                  }
-                                >
-                                  ★
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block mb-1 text-sm">
-                            Coupon Code
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              placeholder="Enter coupon code"
-                              value={coupon}
-                              onChange={(e) => setCoupon(e.target.value)}
-                              className="w-full border rounded px-3 py-2 dark:bg-secondary/90"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
-                          <MessageSquare size={16} />
-                          Comment
-                        </label>
-                        <textarea
-                          className="w-full border border-border rounded px-3 py-2 dark:bg-secondary/90 dark:border-secondary/50"
-                          rows={4}
-                          placeholder="Write your review here..."
-                        ></textarea>
-                      </div>
-                      <div className="flex justify-end">
-                        <Button>
-                          <CheckCircle size={16} className="mr-2" />
-                          Submit Review
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 {userReviews.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     You haven't written any reviews yet.
@@ -832,9 +782,9 @@ export default function DashboardClient({
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <p className="font-semibold">{review.vehicle}</p>
+                          <p className="font-semibold">{liveSession?.user?.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {review.date}
+                            {new Date(review?.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -848,15 +798,18 @@ export default function DashboardClient({
                         </div>
                       </div>
                       <p className="text-sm mb-4">{review.comment}</p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Reviewed: {review.location}
+                      </p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        {/* <Button size="sm" variant="outline" disabled>
                           <Edit size={14} className="mr-2" />
                           Edit
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" disabled>
                           <Trash2 size={14} className="mr-2" />
                           Delete
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   ))}
@@ -879,13 +832,6 @@ export default function DashboardClient({
 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4 mb-6">
-                    {/* <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold">
-                      {session?.user?.name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase() || "U"}
-                    </div> */}
                     <Avatar className="h-24 w-24">
                       <AvatarImage src={displaySession?.user?.image || undefined} />
                       <AvatarFallback>
