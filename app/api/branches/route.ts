@@ -8,14 +8,18 @@ export async function GET() {
     },
   });
 
-  function groupByLocation({
-    location,
-    ...rest
-  }: {
-    location: string | null | undefined;
-  }) {
-    return location === "Colombo" ? "Colombo" : location || "Unknown";
-  }
-  const grouped = Object.groupBy(vehicles, groupByLocation);
+  const grouped = vehicles.reduce((acc: any, vehicle) => {
+    const key =
+      vehicle.location === "Colombo"
+        ? "Colombo"
+        : vehicle.location || "Unknown";
+
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+
+    acc[key].push(vehicle);
+    return acc;
+  }, {});
   return Response.json(grouped);
 }

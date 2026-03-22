@@ -30,7 +30,7 @@ export async function sendNewsletterEmail({
 
     <div style="padding: 30px;">
       
-      <pre style="background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 18px;">
+      <pre style="background: #f1f5f9; padding: 3px; border-radius: 2px; font-size: 12px;">
         ${content}
       </pre>
 

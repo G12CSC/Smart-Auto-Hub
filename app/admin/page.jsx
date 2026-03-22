@@ -332,15 +332,20 @@ export default function AdminPage() {
 
   const fetchAllAdvisors = async () => {
     try {
-      const res = await fetch("/api/Advisors");
+      const res = await fetch("/api/admin/advisors");
       const data = await res.json();
       console.log("Fetched Advisors:", data);
 
-      setAdvisors(data);
+      setAdvisors(data.advisors);
     } catch (error) {
       console.error("Failed to fetch advisors", error);
     }
   };
+
+  useEffect(() => {
+    fetchAllAdvisors();
+
+  }, []);
 
 
   const handleDeleteAdvisors = async () => {
@@ -1124,9 +1129,9 @@ export default function AdminPage() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="h-16 w-24 bg-secondary rounded flex items-center justify-center overflow-hidden">
-                          {vehicle.image ? (
+                          {vehicle.images && vehicle.images.length > 0 ? (
                             <img
-                              src={vehicle.image}
+                              src={vehicle.images[0]}
                               alt={vehicle.name}
                               className="w-full h-full object-cover"
                             />
@@ -1136,7 +1141,7 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {vehicle.name}
+                            {vehicle.brand} {vehicle.model} ({vehicle.year})
                           </h3>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
@@ -1157,18 +1162,6 @@ export default function AdminPage() {
                               ? `LKR ${vehicle.price.toLocaleString()}`
                               : vehicle.price}
                           </p>
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${vehicle.status === "Available"
-                              ? "bg-green-500/20 text-green-700"
-                              : vehicle.status === "Shipped"
-                                ? "bg-orange-500/20 text-orange-700"
-                                : vehicle.status === "Reserved"
-                                  ? "bg-blue-500/20 text-blue-700"
-                                  : "bg-red-500/20 text-red-700"
-                              }`}
-                          >
-                            {vehicle.status}
-                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -1518,64 +1511,6 @@ export default function AdminPage() {
                 </div>
 
                 <div className="gap-3 flex">
-                  <Button onClick={() => (handleDeleteAdvisors())} variant="outline" className="bg-red-600 text-white hover:bg-red-700">
-                    <UserCog size={18} className="mr-2" />
-                    Delete Advisors
-                  </Button>
-
-                  {
-                    showAdvisors && (
-                      <div className="bg-white dark:bg-black/90 rounded-lg border border-border p-4 absolute top-20 right-10 w-120 z-50">
-                        <h3 className="font-bold text-lg mb-3">Advisors List</h3>
-                        <button onClick={() => setShowAdvisors(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-muted-foreground/80">
-                          <CircleX size={16} />
-                        </button>
-                        <div className="max-h-150 overflow-y-auto">
-                          {advisors.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                              No advisors found.
-                            </p>
-                          ) : (
-                            <ul className="space-y-2">
-                              {advisors.map((advisor) => (
-                                <li key={advisor.id} className="border border-border rounded p-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-secondary rounded-full overflow-hidden">
-                                      {advisor.image ? (
-                                        <img
-                                          src={advisor.image}
-                                          alt={advisor.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <User size={16} className="text-muted-foreground" />
-                                      )}
-                                    </div>
-                                    <div>
-                                      <p className="font-medium">{advisor.name}</p>
-                                      <p className="text-xs text-muted-foreground">{advisor.email}</p>
-                                    </div>
-
-                                    <div className="ml-auto">
-                                      <Button size="sm" variant="outline" onClick={() => {
-                                        if (confirm(`Are you sure you want to delete advisor ${advisor.name}? This action cannot be undone.`)) {
-                                          handleDeleteAdvisor(advisor.id);
-                                        }
-                                      }
-                                      }>
-                                        <Trash2 size={14} className="mr-1" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  }
-
                   <Button onClick={() => setIsCreateAdvisorOpen(true)}>
                     <UserCog size={18} className="mr-2" />
                     Create Advisor
@@ -1588,11 +1523,32 @@ export default function AdminPage() {
                 Advisors created here will receive temporary credentials
                 and will be required to change their password on first login.
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                {
+                  advisors.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                      No advisors created yet.
+                    </div>
+                  ) : (
+                    advisors.map((advisor) => (
+                      <div key={advisor.id} className="bg-white dark:bg-black/50 rounded-lg border border-border p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-3 bg-primary/10 rounded-lg">
+                            <UserCog size={24} className="text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-xl">{advisor.name}</h3>
+                            <p className="text-sm text-muted-foreground">Advisor</p>
+                          </div>
+                        </div>
+                      </div>
+                        
 
+                  )))
+                }
+              </div>
             </div>
           )}
-
-
 
           {/* Branch Inventory Tab */}
           {activeTab === "branches" && (
