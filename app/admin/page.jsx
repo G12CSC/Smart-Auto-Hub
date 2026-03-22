@@ -29,7 +29,9 @@ import {
   LogOut,
   Sun,
   Moon,
-  CircleX
+  CircleX,
+  Route,
+  Router
 
 } from "lucide-react";
 
@@ -70,6 +72,7 @@ import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
 import { vehicleAPI } from "../../lib/api/vehicles.js";
 import { set } from "date-fns/set";
+import path from "node:path";
 
 
 const vehicleFormDefaults = {
@@ -373,6 +376,7 @@ export default function AdminPage() {
       if (data.success) {
         toast.success("Advisor deleted successfully ✅");
         await fetchAllAdvisors();
+        Router.refresh();
       } else {
         toast.error(data.message || "Failed to delete advisor ❌");
       }
@@ -394,7 +398,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Vehicle deleted successfully");
-
+        Router.refresh();
       }
 
     } catch (error) {
@@ -1523,7 +1527,7 @@ export default function AdminPage() {
                 Advisors created here will receive temporary credentials
                 and will be required to change their password on first login.
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
                 {
                   advisors.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
@@ -1532,19 +1536,30 @@ export default function AdminPage() {
                   ) : (
                     advisors.map((advisor) => (
                       <div key={advisor.id} className="bg-white dark:bg-black/50 rounded-lg border border-border p-4">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <UserCog size={24} className="text-primary" />
+                        <div className="flex items-center gap-3 mb-4 justify-between">
+                          <div className="flex gap-2">
+                            <div className="p-3 bg-primary/10 rounded-lg">
+                              <UserCog size={24} className="text-primary" />
+
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-xl">{advisor.name}</h3>
+                              <p className="text-sm text-muted-foreground">Advisor</p>
+                            </div>
                           </div>
                           <div>
-                            <h3 className="font-bold text-xl">{advisor.name}</h3>
-                            <p className="text-sm text-muted-foreground">Advisor</p>
+                            <Button variant="outline" size="sm" onClick={() => {
+                              handleDeleteAdvisor(advisor.id);
+                            }
+                            } className="ml-auto">
+                              <Trash2 size={16} />
+                            </Button>
                           </div>
                         </div>
                       </div>
-                        
 
-                  )))
+
+                    )))
                 }
               </div>
             </div>

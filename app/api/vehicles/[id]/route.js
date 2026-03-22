@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma.ts";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req, context) {
 
@@ -34,6 +35,8 @@ export async function PUT(request, context) {
       },
       data: data,
     });
+
+    revalidatePath("/admin");
 
     return NextResponse.json(updatedCar);
   } catch (error) {
