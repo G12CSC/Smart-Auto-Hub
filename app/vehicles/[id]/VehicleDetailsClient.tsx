@@ -450,7 +450,7 @@ export default function VehicleDetailsClient({
         </div>
 
         {/* Leasing Calculator */}
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
+        <div className="bg-linear-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
           <h3 className="font-bold text-2xl mb-6">
             Estimate Your Monthly Payment
           </h3>
@@ -539,137 +539,6 @@ export default function VehicleDetailsClient({
               </div>
             )}
           </div>
-
-          {/* Review Form */}
-
-          {/*<div className="bg-muted/50 rounded-lg p-6 mb-8">*/}
-          {/*  <h4 className="font-semibold text-lg mb-6">Write a Review</h4>*/}
-
-          {/*  <form onSubmit={handleReviewSubmit} className="space-y-5">*/}
-          {/*    /!* NAME + EMAIL *!/*/}
-          {/*    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">*/}
-          {/*      /!* NAME *!/*/}
-          {/*      <div>*/}
-          {/*        <label className="block text-sm font-medium mb-2">*/}
-          {/*          Your Name <span className="text-red-500">*</span>*/}
-          {/*        </label>*/}
-          {/*        <input*/}
-          {/*          type="text"*/}
-          {/*          value={reviewForm.name}*/}
-          {/*          onChange={(e) =>*/}
-          {/*            setReviewForm({ ...reviewForm, name: e.target.value })*/}
-          {/*          }*/}
-          {/*          className={`input ${reviewErrors.name && "input-error"}`}*/}
-          {/*          placeholder="John Doe"*/}
-          {/*        />*/}
-          {/*        {reviewErrors.name && (*/}
-          {/*          <p className="error-text">{reviewErrors.name}</p>*/}
-          {/*        )}*/}
-          {/*      </div>*/}
-
-          {/*      /!* EMAIL *!/*/}
-          {/*      <div>*/}
-          {/*        <label className="block text-sm font-medium mb-2">*/}
-          {/*          Your Email <span className="text-red-500">*</span>*/}
-          {/*        </label>*/}
-          {/*        <input*/}
-          {/*          type="email"*/}
-          {/*          value={reviewForm.email}*/}
-          {/*          onChange={(e) =>*/}
-          {/*            setReviewForm({ ...reviewForm, email: e.target.value })*/}
-          {/*          }*/}
-          {/*          className={`input ${reviewErrors.email && "input-error"}`}*/}
-          {/*          placeholder="john@example.com"*/}
-          {/*        />*/}
-          {/*        {reviewErrors.email && (*/}
-          {/*          <p className="error-text">{reviewErrors.email}</p>*/}
-          {/*        )}*/}
-          {/*      </div>*/}
-          {/*    </div>*/}
-
-          {/*    /!* COUPON *!/*/}
-          {/*    <div>*/}
-          {/*      <label className="block text-sm font-medium mb-2">*/}
-          {/*        Coupon Code*/}
-          {/*      </label>*/}
-          {/*      <input*/}
-          {/*        type="text"*/}
-          {/*        value={reviewForm.couponId}*/}
-          {/*        onChange={(e) =>*/}
-          {/*          setReviewForm({ ...reviewForm, couponId: e.target.value })*/}
-          {/*        }*/}
-          {/*        className={`input ${reviewErrors.couponId && "input-error"}`}*/}
-          {/*        placeholder="Enter coupon code"*/}
-          {/*      />*/}
-          {/*      {reviewErrors.couponId && (*/}
-          {/*        <p className="error-text">{reviewErrors.couponId}</p>*/}
-          {/*      )}*/}
-          {/*    </div>*/}
-
-          {/*    /!* RATING *!/*/}
-          {/*    <div>*/}
-          {/*      <label className="block text-sm font-medium mb-2">*/}
-          {/*        Rating <span className="text-red-500">*</span>*/}
-          {/*      </label>*/}
-          {/*      <StarRating*/}
-          {/*        rating={reviewForm.rating}*/}
-          {/*        onRatingChange={(rating) =>*/}
-          {/*          setReviewForm({ ...reviewForm, rating })*/}
-          {/*        }*/}
-          {/*        size={32}*/}
-          {/*      />*/}
-          {/*      {reviewErrors.rating && (*/}
-          {/*        <p className="error-text">{reviewErrors.rating}</p>*/}
-          {/*      )}*/}
-          {/*    </div>*/}
-
-          {/*    /!* COMMENT *!/*/}
-          {/*    <div>*/}
-          {/*      <label className="block text-sm font-medium mb-2">*/}
-          {/*        Your Review <span className="text-red-500">*</span>*/}
-          {/*      </label>*/}
-
-          {/*      <textarea*/}
-          {/*        value={reviewForm.comment}*/}
-          {/*        onChange={(e) =>*/}
-          {/*          setReviewForm({ ...reviewForm, comment: e.target.value })*/}
-          {/*        }*/}
-          {/*        rows={4}*/}
-          {/*        className={`textarea ${reviewErrors.comment && "textarea-error"}`}*/}
-          {/*        placeholder="Share your experience with this vehicle..."*/}
-          {/*      />*/}
-
-          {/*      <div className="flex justify-between mt-1">*/}
-          {/*        {reviewErrors.comment ? (*/}
-          {/*          <p className="error-text">{reviewErrors.comment}</p>*/}
-          {/*        ) : (*/}
-          {/*          <p className="text-muted-foreground text-sm">*/}
-          {/*            Minimum 10 characters*/}
-          {/*          </p>*/}
-          {/*        )}*/}
-          {/*        <p className="text-muted-foreground text-sm">*/}
-          {/*          {reviewForm.comment.length} characters*/}
-          {/*        </p>*/}
-          {/*      </div>*/}
-          {/*    </div>*/}
-
-          {/*    /!* SUBMIT *!/*/}
-          {/*    <Button*/}
-          {/*      type="submit"*/}
-          {/*      disabled={submittingReview}*/}
-          {/*      className="w-full md:w-auto"*/}
-          {/*    >*/}
-          {/*      {submittingReview ? (*/}
-          {/*        <>*/}
-          {/*          <Loader2 className="w-4 h-4 mr-2 animate-spin" />*/}
-          {/*          Submitting...*/}
-          {/*        </>*/}
-          {/*      ) : (*/}
-          {/*        "Submit Review"*/}
-          {/*      )}*/}
-          {/*    </Button>*/}
-          {/*  </form>*/}
-          {/*</div>*/}
 
           {/* Reviews List */}
           {reviews.length === 0 ? (
