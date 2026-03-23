@@ -18,7 +18,6 @@ import {
   Car,
   Mail,
   MapPin,
-  User,
   FileText,
   Video,
   ExternalLink,
@@ -30,8 +29,6 @@ import {
   Sun,
   Moon,
   CircleX,
-  Route,
-  Router
 
 } from "lucide-react";
 
@@ -76,7 +73,7 @@ import path from "node:path";
 
 
 const vehicleFormDefaults = {
-  companyName: "",
+  brand: "",
   model: "",
   year: "",
   type: "",
@@ -84,6 +81,11 @@ const vehicleFormDefaults = {
   transmission: "",
   fuelType: "",
   branch: "Nugegoda",
+  bodyType: "",
+  engineCapacity: "",
+  location: "",
+  condition: "New",
+  dealer: "",
   price: "",
   description: "",
   images: "",
@@ -130,7 +132,6 @@ export default function AdminPage() {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
   const [advisors, setAdvisors] = useState([]);
-  const [showAdvisors, setShowAdvisors] = useState(false);
 
   const [form, setForm] = useState({
     id: "",
@@ -243,12 +244,16 @@ export default function AdminPage() {
   };
 
   const loadVehicles = async () => {
-    const result = await vehicleAPI.getAllVehicles();
-    if (result.success) {
-      const sortedVehicles = [...result.data].sort(
-        (a, b) => Number(b.id) - Number(a.id),
-      );
-      setAdminVehicles(sortedVehicles);
+    try {
+      const result = await vehicleAPI.getAllVehicles();
+      if (result.success) {
+        const sortedVehicles = [...result.data].sort(
+          (a, b) => Number(b.id) - Number(a.id),
+        );
+        setAdminVehicles(sortedVehicles);
+      }
+    } catch (error) {
+      console.error("Failed to load vehicles", error);
     }
   };
 
@@ -351,15 +356,6 @@ export default function AdminPage() {
   }, []);
 
 
-  const handleDeleteAdvisors = async () => {
-    try {
-      await fetchAllAdvisors();
-      setShowAdvisors(true);
-    } catch (error) {
-      console.error("Failed to delete advisors", error);
-    }
-  };
-
   const handleDeleteAdvisor = async (advisorId) => {
     if (!advisorId) {
       toast.error("Invalid advisor ID ❌");
@@ -376,7 +372,6 @@ export default function AdminPage() {
       if (data.success) {
         toast.success("Advisor deleted successfully ✅");
         await fetchAllAdvisors();
-        Router.refresh();
       } else {
         toast.error(data.message || "Failed to delete advisor ❌");
       }
@@ -398,7 +393,6 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Vehicle deleted successfully");
-        Router.refresh();
       }
 
     } catch (error) {
@@ -426,27 +420,35 @@ export default function AdminPage() {
     }
   };
 
-  const handleAdminRequest = () => {
-    fetch("/api/newsletter/listOfSubscriptions")
-      .then((res) => res.json())
-      .then((data) => {
-        setNewsletterSubscribers(data.length);
-      });
+  const handleAdminRequest = async () => {
+    try {
+      const res = await fetch("/api/newsletter/listOfSubscriptions");
+      const data = await res.json();
+      setNewsletterSubscribers(data.length);
+    } catch (error) {
+      console.error("Newsletter fetch failed:", error);
+    }
 
-    fetch("/api/vehicles/getVehicles").
-      then((res) => res.json())
-      .then((data) => {
-        setTotalVehicles(data);
-      });
+    try {
+      const res = await fetch("/api/vehicles/getVehicles");
+      const data = await res.json();
+      setTotalVehicles(data);
+    } catch (error) {
+      console.error("Vehicles fetch failed:", error);
+    }
 
-    fetch("/api/Consultations/getAllBooking").
-      then((res) => res.json())
-      .then((data) => {
-        const pending = Array.isArray(data)
-          ? data.filter((req) => req.status === "PENDING").length
-          : (data.data || []).filter((req) => req.status === "PENDING").length;
-        setPendingRequests(pending);
-      });
+    try {
+      const res = await fetch("/api/Consultations/getAllBooking");
+      const data = await res.json();
+
+      const pending = Array.isArray(data)
+        ? data.filter((req) => req.status === "PENDING").length
+        : (data.data || []).filter((req) => req.status === "PENDING").length;
+
+      setPendingRequests(pending);
+    } catch (error) {
+      console.error("Bookings fetch failed:", error);
+    }
 
   }
 
@@ -470,8 +472,14 @@ export default function AdminPage() {
   });
 
   useEffect(() => {
-    const notifs = localStorageAPI.getNotifications();
-    setNotifications(notifs.admin);
+    try {
+      if (typeof window !== "undefined") {
+        const notifs = localStorageAPI.getNotifications();
+        setNotifications(notifs.admin);
+      }
+    } catch (error) {
+      console.error("Failed to load notifications", error);
+    }
     fetchBookings();
     loadVehicles();
     loadVideos();
@@ -482,22 +490,27 @@ export default function AdminPage() {
 
   const handleTabChange = (tabId) => {
 
-    setActiveTab(tabId);
+    try {
+      setActiveTab(tabId);
 
-    if (tabId === "requests") {
-      localStorageAPI.clearNotification("admin", "requests");
-    } else if (tabId === "vehicles") {
-      localStorageAPI.clearNotification("admin", "vehicles");
-    } else if (tabId === "videos") {
-      localStorageAPI.clearNotification("admin", "videos");
-    } else if (tabId === "newsletter") {
-      localStorageAPI.clearNotification("admin", "newsletter");
-    } else if (tabId === "advisors") {
-      localStorageAPI.clearNotification("admin", "advisors");
+      if (tabId === "requests") {
+        localStorageAPI.clearNotification("admin", "requests");
+      } else if (tabId === "vehicles") {
+        localStorageAPI.clearNotification("admin", "vehicles");
+      } else if (tabId === "videos") {
+        localStorageAPI.clearNotification("admin", "videos");
+      } else if (tabId === "newsletter") {
+        localStorageAPI.clearNotification("admin", "newsletter");
+      } else if (tabId === "advisors") {
+        localStorageAPI.clearNotification("admin", "advisors");
+      }
+
+      const notifs = localStorageAPI.getNotifications();
+      setNotifications(notifs.admin);
     }
-
-    const notifs = localStorageAPI.getNotifications();
-    setNotifications(notifs.admin);
+    catch (error) {
+      console.error("Failed to update notifications", error);
+    }
   };
 
   const handleEditVehicle = async (event) => {
@@ -872,6 +885,8 @@ export default function AdminPage() {
                                 ? "bg-rose-500/20 text-rose-700 dark:bg-rose-500/30 dark:text-rose-300"
                                 : request.status === "CANCELLED"
                                   ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
+                                  : request.status === "COMPLETED"
+                                    ? "bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300"
                                   : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                               }`}
                           >
@@ -879,7 +894,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-2 flex gap-2">
-                          {request.status === "PENDING" && (
+                          {(request.status === "PENDING" || request.status === "REJECTED") && (
                             <>
 
                               <Button
@@ -1062,7 +1077,7 @@ export default function AdminPage() {
                           <select
                             value={vehicleForm.condition}
                             onChange={(e) => handleVehicleFieldChange("condition", e.target.value)}
-                            className="w-full border rounded-md px-3 py-2"
+                            className="w-full border rounded-md px-3 py-2 dark:bg-[#0f090b]"
                           >
                             <option value="NEW">New</option>
                             <option value="USED">Used</option>
@@ -1648,7 +1663,7 @@ export default function AdminPage() {
               <form
                 name="sumitTransaction"
                 onSubmit={handleTransactionSubmit}
-                className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 shadow rounded-2xl space-y-6"
+                className="max-w-3xl mx-auto p-6 bg-white dark:bg-black/50 shadow rounded-2xl space-y-6"
               >
                 <h2 className="text-xl font-bold">Transaction Form</h2>
 

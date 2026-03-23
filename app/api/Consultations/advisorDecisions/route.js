@@ -4,26 +4,35 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function PATCH(req) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.adminRole !== "advisor") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.adminRole !== "advisor") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const { bookingId, decision } = await req.json();
 
-    const { bookingId, decision } = await req.json();
+  if (!["ACCEPTED", "REJECTED"].includes(decision)) {
+    return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
+  }
 
-    if (!["ACCEPTED", "REJECTED"].includes(decision)) {
-        return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
-    }
+  const booking = await prisma.consultationBooking.update({
+    where: { id: bookingId },
+    data: {
+      status: decision,
+    },
+  });
 
-    const booking = await prisma.consultationBooking.update({
-        where: { id: bookingId },
-        data: {
-            status: decision,
-        },
+  if (decision === "REJECTED") {
+    await prisma.consultationBooking.update({
+      where: { id: bookingId },
+      data: {
+        adminMessage: "Your consultation request has been rejected. Please contact support for more information.",
+      },
     });
+  }
 
-    console.log(session);
 
-    return NextResponse.json({ success: true, booking });
+  console.log(session);
+
+  return NextResponse.json({ success: true, booking });
 }
