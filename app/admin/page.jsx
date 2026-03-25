@@ -33,6 +33,7 @@ import {
 
 import { useVehicles } from "@/hooks/useVehicles";
 import { useAdvisor } from "@/hooks/useAdvisor";
+import { useVideo } from "@/hooks/useVideo";
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
@@ -59,13 +60,6 @@ import {
 
 import { toast } from "sonner";
 
-import {
-  getVideoReviews,
-  addVideoReview,
-  deleteVideoReview,
-  editVideoReview
-} from "@/app/actions/videoActions";
-
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
 import { fetchJSON } from "@/services/api.ts";
@@ -81,6 +75,7 @@ export default function AdminPage() {
     handleEditVehicle, openEditVehicle
   } = useVehicles();
   const { advisors, handleDeleteAdvisor } = useAdvisor();
+  const { videoReviews, handleAddVideo, handleDeleteVideo, loadVideos, handleVideoFieldChange, handleEditVideo } = useVideo();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,14 +87,10 @@ export default function AdminPage() {
     description: "",
     videoId: "",
   });
-  const [videoReviews, setVideoReviews] = useState([]);
 
   const [recentRequests, setRecentRequests] = useState([]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [videoIds, setVideoIds] = useState([]);
-
-  const [deleteVideoId, setDeleteVideoId] = useState(null);
 
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
   const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] = useState(null);
@@ -108,7 +99,6 @@ export default function AdminPage() {
   const [selectedBrand, setSelectedBrand] = useState(null);
 
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
-  const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -174,38 +164,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleVideoFieldChange = (field, value, videoId) => {
-    setVideoReviews((prev) =>
-      prev.map((video) =>
-        video.id === videoId ? { ...video, [field]: value } : video
-      )
-    );
-  }
-
-  const handleEditVideo = async (videoId) => {
-    const video = videoReviews.find((v) => v.id === videoId);
-    if (!video) {
-      toast.error("Video not found");
-      return;
-    }
-    try {
-      const result = await editVideoReview(videoId, {
-        title: video.title,
-        description: video.description,
-      });
-      if (result.success) {
-        toast.success("Video review updated successfully");
-        loadVideos();
-      } else {
-        toast.error("Failed to update video review");
-      }
-    }
-    catch (error) {
-      toast.error("Failed to update video review");
-    }
-  }
-
-
   const handleBranchInventory = async () => {
     // This function can be expanded to fetch and display inventory for each branch
     const branchInventory = await fetchJSON("/api/branches");
@@ -213,38 +171,11 @@ export default function AdminPage() {
     setBranchInventory(branchInventory);
   };
 
-  const loadVideos = async () => {
-    const result = await getVideoReviews();
-    if (result.success) {
-      setVideoReviews(result.data);
-      setVideoIds(result.ids);
-    }
-  };
-
   const handleVehicleFieldChange = (field, value) => {
     setVehicleForm((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
-
-  const handleAddVideo = async () => {
-    //Basic Validation
-    if (!newVideo.title || !newVideo.videoId) {
-      toast.error("Please fill in Title and VideoId");
-      return;
-    }
-
-    //Call the server action
-    const result = await addVideoReview(newVideo);
-
-    if (result.success) {
-      toast.success("Video Review added successfully");
-      setNewVideo({ title: "", description: "", videoId: "" }); //Resets form
-      loadVideos();
-    } else {
-      toast.error("Failed to add video");
-    }
   };
 
   const handleAdminRequest = async () => {
@@ -275,18 +206,6 @@ export default function AdminPage() {
     }
 
   }
-
-  const handleDeleteVideo = async (videoId) => {
-    const result = await deleteVideoReview(videoId);
-
-    if (result.success) {
-      toast.success("Video review removed from homepage");
-      loadVideos(); //Refreshes the List
-    } else {
-      toast.error("Failed to remove the video");
-    }
-    setDeleteVideoId(null);
-  };
 
   const [notifications, setNotifications] = useState({
     requests: 0,
