@@ -19,6 +19,8 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useAdvisor } from "@/hooks/useAdvisor";
 import { useVideo } from "@/hooks/useVideo";
 import { useBranchInventory } from "@/hooks/useBranchInventory";
+import { useAdminRequest } from "@/hooks/useAdminRequest";
+import { useTransaction } from "@/hooks/useTransaction";
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
@@ -69,12 +71,11 @@ export default function AdminPage() {
     brands, setBrands,
     models, setModels,
     years, setYears } = useBranchInventory();
+  const { newsletterSubscribers, totalVehicles, pendingRequests } = useAdminRequest();
+  const { handleTransactionSubmit, loadingTransactions } = useTransaction();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
-  const [newsletterSubscribers, setNewsletterSubscribers] = useState(0);
-  const [totalVehicles, setTotalVehicles] = useState(0);
-  const [pendingRequests, setPendingRequests] = useState(0);
   const [newVideo, setNewVideo] = useState({
     title: "",
     description: "",
@@ -95,7 +96,6 @@ export default function AdminPage() {
 
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingYears, setLoadingYears] = useState(false);
-  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const stats = [
 
@@ -154,35 +154,6 @@ export default function AdminPage() {
     }));
   };
 
-  const handleAdminRequest = async () => {
-    try {
-      const data = await fetchJSON("/api/newsletter/listOfSubscriptions");
-      setNewsletterSubscribers(data.length);
-    } catch (error) {
-      console.error("Newsletter fetch failed:", error);
-    }
-
-    try {
-      const data = await fetchJSON("/api/vehicles/getVehicles");
-      setTotalVehicles(data);
-    } catch (error) {
-      console.error("Vehicles fetch failed:", error);
-    }
-
-    try {
-      const data = await fetchJSON("/api/Consultations/getAllBooking");
-
-      const pending = Array.isArray(data)
-        ? data.filter((req) => req.status === "PENDING").length
-        : (data.data || []).filter((req) => req.status === "PENDING").length;
-
-      setPendingRequests(pending);
-    } catch (error) {
-      console.error("Bookings fetch failed:", error);
-    }
-
-  }
-
   const [notifications, setNotifications] = useState({
     requests: 0,
     vehicles: 0,
@@ -202,7 +173,6 @@ export default function AdminPage() {
     fetchBookings();
     loadVehicles();
     loadVideos();
-    handleAdminRequest();
     handleBranchInventory();
   }, []);
 
@@ -275,44 +245,6 @@ export default function AdminPage() {
     };
     loadYears();
   }, [form.model]);
-
-  const handleTransactionSubmit = async (e) => {
-    e.preventDefault();
-    setLoadingTransactions(true);
-
-    try {
-      const data = await fetchJSON("/api/admin/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(form)
-      });
-
-      if (data.success) {
-        setForm({
-          id: "",
-          buyerName: "",
-          buyerEmail: "",
-          phone: "",
-          location: "",
-          price: "",
-          brand: "",
-          model: "",
-          year: 0
-        });
-
-        toast.success("Transaction saved successfully");
-      }
-    }
-    catch (error) {
-      console.error("Error saving transaction:", error);
-      toast.error(error.message || "Failed to save transaction");
-    }
-    finally {
-      setLoadingTransactions(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
