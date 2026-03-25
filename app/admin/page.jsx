@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { useVehicles } from "@/hooks/useVehicles";
+import { useAdvisor } from "@/hooks/useAdvisor";
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
@@ -67,7 +68,6 @@ import {
 
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
-import { vehicleAPI } from "../../lib/api/vehicles.js";
 import { fetchJSON } from "@/services/api.ts";
 
 export default function AdminPage() {
@@ -77,8 +77,10 @@ export default function AdminPage() {
     loadVehicles, handleAddVehicle,
     isAddVehicleOpen, setIsAddVehicleOpen,
     setVehicleFormError,
-    vehicleForm, setVehicleForm
+    vehicleForm, setVehicleForm,
+    handleEditVehicle, openEditVehicle
   } = useVehicles();
+  const { advisors, handleDeleteAdvisor } = useAdvisor();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
@@ -108,7 +110,6 @@ export default function AdminPage() {
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
-  const [advisors, setAdvisors] = useState([]);
 
   const [form, setForm] = useState({
     id: "",
@@ -212,13 +213,6 @@ export default function AdminPage() {
     setBranchInventory(branchInventory);
   };
 
-  const openEditVehicle = (vehicle) => {
-    setEditingVehicle(vehicle);
-    setVehicleForm(vehicle); // preload form
-    setIsEditVehicleOpen(true);
-
-  };
-
   const loadVideos = async () => {
     const result = await getVideoReviews();
     if (result.success) {
@@ -232,47 +226,6 @@ export default function AdminPage() {
       ...prev,
       [field]: value,
     }));
-  };
-
-  const fetchAllAdvisors = async () => {
-    try {
-      const data = await fetchJSON("/api/admin/advisors");
-      console.log("Fetched Advisors:", data);
-
-      setAdvisors(data.advisors);
-    } catch (error) {
-      console.error("Failed to fetch advisors", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllAdvisors();
-
-  }, []);
-
-
-  const handleDeleteAdvisor = async (advisorId) => {
-    if (!advisorId) {
-      toast.error("Invalid advisor ID ❌");
-      return;
-    }
-
-    try {
-      const data = await fetchJSON(`/api/Advisors/${advisorId}`, {
-        method: "DELETE",
-      });
-
-      if (data.success) {
-        toast.success("Advisor deleted successfully ✅");
-        await fetchAllAdvisors();
-      } else {
-        toast.error(data.message || "Failed to delete advisor ❌");
-      }
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete advisor ❌");
-    }
   };
 
   const handleAddVideo = async () => {
@@ -360,7 +313,6 @@ export default function AdminPage() {
 
 
   const handleTabChange = (tabId) => {
-
     try {
       setActiveTab(tabId);
 
@@ -384,44 +336,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditVehicle = async (event) => {
-    event.preventDefault();
-
-    const images = vehicleForm.images.toString().split(/,|\n/).map((value) => value.trim()).filter(Boolean);
-
-    const updatedVehicle = {
-      brand: vehicleForm.brand,
-      model: vehicleForm.model,
-      year: Number(vehicleForm.year),
-      price: Number(vehicleForm.price),
-      mileage: Number(vehicleForm.mileage),
-      transmission: vehicleForm.transmission,
-      fuelType: vehicleForm.fuelType,
-      bodyType: vehicleForm.bodyType,
-      location: vehicleForm.location,
-      images
-    };
-    console.log("UpdatedVehicle:", updatedVehicle);
-    const id = editingVehicle.id;
-    console.log("Vehicle ID:", id);
-    const res = await fetch(`/api/vehicles/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedVehicle)
-    });
-
-    if (res.ok) {
-      await loadVehicles();
-      setIsEditVehicleOpen(false);
-      toast.success("Vehicle updated successfully");
-    }
-    else {
-      setIsEditVehicleOpen(false);
-      toast.error("Failed to update vehicle");
-    }
-
-
-  };
 
   useEffect(() => {
     const loadData = async () => {

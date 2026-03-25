@@ -30,6 +30,8 @@ export const useVehicles = () => {
   const [isSavingVehicle, setIsSavingVehicle] = useState(false);
   const [vehicleFormError, setVehicleFormError] = useState("");
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
+  const [editingVehicle, setEditingVehicle] = useState<null | any>(null);
+  const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
 
   const handleDeleteVehicle = async (vehicleId: string) => {
     try {
@@ -120,6 +122,52 @@ export const useVehicles = () => {
     setIsSavingVehicle(false);
   };
 
+  const handleEditVehicle = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const images = vehicleForm.images
+      .toString()
+      .split(/,|\n/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const updatedVehicle = {
+      brand: vehicleForm.brand,
+      model: vehicleForm.model,
+      year: Number(vehicleForm.year),
+      price: Number(vehicleForm.price),
+      mileage: Number(vehicleForm.mileage),
+      transmission: vehicleForm.transmission,
+      fuelType: vehicleForm.fuelType,
+      bodyType: vehicleForm.bodyType,
+      location: vehicleForm.location,
+      images,
+    };
+    console.log("UpdatedVehicle:", updatedVehicle);
+    const id = editingVehicle.id;
+    console.log("Vehicle ID:", id);
+    const res = await fetch(`/api/vehicles/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedVehicle),
+    });
+
+    if (res.ok) {
+      await loadVehicles();
+      setIsEditVehicleOpen(false);
+      toast.success("Vehicle updated successfully");
+    } else {
+      setIsEditVehicleOpen(false);
+      toast.error("Failed to update vehicle");
+    }
+  };
+
+  const openEditVehicle = (vehicle: any) => {
+    setEditingVehicle(vehicle);
+    setVehicleForm(vehicle); 
+    setIsEditVehicleOpen(true);
+  };
+
   return {
     adminVehicles,
     handleDeleteVehicle,
@@ -132,6 +180,9 @@ export const useVehicles = () => {
     setVehicleFormError,
     vehicleForm,
     setVehicleForm,
-
+    isEditVehicleOpen,
+    setIsEditVehicleOpen,
+    handleEditVehicle,
+    openEditVehicle,
   };
 };
