@@ -28,10 +28,10 @@ import {
   LogOut,
   Sun,
   Moon,
-  CircleX,
-
+  CircleX
 } from "lucide-react";
 
+import { useVehicles } from "@/hooks/useVehicles";
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
@@ -68,34 +68,17 @@ import {
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import CreateAdvisorModal from "../../components/createAdvisorModel.jsx";
 import { vehicleAPI } from "../../lib/api/vehicles.js";
-import { set } from "date-fns/set";
-import path from "node:path";
-
-
-const vehicleFormDefaults = {
-  brand: "",
-  model: "",
-  year: "",
-  type: "",
-  mileage: "",
-  transmission: "",
-  fuelType: "",
-  branch: "Nugegoda",
-  bodyType: "",
-  engineCapacity: "",
-  location: "",
-  condition: "New",
-  dealer: "",
-  price: "",
-  description: "",
-  images: "",
-  status: "Available",
-};
-
-
+import { fetchJSON } from "@/services/api.ts";
 
 export default function AdminPage() {
   const { data: session } = useSession();
+  const {
+    adminVehicles, handleDeleteVehicle,
+    loadVehicles, handleAddVehicle,
+    isAddVehicleOpen, setIsAddVehicleOpen,
+    setVehicleFormError,
+    vehicleForm, setVehicleForm
+  } = useVehicles();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,13 +92,7 @@ export default function AdminPage() {
   });
   const [videoReviews, setVideoReviews] = useState([]);
 
-  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
-  const [isSavingVehicle, setIsSavingVehicle] = useState(false);
-  const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
-  const [vehicleFormError, setVehicleFormError] = useState("");
-
   const [recentRequests, setRecentRequests] = useState([]);
-  const [adminVehicles, setAdminVehicles] = useState([]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [videoIds, setVideoIds] = useState([]);
@@ -178,8 +155,7 @@ export default function AdminPage() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch("/api/Consultations/getAllBooking");
-      const data = await res.json();
+      const data = await fetchJSON("/api/Consultations/getAllBooking");
       setRecentRequests(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Failed to fetch bookings", error);
@@ -231,7 +207,7 @@ export default function AdminPage() {
 
   const handleBranchInventory = async () => {
     // This function can be expanded to fetch and display inventory for each branch
-    const branchInventory = await fetch("/api/branches").then(res => res.json());
+    const branchInventory = await fetchJSON("/api/branches");
     console.log("Branch Inventory:", branchInventory);
     setBranchInventory(branchInventory);
   };
@@ -242,21 +218,6 @@ export default function AdminPage() {
     setIsEditVehicleOpen(true);
 
   };
-
-  const loadVehicles = async () => {
-    try {
-      const result = await vehicleAPI.getAllVehicles();
-      if (result.success) {
-        const sortedVehicles = [...result.data].sort(
-          (a, b) => Number(b.id) - Number(a.id),
-        );
-        setAdminVehicles(sortedVehicles);
-      }
-    } catch (error) {
-      console.error("Failed to load vehicles", error);
-    }
-  };
-
 
   const loadVideos = async () => {
     const result = await getVideoReviews();
@@ -273,75 +234,9 @@ export default function AdminPage() {
     }));
   };
 
-  const handleAddVehicle = async (event) => {
-    event.preventDefault();
-    setIsSavingVehicle(true);
-    setVehicleFormError("");
-
-    // Validation
-    if (
-      !vehicleForm.brand?.trim() ||
-      !vehicleForm.model?.trim() ||
-      !vehicleForm.year ||
-      !vehicleForm.price
-    ) {
-      setVehicleFormError("Please fill required fields.");
-      setIsSavingVehicle(false);
-      return;
-    }
-
-
-    // Convert images string → array
-    const images = vehicleForm.images
-      ?.split(/,|\n/)
-      .map((value) => value.trim())
-      .filter(Boolean) || [];
-
-    const newVehicle = {
-      brand: vehicleForm.brand.trim(),
-      model: vehicleForm.model.trim(),
-      year: Number(vehicleForm.year),
-      price: Number(vehicleForm.price),
-      mileage: Number(vehicleForm.mileage) || 0,
-      transmission: vehicleForm.transmission?.trim() || null,
-      fuelType: vehicleForm.fuelType?.trim() || null,
-      bodyType: vehicleForm.bodyType?.trim() || null,
-      engineCapacity: vehicleForm.engineCapacity
-        ? Number(vehicleForm.engineCapacity)
-        : null,
-      location: vehicleForm.location?.trim() || null,
-      dealer: vehicleForm.dealer?.trim() || null,
-      condition: vehicleForm.condition || null,
-      edition: vehicleForm.edition || null,
-      images
-    };
-
-    try {
-
-      const result = await vehicleAPI.addVehicle(newVehicle);
-
-      if (result.success) {
-        await loadVehicles();
-        setVehicleForm(vehicleFormDefaults);
-        setIsAddVehicleOpen(false);
-        toast.success("Vehicle added successfully");
-
-      } else {
-        setVehicleFormError(result.error || "Failed to add vehicle.");
-        toast.error(result.error || "Failed to add vehicle.");
-      }
-
-    } catch (error) {
-      setVehicleFormError("Something went wrong.");
-    }
-
-    setIsSavingVehicle(false);
-  };
-
   const fetchAllAdvisors = async () => {
     try {
-      const res = await fetch("/api/admin/advisors");
-      const data = await res.json();
+      const data = await fetchJSON("/api/admin/advisors");
       console.log("Fetched Advisors:", data);
 
       setAdvisors(data.advisors);
@@ -363,11 +258,9 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch(`/api/Advisors/${advisorId}`, {
+      const data = await fetchJSON(`/api/Advisors/${advisorId}`, {
         method: "DELETE",
       });
-
-      const data = await res.json();
 
       if (data.success) {
         toast.success("Advisor deleted successfully ✅");
@@ -379,25 +272,6 @@ export default function AdminPage() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete advisor ❌");
-    }
-  };
-
-
-  const handleDeleteVehicle = async (vehicleId) => {
-
-    try {
-      const res = await fetch(`/api/vehicles/${vehicleId}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Vehicle deleted successfully");
-      }
-
-    } catch (error) {
-      toast.error("Failed to delete vehicle");
-
     }
   };
 
@@ -422,24 +296,21 @@ export default function AdminPage() {
 
   const handleAdminRequest = async () => {
     try {
-      const res = await fetch("/api/newsletter/listOfSubscriptions");
-      const data = await res.json();
+      const data = await fetchJSON("/api/newsletter/listOfSubscriptions");
       setNewsletterSubscribers(data.length);
     } catch (error) {
       console.error("Newsletter fetch failed:", error);
     }
 
     try {
-      const res = await fetch("/api/vehicles/getVehicles");
-      const data = await res.json();
+      const data = await fetchJSON("/api/vehicles/getVehicles");
       setTotalVehicles(data);
     } catch (error) {
       console.error("Vehicles fetch failed:", error);
     }
 
     try {
-      const res = await fetch("/api/Consultations/getAllBooking");
-      const data = await res.json();
+      const data = await fetchJSON("/api/Consultations/getAllBooking");
 
       const pending = Array.isArray(data)
         ? data.filter((req) => req.status === "PENDING").length
@@ -553,30 +424,47 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetch("/api/cars/brands")
-      .then(res => res.json())
-      .then(setBrands);
+    const loadData = async () => {
+      const data = await fetchJSON("/api/cars/brands");
+      setBrands(data);
+    };
+    loadData();
   }, []);
 
   // 🔹 Load models when brand changes
   useEffect(() => {
     if (!form.brand) return;
 
-    setLoadingModels(true);
-    fetch(`/api/cars/models?brand=${form.brand}`)
-      .then(res => res.json())
-      .then(data => setModels(data))
-      .finally(() => setLoadingModels(false));
+    const loadModels = async () => {
+      setLoadingModels(true);
+      try {
+        const data = await fetchJSON(`/api/cars/models?brand=${form.brand}`);
+        setModels(data);
+      } catch (error) {
+        console.error("Failed to load models", error);
+      } finally {
+        setLoadingModels(false);
+      }
+    };
+    loadModels();
   }, [form.brand]);
 
   useEffect(() => {
     if (!form.brand || !form.model) return;
 
-    setLoadingYears(true);
-    fetch(`/api/cars/years?brand=${form.brand}&model=${form.model}`)
-      .then(res => res.json())
-      .then(data => setYears(data))
-      .finally(() => setLoadingYears(false));
+    const loadYears = async () => {
+      setLoadingYears(true);
+
+      try {
+        const data = await fetchJSON(`/api/cars/years?brand=${form.brand}&model=${form.model}`);
+        setYears(data);
+      } catch (error) {
+        console.error("Failed to load years", error);
+      } finally {
+        setLoadingYears(false);
+      }
+    };
+    loadYears();
   }, [form.model]);
 
   const handleBrandChange = (e) => {
@@ -612,15 +500,13 @@ export default function AdminPage() {
     setLoadingTransactions(true);
 
     try {
-      const res = await fetch("/api/admin/transactions", {
+      const data = await fetchJSON("/api/admin/transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(form)
       });
-
-      const data = await res.json();
 
       if (data.success) {
         setForm({
@@ -887,7 +773,7 @@ export default function AdminPage() {
                                   ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300"
                                   : request.status === "COMPLETED"
                                     ? "bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300"
-                                  : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
+                                    : "bg-amber-500/20 text-amber-700 dark:bg-amber-500/30 dark:text-amber-300"
                               }`}
                           >
                             {request.status}
