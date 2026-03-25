@@ -9,31 +9,16 @@ import RightPanel from "@/components/branches/RightPanel";
 import InputBox from "@/components/Input";
 
 import {
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Trash2,
-  Users,
-  Car,
-  Mail,
-  MapPin,
-  FileText,
-  Video,
-  ExternalLink,
-  RefreshCcw,
-  Plus,
-  UserCog,
-  Binoculars,
-  LogOut,
-  Sun,
-  Moon,
-  CircleX
+  Search, Filter, Eye, Edit, Trash2, Users,
+  Car, Mail, MapPin, FileText, Video, ExternalLink,
+  RefreshCcw, Plus, UserCog, Binoculars, LogOut,
+  Sun, Moon, CircleX
 } from "lucide-react";
 
 import { useVehicles } from "@/hooks/useVehicles";
 import { useAdvisor } from "@/hooks/useAdvisor";
 import { useVideo } from "@/hooks/useVideo";
+import { useBranchInventory } from "@/hooks/useBranchInventory";
 import NewsletterTable from "./NewsletterTable";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
@@ -76,6 +61,14 @@ export default function AdminPage() {
   } = useVehicles();
   const { advisors, handleDeleteAdvisor } = useAdvisor();
   const { videoReviews, handleAddVideo, handleDeleteVideo, loadVideos, handleVideoFieldChange, handleEditVideo } = useVideo();
+  const { handleBrandChange,
+    handleModelChange,
+    handleChange,
+    branchInventory, setBranchInventory,
+    form, setForm,
+    brands, setBrands,
+    models, setModels,
+    years, setYears } = useBranchInventory();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
   const [searchQuery, setSearchQuery] = useState("");
@@ -94,28 +87,11 @@ export default function AdminPage() {
 
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
   const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] = useState(null);
-  const [branchInventory, setBranchInventory] = useState({});
   const [viewBranchModel, setViewBranchModel] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
   const [isCreateAdvisorOpen, setIsCreateAdvisorOpen] = useState(false);
-
-  const [form, setForm] = useState({
-    id: "",
-    buyerName: "",
-    buyerEmail: "",
-    phone: "",
-    location: "",
-    price: "",
-    brand: "",
-    model: "",
-    year: 0
-  });
-
-  const [brands, setBrands] = useState([]);
-  const [models, setModels] = useState([]);
-  const [years, setYears] = useState([]);
 
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingYears, setLoadingYears] = useState(false);
@@ -300,34 +276,6 @@ export default function AdminPage() {
     loadYears();
   }, [form.model]);
 
-  const handleBrandChange = (e) => {
-    setForm({
-      ...form,
-      brand: e.target.value,
-      model: "",
-      year: ""
-    });
-    setModels([]);
-    setYears([]);
-  };
-
-  const handleModelChange = (e) => {
-    setForm({
-      ...form,
-      model: e.target.value,
-      year: ""
-    });
-    setYears([]);
-  };
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
-  }
-
-
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
     setLoadingTransactions(true);
@@ -356,8 +304,6 @@ export default function AdminPage() {
 
         toast.success("Transaction saved successfully");
       }
-
-
     }
     catch (error) {
       console.error("Error saving transaction:", error);
