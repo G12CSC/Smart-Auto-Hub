@@ -144,31 +144,6 @@ export function Header() {
 
           {!user ? (
             <>
-              {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="hover:opacity-80 transition"
-                    title="Open account menu"
-                  >
-                    <Avatar className="h-10 w-10 border-2 border-border">
-                      <AvatarFallback className="bg-muted">
-                        <User className="h-5 w-5 text-muted-foreground" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/login" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Login to See your Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu> */}
-
               <Button variant="outline" className="hidden lg:block" asChild>
                 <Link href="/login">Login</Link>
               </Button>
