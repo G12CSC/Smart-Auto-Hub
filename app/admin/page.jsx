@@ -16,11 +16,10 @@ import {
 } from "lucide-react";
 
 import { useVehicles } from "@/hooks/useVehicles";
-import { useAdvisor } from "@/hooks/useAdvisor";
-import { useVideo } from "@/hooks/useVideo";
 import { useBranchInventory } from "@/hooks/useBranchInventory";
 import { useAdminRequest } from "@/hooks/useAdminRequest";
 import { useTransaction } from "@/hooks/useTransaction";
+import { useVideo } from "@/hooks/useVideo";
 
 import NewsletterTab from "../../components/admin/newsletterTab/NewsletterTab.jsx";
 import ChatBot from "@/components/ChatBot";
@@ -50,6 +49,7 @@ import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import { fetchJSON } from "@/services/api.ts";
 import BookingTab from "@/components/admin/consultationBooking/BookingTab.jsx";
 import AdvisorTab from "@/components/admin/advisorTab/AdvisorTab.jsx";
+import VideoReviewTab from "@/components/admin/videoReviewTab/VideoReviewTab.jsx";
 
 export default function AdminPage() {
   const { data: session } = useSession();
@@ -61,8 +61,7 @@ export default function AdminPage() {
     vehicleForm, setVehicleForm,
     handleEditVehicle, openEditVehicle
   } = useVehicles();
-  const { advisors, handleDeleteAdvisor } = useAdvisor();
-  const { videoReviews, handleAddVideo, handleDeleteVideo, loadVideos, handleVideoFieldChange, handleEditVideo } = useVideo();
+  const { loadVideos } = useVideo();
   const { handleBrandChange,
     handleModelChange,
     handleChange,
@@ -75,11 +74,6 @@ export default function AdminPage() {
   const { handleTransactionSubmit, loadingTransactions } = useTransaction();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("requests");
-  const [newVideo, setNewVideo] = useState({
-    title: "",
-    description: "",
-    videoId: "",
-  });
 
   const [recentRequests, setRecentRequests] = useState([]);
 
@@ -756,201 +750,7 @@ export default function AdminPage() {
 
           {/* Video Reviews Management Tab */}
           {activeTab === "videos" && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold">
-                    Video Reviews Management
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Manage YouTube video reviews displayed on homepage
-                  </p>
-                </div>
-              </div>
-
-              {/* Add New Video Form */}
-              <div className="bg-white dark:bg-black/50 rounded-lg border border-border p-6 mb-6">
-                <h3 className="font-bold text-lg mb-4">Add New Video Review</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-2">
-                      Video Title
-                    </label>
-                    <Input
-                      placeholder="e.g., 2023 Toyota Camry Full Review"
-                      value={newVideo.title}
-                      onChange={(e) =>
-                        setNewVideo({ ...newVideo, title: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      className="w-full px-4 py-2 rounded bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px]"
-                      placeholder="Brief description of the video content..."
-                      value={newVideo.description}
-                      onChange={(e) =>
-                        setNewVideo({
-                          ...newVideo,
-                          description: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        YouTube Video ID
-                      </label>
-                      <Input
-                        placeholder="e.g., dQw4w9WgXcQ"
-                        value={newVideo.videoId}
-                        onChange={(e) =>
-                          setNewVideo({ ...newVideo, videoId: e.target.value })
-                        }
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Find this in the YouTube URL: youtube.com/watch?v=
-                        <strong>VIDEO_ID</strong>
-                      </p>
-                    </div>
-                    <div className="flex items-end pt-2">
-                      <Button className="w-full" onClick={handleAddVideo}>
-                        <Plus size={18} className="mr-2" />
-                        Add Video
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Existing Videos List */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-lg">
-                  Published Videos ({videoReviews.length})
-                </h3>
-                {videoReviews.map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
-
-                  >
-                    <div className="relative h-24 w-40 shrink-0 bg-secondary rounded overflow-hidden group">
-                      <img
-                        src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <Video size={24} className="text-white" />
-                      </div>
-                    </div>
-                    <div className="grow">
-                      <h4 className="font-semibold text-base mb-1">
-                        {video.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                        {video.description}
-                      </p>
-
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Uploaded: { }</span>
-                        <span>{video.views} views</span>
-                        <span>ID: {video.youtubeId}</span>
-
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          window.open(
-                            `https://www.youtube.com/watch?v=${video.youtubeId}`,
-                            "_blank",
-                          )
-                        }
-                      >
-                        <ExternalLink size={16} />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <Edit size={16} />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-lg font-bold flex justify-between items-center">
-                              Edit Video Review
-                              <AlertDialogCancel size="xs" variant="outline" className="ml-4 cursor-pointer" >
-                                <CircleX />
-                              </AlertDialogCancel>
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will allow you to edit the video title and
-                              description. To change the video itself, please
-                              delete and re-add with the new YouTube ID.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <div className="p-4">
-                            <Input
-                              className="mb-4"
-                              value={video.title}
-                              onChange={(e) => handleVideoFieldChange("title", e.target.value, video.id)}
-                              placeholder="Video Title"
-                            />
-                            <Textarea
-                              value={video.description}
-                              onChange={(e) => handleVideoFieldChange("description", e.target.value, video.id)}
-                              placeholder="Video Description"
-                            />
-                            <Button onClick={() => {
-                              handleEditVideo(video.id);
-
-                            }} className="mt-4">
-                              Save Changes
-                            </Button>
-                          </div>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Video</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to remove this video from
-                              the homepage? This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <div className="flex justify-end gap-3">
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteVideo(video.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Remove
-                            </AlertDialogAction>
-                          </div>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <VideoReviewTab />
           )}
 
           {/* Newsletter Tab */}
