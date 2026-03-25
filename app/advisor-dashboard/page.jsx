@@ -585,13 +585,18 @@ export default function AdvisorPage() {
             }
           />
 
-          <Input
-            placeholder="Specialization"
-            value={advisorInfo?.specialization || ""}
-            onChange={(e) =>
-              setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
-            }
-          />
+          <select value={advisorInfo?.specialization || ""} onChange={(e) =>
+            setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
+          } className="w-full px-3 py-2 border rounded-md dark:bg-[#181214]">
+
+            <option value="">Select Specialization</option>
+            <option value="Engine Specialist">Engine Specialist</option>
+            <option value="Transmission Specialist">Transmission Specialist</option>
+            <option value="Electrical Systems Specialist">Electrical Systems Specialist</option>
+            <option value="Brake Systems Specialist">Brake Systems Specialist</option>
+            <option value="Suspension Specialist">Suspension Specialist</option>
+            <option value="General Mechanic">General Mechanic</option>
+          </select>
 
           <Input
             placeholder="Experience"
