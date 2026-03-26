@@ -1,6 +1,6 @@
 import { fetchJSON } from "@/services/api";
 import { vehicleAPI } from "@/lib/api/vehicles.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 const vehicleFormDefaults = {
@@ -172,6 +172,9 @@ export const useVehicles = () => {
     setVehicleForm(vehicle);
     setIsEditVehicleOpen(true);
   };
+  useEffect(() => {
+    loadVehicles();
+  }, []);
 
   return {
     adminVehicles,

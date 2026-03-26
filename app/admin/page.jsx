@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import RightPanel from "@/components/branches/RightPanel";
 
-import { Eye, Edit, Trash2, Users,
+import { Users,
   Car, Mail, MapPin, FileText, Video,
-  Plus, UserCog, LogOut,
-  Sun, Moon, CircleX
+  UserCog, LogOut,
+  Sun, Moon
 } from "lucide-react";
 
 import { useVehicles } from "@/hooks/useVehicles";
@@ -21,24 +19,7 @@ import { useVideo } from "@/hooks/useVideo";
 import NewsletterTab from "../../components/admin/newsletterTab/NewsletterTab.jsx";
 import ChatBot from "@/components/ChatBot";
 import { useTheme } from "next-themes";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+
 
 import { toast } from "sonner";
 import { localStorageAPI } from "@/lib/storage/localStorage";
@@ -48,16 +29,13 @@ import BookingTab from "@/components/admin/consultationBooking/BookingTab.jsx";
 import AdvisorTab from "@/components/admin/advisorTab/AdvisorTab.jsx";
 import VideoReviewTab from "@/components/admin/videoReviewTab/VideoReviewTab.jsx";
 import TransactionTab from "@/components/admin/transactionTab/TransactionTab.jsx";
+import VehicleManagementTab from "@/components/admin/vehicleManagementTab/VehicleManagementTab.jsx";
 
 export default function AdminPage() {
   const { data: session } = useSession();
   const {
-    adminVehicles, handleDeleteVehicle,
-    loadVehicles, handleAddVehicle,
-    isAddVehicleOpen, setIsAddVehicleOpen,
-    setVehicleFormError,
-    vehicleForm, setVehicleForm,
-    handleEditVehicle, openEditVehicle
+    loadVehicles,
+    setVehicleForm,
   } = useVehicles();
   const { loadVideos } = useVideo();
   const {branchInventory, setBranchInventory} = useBranchInventory();
@@ -74,7 +52,6 @@ export default function AdminPage() {
   const [viewBranchModel, setViewBranchModel] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
 
   const stats = [
 
@@ -338,360 +315,7 @@ export default function AdminPage() {
 
           {/* Vehicle Management Tab */}
           {activeTab === "vehicles" && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Vehicle Management</h2>
-                <Dialog
-                  open={isAddVehicleOpen}
-                  onOpenChange={(open) => {
-                    setIsAddVehicleOpen(open);
-                    if (!open) {
-                      setVehicleFormError("");
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus size={18} className="mr-2" />
-                      Add New Vehicle
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Add Vehicle</DialogTitle>
-                    </DialogHeader>
-
-                    <form onSubmit={handleAddVehicle} className="space-y-4">
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        {/* Brand */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Brand
-                          </label>
-                          <Input
-                            value={vehicleForm.brand}
-                            onChange={(e) => handleVehicleFieldChange("brand", e.target.value)}
-                            placeholder="Toyota"
-                            required
-                          />
-                        </div>
-
-                        {/* Model */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Model
-                          </label>
-                          <Input
-                            value={vehicleForm.model}
-                            onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
-                            placeholder="Prius"
-                            required
-                          />
-                        </div>
-
-                        {/* Year */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Year
-                          </label>
-                          <Input
-                            type="number"
-                            value={vehicleForm.year}
-                            onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
-                            required
-                          />
-                        </div>
-
-                        {/* Price */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Price (LKR)
-                          </label>
-                          <Input
-                            type="number"
-                            value={vehicleForm.price}
-                            onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
-                            required
-                          />
-                        </div>
-
-                        {/* Mileage */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Mileage
-                          </label>
-                          <Input
-                            type="number"
-                            value={vehicleForm.mileage}
-                            onChange={(e) => handleVehicleFieldChange("mileage", e.target.value)}
-                          />
-                        </div>
-
-                        {/* Transmission */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Transmission
-                          </label>
-                          <Input
-                            value={vehicleForm.transmission}
-                            onChange={(e) => handleVehicleFieldChange("transmission", e.target.value)}
-                            placeholder="Automatic"
-                          />
-                        </div>
-
-                        {/* Fuel Type */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Fuel Type
-                          </label>
-                          <Input
-                            value={vehicleForm.fuelType}
-                            onChange={(e) => handleVehicleFieldChange("fuelType", e.target.value)}
-                            placeholder="Hybrid"
-                          />
-                        </div>
-
-                        {/* Body Type */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Body Type
-                          </label>
-                          <Input
-                            value={vehicleForm.bodyType}
-                            onChange={(e) => handleVehicleFieldChange("bodyType", e.target.value)}
-                            placeholder="SUV"
-                          />
-                        </div>
-
-                        {/* Engine Capacity */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Engine Capacity (cc)
-                          </label>
-                          <Input
-                            type="number"
-                            value={vehicleForm.engineCapacity}
-                            onChange={(e) => handleVehicleFieldChange("engineCapacity", e.target.value)}
-                          />
-                        </div>
-                        {/* Condition */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Condition
-                          </label>
-                          <select
-                            value={vehicleForm.condition}
-                            onChange={(e) => handleVehicleFieldChange("condition", e.target.value)}
-                            className="w-full border rounded-md px-3 py-2 dark:bg-[#0f090b]"
-                          >
-                            <option value="NEW">New</option>
-                            <option value="USED">Used</option>
-                            <option value="RECONDITIONED">Reconditioned</option>
-                          </select>
-                        </div>
-                        {/* Location */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Location
-                          </label>
-                          <Input
-                            value={vehicleForm.location}
-                            onChange={(e) => handleVehicleFieldChange("location", e.target.value)}
-                            placeholder="Colombo"
-                          />
-                        </div>
-                        {/* Dealer */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Dealer
-                          </label>
-                          <Input
-                            value={vehicleForm.dealer}
-                            onChange={(e) => handleVehicleFieldChange("dealer", e.target.value)}
-                            placeholder="Sameera Auto Traders"
-                          />
-                        </div>
-                        {/* Images */}
-                        <div className="md:col-span-2">
-                          <label className="text-sm font-medium mb-2 block">
-                            Images
-                          </label>
-                          <Textarea
-                            value={vehicleForm.images}
-                            onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
-                            placeholder="image1.jpg,image2.jpg"
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsAddVehicleOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit">
-                          Save Vehicle
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {adminVehicles.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                  No vehicles available yet.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {adminVehicles.map((vehicle) => (
-                    <div
-                      key={vehicle.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/30 transition"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-16 w-24 bg-secondary rounded flex items-center justify-center overflow-hidden">
-                          {vehicle.images && vehicle.images.length > 0 ? (
-                            <img
-                              src={vehicle.images[0]}
-                              alt={vehicle.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Car size={32} className="text-muted-foreground" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">
-                            {vehicle.brand} {vehicle.model} ({vehicle.year})
-                          </h3>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1">
-                              <MapPin size={14} />
-                              {vehicle.location || vehicle.branch || "N/A"}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye size={14} />
-                              {vehicle.views ?? 0} views
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="font-bold text-lg">
-                            {typeof vehicle.price === "number"
-                              ? `LKR ${vehicle.price.toLocaleString()}`
-                              : vehicle.price}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              openEditVehicle(vehicle);
-                              setIsEditVehicleOpen(true);
-
-                            }}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Dialog open={isEditVehicleOpen} onOpenChange={setIsEditVehicleOpen} className="bg-transparent">
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-
-                              <DialogHeader>
-                                <DialogTitle>Edit Vehicle</DialogTitle>
-                              </DialogHeader>
-
-                              <form onSubmit={handleEditVehicle} className="space-y-4">
-
-                                <Input
-                                  value={vehicleForm.brand}
-                                  onChange={(e) => handleVehicleFieldChange("brand", e.target.value)}
-                                  placeholder="Brand"
-                                />
-
-                                <Input
-                                  value={vehicleForm.model}
-                                  onChange={(e) => handleVehicleFieldChange("model", e.target.value)}
-                                  placeholder="Model"
-                                />
-
-                                <Input
-                                  type="number"
-                                  value={vehicleForm.year}
-                                  onChange={(e) => handleVehicleFieldChange("year", e.target.value)}
-                                />
-
-                                <Input
-                                  type="number"
-                                  value={vehicleForm.price}
-                                  onChange={(e) => handleVehicleFieldChange("price", e.target.value)}
-                                />
-
-                                <Textarea
-                                  value={vehicleForm.images}
-                                  onChange={(e) => handleVehicleFieldChange("images", e.target.value)}
-                                />
-
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => setIsEditVehicleOpen(false)}
-                                  >
-                                    Cancel
-                                  </Button>
-
-                                  <Button type="submit">
-                                    Update Vehicle
-                                  </Button>
-                                </DialogFooter>
-
-                              </form>
-
-                            </DialogContent>
-                          </Dialog>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost">
-                                <Trash2 size={16} />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete Vehicle
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete "
-                                  {vehicle.name}"? This action can not be
-                                  undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <div className="flex justify-end gap-3">
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    handleDeleteVehicle(vehicle.id)
-                                  }
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </div>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <VehicleManagementTab />
           )}
 
           {/* Video Reviews Management Tab */}
