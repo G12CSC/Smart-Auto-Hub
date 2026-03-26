@@ -19,6 +19,7 @@ export async function GET(req, context) {
   });
 
   if (!car) return new Response("Car not found", { status: 404 });
+  revalidatePath("/admin");
 
   return new Response(JSON.stringify(car), { status: 200 });
 }
@@ -37,6 +38,7 @@ export async function PUT(request, context) {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/");
 
     return NextResponse.json(updatedCar);
   } catch (error) {
@@ -54,6 +56,7 @@ export async function DELETE(request, context) {
       where: { id: params.id },
     });
     revalidatePath("/admin");
+    revalidatePath("/");
     return NextResponse.json({ message: "Vehicle deleted successfully", success: true });
   } catch (error) {
     return NextResponse.json(

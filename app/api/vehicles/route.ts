@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
 
@@ -49,6 +50,8 @@ export async function GET(req: Request) {
             },
         });
 
+        revalidatePath("/admin");
+        revalidatePath("/");
         return NextResponse.json(vehicles);
 
     } catch (error) {
@@ -83,6 +86,8 @@ export async function POST(req: Request) {
                 images: data.images,
             },
         });
+        revalidatePath("/admin");
+        revalidatePath("/");
 
         return NextResponse.json(newVehicle);
 

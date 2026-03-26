@@ -24,6 +24,8 @@ const vehicleFormDefaults = {
   edition: "",
 };
 
+import { useRouter } from "next/navigation";
+
 export const useVehicles = () => {
   const [adminVehicles, setAdminVehicles] = useState([]);
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
@@ -32,6 +34,7 @@ export const useVehicles = () => {
   const [vehicleForm, setVehicleForm] = useState(vehicleFormDefaults);
   const [editingVehicle, setEditingVehicle] = useState<null | any>(null);
   const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false);
+  const router = useRouter();
 
   const handleDeleteVehicle = async (vehicleId: string) => {
     try {
@@ -40,6 +43,7 @@ export const useVehicles = () => {
       });
       if (data.success) {
         toast.success("Vehicle deleted successfully");
+        loadVehicles();
       }
     } catch (error) {
       toast.error("Failed to delete vehicle");
@@ -111,6 +115,7 @@ export const useVehicles = () => {
         setVehicleForm(vehicleFormDefaults);
         setIsAddVehicleOpen(false);
         toast.success("Vehicle added successfully");
+        router.refresh();
       } else {
         setVehicleFormError(result.error || "Failed to add vehicle.");
         toast.error(result.error || "Failed to add vehicle.");
@@ -164,7 +169,7 @@ export const useVehicles = () => {
 
   const openEditVehicle = (vehicle: any) => {
     setEditingVehicle(vehicle);
-    setVehicleForm(vehicle); 
+    setVehicleForm(vehicle);
     setIsEditVehicleOpen(true);
   };
 

@@ -592,7 +592,11 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
-                            onClick={() => openEditVehicle(vehicle)}
+                            onClick={() => {
+                              openEditVehicle(vehicle);
+                              setIsEditVehicleOpen(true);
+
+                            }}
                           >
                             <Edit size={16} />
                           </Button>
