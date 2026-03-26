@@ -35,18 +35,14 @@ export default function AdminPage() {
   const { data: session } = useSession();
   const {
     loadVehicles,
-    setVehicleForm,
   } = useVehicles();
   const { loadVideos } = useVideo();
   const {branchInventory, setBranchInventory} = useBranchInventory();
   const { newsletterSubscribers, totalVehicles, pendingRequests } = useAdminRequest();
   const { theme, setTheme } = useTheme();
+
   const [activeTab, setActiveTab] = useState("requests");
-
   const [recentRequests, setRecentRequests] = useState([]);
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
   const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] = useState(null);
   const [viewBranchModel, setViewBranchModel] = useState(false);
@@ -54,7 +50,6 @@ export default function AdminPage() {
 
 
   const stats = [
-
     {
       label: "Pending Requests",
       value: pendingRequests,
@@ -67,7 +62,6 @@ export default function AdminPage() {
       icon: Car,
       color: "bg-green-500/20 text-green-600",
     },
-
     {
       label: "Newsletter Subscribers",
       value: newsletterSubscribers,
@@ -85,29 +79,11 @@ export default function AdminPage() {
     }
   };
 
-  const handleRefreshBookings = async () => {
-    try {
-      setIsRefreshing(true);
-      await fetchBookings();
-    } catch (error) {
-      console.error("Failed to refresh bookings", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const handleBranchInventory = async () => {
     // This function can be expanded to fetch and display inventory for each branch
     const branchInventory = await fetchJSON("/api/branches");
     console.log("Branch Inventory:", branchInventory);
     setBranchInventory(branchInventory);
-  };
-
-  const handleVehicleFieldChange = (field, value) => {
-    setVehicleForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
   };
 
   const [notifications, setNotifications] = useState({
