@@ -3,16 +3,15 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import RightPanel from "@/components/branches/RightPanel";
 
-import { Users,
+import {
+  Users,
   Car, Mail, MapPin, FileText, Video,
   UserCog, LogOut,
   Sun, Moon
 } from "lucide-react";
 
 import { useVehicles } from "@/hooks/useVehicles";
-import { useBranchInventory } from "@/hooks/useBranchInventory";
 import { useAdminRequest } from "@/hooks/useAdminRequest";
 import { useVideo } from "@/hooks/useVideo";
 
@@ -25,11 +24,13 @@ import { toast } from "sonner";
 import { localStorageAPI } from "@/lib/storage/localStorage";
 import AdvisorSelectionModal from "@/components/advisor-selection-modal";
 import { fetchJSON } from "@/services/api.ts";
+
 import BookingTab from "@/components/admin/consultationBooking/BookingTab.jsx";
 import AdvisorTab from "@/components/admin/advisorTab/AdvisorTab.jsx";
 import VideoReviewTab from "@/components/admin/videoReviewTab/VideoReviewTab.jsx";
 import TransactionTab from "@/components/admin/transactionTab/TransactionTab.jsx";
 import VehicleManagementTab from "@/components/admin/vehicleManagementTab/VehicleManagementTab.jsx";
+import BranchDetailsTab from "@/components/admin/branchDetailsTab/BranchDetailsTab.jsx";
 
 export default function AdminPage() {
   const { data: session } = useSession();
@@ -37,7 +38,6 @@ export default function AdminPage() {
     loadVehicles,
   } = useVehicles();
   const { loadVideos } = useVideo();
-  const {branchInventory, setBranchInventory} = useBranchInventory();
   const { newsletterSubscribers, totalVehicles, pendingRequests } = useAdminRequest();
   const { theme, setTheme } = useTheme();
 
@@ -45,8 +45,6 @@ export default function AdminPage() {
   const [recentRequests, setRecentRequests] = useState([]);
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false);
   const [selectedRequestForAdvisor, setSelectedRequestForAdvisor] = useState(null);
-  const [viewBranchModel, setViewBranchModel] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState(null);
 
 
   const stats = [
@@ -79,13 +77,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleBranchInventory = async () => {
-    // This function can be expanded to fetch and display inventory for each branch
-    const branchInventory = await fetchJSON("/api/branches");
-    console.log("Branch Inventory:", branchInventory);
-    setBranchInventory(branchInventory);
-  };
-
   const [notifications, setNotifications] = useState({
     requests: 0,
     vehicles: 0,
@@ -105,7 +96,6 @@ export default function AdminPage() {
     fetchBookings();
     loadVehicles();
     loadVideos();
-    handleBranchInventory();
   }, []);
 
 
@@ -238,7 +228,7 @@ export default function AdminPage() {
               },
               {
                 id: "branches",
-                label: "Branch Inventory",
+                label: "Branch Details",
                 icon: MapPin,
                 count: 0,
               },
@@ -280,7 +270,7 @@ export default function AdminPage() {
         <div className="bg-card rounded-b-lg border-x border-b border-border p-6 slide-in-down delay-400">
           {/* Customer Requests Tab */}
           {activeTab === "requests" && (
-            <BookingTab 
+            <BookingTab
               recentRequests={recentRequests}
               fetchBookings={fetchBookings}
               setSelectedRequestForAdvisor={setSelectedRequestForAdvisor}
@@ -310,77 +300,7 @@ export default function AdminPage() {
 
           {/* Branch Inventory Tab */}
           {activeTab === "branches" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Branch-wise Inventory</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(branchInventory).map(([branch, vehicles]) => (
-                  <div key={branch} className="bg-white dark:bg-black/50 rounded-lg border border-border p-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <MapPin size={24} className="text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-xl">{branch}</h3>
-                        <p className="text-sm text-muted-foreground">Branch</p>
-                      </div>
-                    </div>
-                    {vehicles.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No vehicles in this branch.
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">
-                            Total Vehicles
-                          </span>
-                          <span className="font-bold text-lg">
-                            {vehicles.length}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* List of vehicles brands only */}
-                          {Array.from(new Set(vehicles.map((v) => v.brand))).map((brand) => (
-                            <div key={brand} className="flex justify-between items-center border border-border rounded cursor-pointer hover:bg-red-50 px-3 py-2" onClick={() => {
-                              setSelectedBrand(brand);
-                              setViewBranchModel(true);
-                            }}>
-                              <span className="text-sm text-muted-foreground">{brand}</span>
-                              <span className="font-bold">{vehicles.filter((v) => v.brand === brand).length}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="max-h-48 overflow-y-auto">
-                          <Button onClick={() => {
-                            setSelectedBrand(null);
-                            setViewBranchModel(true);
-                          }
-                          } className="w-full mt-4 cursor-pointer" variant="outline">
-                            View Details
-                          </Button>
-
-                        </div>
-                        {
-                          viewBranchModel && (
-                            <>
-                              <RightPanel branch={branch} brand={selectedBrand} setViewBranchModel={setViewBranchModel} />
-                            </>
-                          )
-                        }
-                      </div>
-                    )
-                    }
-
-                  </div>
-                ))
-                }
-
-
-              </div>
-            </div>
+            <BranchDetailsTab />
           )}
 
           {activeTab === "transactions" && (
