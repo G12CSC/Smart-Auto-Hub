@@ -9,10 +9,10 @@ interface VideoReview {
   createdAt: Date;
 }
 
-export  function VideoReviews({ video, index }: { video: VideoReview; index: number }) {
+export  function VideoReviews({ key, video, index }: { key: string; video: VideoReview; index: number }) {
   return (
     <a
-      key={video.id}
+      key={key}
       className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
       style={{
         opacity: 0,

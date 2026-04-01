@@ -318,7 +318,7 @@ export default async function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {videoReviews.slice(1,4).map((video, index) => (
 
-                    <VideoReviews video={video} index={index} />
+                    <VideoReviews key={video.id} video={video} index={index} />
                   ))}
                 </div>
               </div>
