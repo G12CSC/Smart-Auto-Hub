@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(submitedReview);
+    return NextResponse.json({ success: true, review: submitedReview });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create review" },

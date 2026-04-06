@@ -4,12 +4,8 @@ import { Footer } from "@/components/Footer";
 import { Button } from "../components/ui/button";
 import {
   ChevronRight,
-  Search,
-  Calendar,
   Play,
-  MessageCircle,
 } from "lucide-react";
-//import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -19,22 +15,14 @@ import UserWelcome from "@/components/home/user-welcome";
 import TestimonialsCarousel from "@/components/home/testimonials-carousel";
 import NewsletterForm from "@/components/home/newsletter-form";
 import FeedbackPopup from "@/components/advertisements/findVehicle/FeedbackPopup";
-
-interface Vehicle {
-  id: number;
-  name: string;
-  price: string;
-  status: "Available" | "Shipped" | "Not Available";
-  images: string[];
-  location: string;
-}
+import Creditability from "@/components/client/creditability-section/Creditability";
+import { VideoReviews } from "@/components/client/video-section/VideoReviews";
 
 interface VideoReview {
   id: string;
   title: string;
   description: string;
-  uploadDate: string;
-  videoId: string;
+  youtubeId: string;
   createdAt: Date;
 }
 
@@ -164,11 +152,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Quick Search Bar */}
-      {/*<section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-24">*/}
-      {/*  <HomeSearchbar />*/}
-      {/*</section>*/}
-
       {/* Featured Vehicles */}
       <section className="max-w-7xl mx-auto px-4 mb-24">
         <div className="flex items-center justify-between my-10">
@@ -243,195 +226,8 @@ export default async function Home() {
       </section>
 
       {/* Trust & Credibility Section + How it works     */}
-      <section className="py-24 border-y border-border">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Section Header */}
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance animate-text-reveal">
-              Your Journey to the Perfect Vehicle
-            </h2>
-            <p className="text-muted-foreground text-xl max-w-3xl mx-auto animate-text-reveal stagger-1">
-              From discovery to ownership, we ensure every step builds trust and
-              confidence
-            </p>
-          </div>
-
-          {/* Process Steps(How It works) - 3 Columns */}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            {/* Step 1 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full shadow-lg text-white font-bold text-xl">
-                1
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-500/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <Search
-                  className="text-blue-600 dark:text-blue-400"
-                  size={40}
-                />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Search</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Browse our full inventory from all branches with advanced
-                filters.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up stagger-1">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-emerald-600 dark:bg-emerald-500 rounded-full shadow-lg text-white font-bold text-xl">
-                2
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <MessageCircle
-                  className="text-emerald-600 dark:text-emerald-400"
-                  size={40}
-                />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Consult</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Book a meeting with our technical specialists for expert advice.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-card p-8 rounded-xl border border-border text-center hover:shadow-xl transition-all duration-300 relative group hover-glow animate-bounce-in-up stagger-2">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full shadow-lg text-white font-bold text-xl">
-                3
-              </div>
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/20 rounded-2xl mb-6 mt-4 group-hover:scale-110 transition-transform">
-                <Calendar className="text-primary" size={40} />
-              </div>
-              <h3 className="font-bold text-2xl mb-4">Book</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Secure your vehicle with an online appointment at your
-                convenience.
-              </p>
-            </div>
-          </div>
-
-          {/* Trust Metrics - This process leads to trust */}
-
-          <div className="bg-linear-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-8 md:p-12 mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center animate-text-reveal">
-              Trusted by Thousands
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              {[
-                {
-                  icon: "🏆",
-                  number: "10+",
-                  label: "Years in Business",
-                  description: "Two decades of excellence",
-                },
-                {
-                  icon: "😊",
-                  number: "50+",
-                  label: "Happy Customers",
-                  description: "Customers trust us annually",
-                },
-                {
-                  icon: "🚗",
-                  number: "30+",
-                  label: "Vehicles Available",
-                  description: "Curated selection",
-                },
-                {
-                  icon: "👨‍🔧",
-                  number: "5+",
-                  label: "Expert Team",
-                  description: "Certified specialists",
-                },
-                {
-                  icon: "⭐",
-                  number: "4.6/5",
-                  label: "Customer Rating",
-                  description: "Based on verified reviews",
-                },
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-center hover:scale-105 transition-transform duration-300 animate-pop-in"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                >
-                  <div className="text-4xl mb-3">{stat.icon}</div>
-                  <div className="text-3xl font-bold text-primary mb-2">
-                    {stat.number}
-                  </div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    {stat.label}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Why Choose Us - The benefits */}
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-              Why Customers Choose Sameera Auto Traders
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Quality Assured",
-                  description:
-                    "Every vehicle undergoes rigorous inspection and testing",
-                  icon: "✓",
-                },
-                {
-                  title: "Transparent Pricing",
-                  description:
-                    "No hidden charges. What you see is what you pay",
-                  icon: "💰",
-                },
-                {
-                  title: "Expert Consultants",
-                  description:
-                    "Get professional advice from our certified specialists",
-                  icon: "👥",
-                },
-                {
-                  title: "After-Sales Support",
-                  description:
-                    "Comprehensive warranty and maintenance packages available",
-                  icon: "🔧",
-                },
-                {
-                  title: "Easy Finance Options",
-                  description: "Flexible EMI plans and trade-in programs",
-                  icon: "💳",
-                },
-                {
-                  title: "Online Convenience",
-                  description:
-                    "Book appointments and manage everything from your phone",
-                  icon: "📱",
-                },
-              ].map((benefit, index) => (
-                <div
-                  key={index}
-                  className="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-300 animate-slide-in-right"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                >
-                  <div className="text-4xl mb-4">{benefit.icon}</div>
-                  <h4 className="font-bold text-xl mb-2">{benefit.title}</h4>
-                  <p className="text-muted-foreground">{benefit.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <Creditability />
+      
       {/* Customer Reviews */}
       <section className="max-w-7xl mx-auto px-4 mb-24 mt-12">
         <h2 className="text-3xl font-bold mb-12 text-center">
@@ -521,51 +317,8 @@ export default async function Home() {
                 <h3 className="text-2xl font-bold mb-6">More Reviews</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {videoReviews.slice(1,4).map((video, index) => (
-                    <a
-                      key={video.id}
-                      className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-2xl hover:border-primary/50 transition-all duration-300 group cursor-pointer hover-glow fade-in-up"
-                      style={{
-                        opacity: 0,
-                        animationDelay: `${(index + 1) * 0.1}s`,
-                      }}
-                      href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <div className="relative h-48 bg-muted overflow-hidden">
-                        <img
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
-                          alt={video.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
-                          <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                            <Play
-                              className="text-white fill-white ml-1"
-                              size={28}
-                            />
-                          </div>
-                        </div>
-                        <Badge className="absolute bottom-3 right-3 px-3 py-1 bg-primary text-white text-xs rounded-md font-semibold flex items-center gap-1">
-                          <svg
-                            className="w-3 h-3 fill-white"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                          </svg>
-                          YouTube
-                        </Badge>
-                      </div>
 
-                      <div className="p-5">
-                        <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
-                          {video.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
-                          {video.description}
-                        </p>
-                      </div>
-                    </a>
+                    <VideoReviews key={video.id} video={video} index={index} />
                   ))}
                 </div>
               </div>

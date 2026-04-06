@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { logAudit } from "@/lib/audit/auditLogger";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export async function DELETE(
       userRole: "admin",
       metadata: { advisorId: id },
     });
+
+    revalidatePath("/admin");
 
     return Response.json({
       success: true,

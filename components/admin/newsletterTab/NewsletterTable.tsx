@@ -11,7 +11,7 @@ interface Subscriber {
   status: string;
 }
 
-function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?: (count: number) => void}) {
+function NewsletterTable() {
 
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
@@ -35,9 +35,6 @@ function NewsletterTable({setNewsletterSubscribers}: {setNewsletterSubscribers?:
 
     if (data.success) {
       setSubscribers(data.newSubscribersList);
-      if (setNewsletterSubscribers) {
-        setNewsletterSubscribers(data.remainingSubscribers);
-      }
     } else {
       alert("Failed to delete subscriber.");
     }

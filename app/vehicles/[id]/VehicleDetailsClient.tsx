@@ -450,7 +450,7 @@ export default function VehicleDetailsClient({
         </div>
 
         {/* Leasing Calculator */}
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
+        <div className="bg-linear-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
           <h3 className="font-bold text-2xl mb-6">
             Estimate Your Monthly Payment
           </h3>
@@ -539,7 +539,6 @@ export default function VehicleDetailsClient({
               </div>
             )}
           </div>
-
 
           {/* Reviews List */}
           {reviews.length === 0 ? (

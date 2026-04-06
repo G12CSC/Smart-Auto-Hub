@@ -13,13 +13,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-//import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { signOut } from "next-auth/react";
 import {
   Calendar,
-  Clock,
-  Phone,
   Mail,
   MessageCircle,
   LogOut,
@@ -27,8 +22,10 @@ import {
   BookOpen,
   Settings,
   Sun,
-  Moon
+  Moon,
+  Phone
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -42,12 +39,10 @@ import { useRouter } from "next/navigation";
 
 export default function AdvisorPage() {
 
-
+  const [loading, setLoading] = useState(false);
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchQuery, setSearchQuery] = useState("");
-  // const [selectedBooking, setSelectedBooking] = useState(null);
-  // const [contactMethod, setContactMethod] = useState("email");
   const [advisorBookings, setAdvisorBookings] = useState([]);
   const [advisorInfo, setAdvisorInfo] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
@@ -56,18 +51,24 @@ export default function AdvisorPage() {
 
 
   const fetchProfile = async () => {
-    const res = await fetch("/api/Advisors/profile")
-    const data = await res.json()
+    try {
+      const res = await fetch("/api/Advisors/profile")
+      const data = await res.json()
 
-    setAdvisorInfo(data)
+      setAdvisorInfo(data)
+    }
+    catch (err) {
+      console.error("Failed to fetch profile", err);
+      toast.error("Failed to load profile");
+    }
   }
 
-    useEffect(() => {
-        if (session) {
-            fetchProfile();
-            fetchAdvisorBookings();
-        }
-    }, [session]);
+  useEffect(() => {
+    if (session) {
+      fetchProfile();
+      fetchAdvisorBookings();
+    }
+  }, [session]);
 
   useEffect(() => {
     if (session?.user?.mustChangePassword) {
@@ -115,7 +116,7 @@ export default function AdvisorPage() {
       if (res.ok) {
         toast.success("Profile updated")
         setOpenEdit(false);
-        await fetchProfile()   // reload profile
+        await fetchProfile()   
 
       }
     }
@@ -569,14 +570,6 @@ export default function AdvisorPage() {
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
-
-            <Input
-                placeholder="User Name"
-                value={advisorInfo?.name || ""}
-                onChange={(e) =>
-                    setAdvisorInfo({ ...advisorInfo, name: e.target.value })
-                }
-            />
           <Input
             placeholder="User Name"
             value={advisorInfo?.name || ""}
@@ -592,29 +585,24 @@ export default function AdvisorPage() {
             }
           />
 
-          <Input
-            placeholder="Specialization"
-            value={advisorInfo?.specialization || ""}
-            onChange={(e) =>
-              setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
-            }
-          />
+          <select value={advisorInfo?.specialization || ""} onChange={(e) =>
+            setAdvisorInfo({ ...advisorInfo, specialization: e.target.value })
+          } className="w-full px-3 py-2 border rounded-md dark:bg-[#181214]">
+
+            <option value="">Select Specialization</option>
+            <option value="Engine Specialist">Engine Specialist</option>
+            <option value="Transmission Specialist">Transmission Specialist</option>
+            <option value="Electrical Systems Specialist">Electrical Systems Specialist</option>
+            <option value="Brake Systems Specialist">Brake Systems Specialist</option>
+            <option value="Suspension Specialist">Suspension Specialist</option>
+            <option value="General Mechanic">General Mechanic</option>
+          </select>
 
           <Input
             placeholder="Experience"
             value={advisorInfo?.experience || ""}
             onChange={(e) =>
               setAdvisorInfo({ ...advisorInfo, experience: e.target.value })
-            }
-          />
-
-          <Input
-            type="text"
-            placeholder="Rating"
-            value={advisorInfo?.rating || ""}
-            disabled
-            onChange={(e) =>
-              setAdvisorInfo({ ...advisorInfo, rating: Number(e.target.value) })
             }
           />
 

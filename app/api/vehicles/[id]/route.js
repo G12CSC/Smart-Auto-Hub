@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma.ts";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req, context) {
 
@@ -18,6 +19,7 @@ export async function GET(req, context) {
   });
 
   if (!car) return new Response("Car not found", { status: 404 });
+  revalidatePath("/admin");
 
   return new Response(JSON.stringify(car), { status: 200 });
 }
@@ -35,6 +37,9 @@ export async function PUT(request, context) {
       data: data,
     });
 
+    revalidatePath("/admin");
+    revalidatePath("/");
+
     return NextResponse.json(updatedCar);
   } catch (error) {
     return NextResponse.json(
@@ -51,6 +56,7 @@ export async function DELETE(request, context) {
       where: { id: params.id },
     });
     revalidatePath("/admin");
+    revalidatePath("/");
     return NextResponse.json({ message: "Vehicle deleted successfully", success: true });
   } catch (error) {
     return NextResponse.json(
