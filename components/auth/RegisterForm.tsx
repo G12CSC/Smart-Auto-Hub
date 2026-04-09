@@ -23,15 +23,17 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
+const initialFormData = {
+  name: "",
+  email: "",
+  countryCode: "+94",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+};
+
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    countryCode: "+94",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [formData, setFormData] = useState(initialFormData);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -49,6 +51,15 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     if (/[^A-Za-z0-9]/.test(formData.password)) strength += 1;
     setPasswordStrength(strength);
   }, [formData.password]);
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setAgreeTerms(false);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setErrors({});
+    setPasswordStrength(0);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -133,7 +144,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           setTimeout(() => setShake(false), 500);
           return;
         }
-
+        resetForm();
         onSwitchToLogin();
       } catch {
         setErrors((prev) => ({
@@ -198,7 +209,11 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 mt-4"
+        autoComplete="off"
+      >
         <div className="space-y-2 animate-slide-up-2">
           <Label htmlFor="name">Full Name</Label>
           <div className="relative group">
@@ -207,6 +222,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             </div>
             <Input
               id="name"
+              autoComplete="name"
               placeholder="John Doe"
               className={cn(
                 "pl-10 transition-all duration-300",
@@ -234,6 +250,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
                 className={cn(
                   "pl-10 transition-all duration-300",
@@ -272,6 +289,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               <Input
                 id="phone"
                 type="tel"
+                autoComplete="tel-national"
                 placeholder="7xxxxxxx"
                 className={cn(
                   "transition-all duration-300",
@@ -299,6 +317,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               placeholder="••••••••"
               className={cn(
                 "pl-10 pr-10 transition-all duration-300",
@@ -374,6 +393,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
               placeholder="••••••••"
               className={cn(
                 "pl-10 pr-10 transition-all duration-300",
@@ -464,7 +484,10 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           Already have an account?{" "}
           <button
             type="button"
-            onClick={onSwitchToLogin}
+            onClick={() => {
+              resetForm();
+              onSwitchToLogin();
+            }}
             className="font-semibold text-primary hover:underline transition-all"
           >
             Sign in
