@@ -17,7 +17,9 @@ export default function RightPanel({
   useEffect(() => {
     async function fetchVehicles() {
       try {
-        const response = await fetch(`/api/branches/branch?branch=${branch || ""}&brand=${brand   || ""}`);
+        const response = await fetch(
+          `/api/branches/branch?branch=${branch || ""}&brand=${brand || ""}`,
+        );
         const data = await response.json();
         setVehicles(data);
       } catch (error) {
@@ -37,13 +39,21 @@ export default function RightPanel({
         <div className="flex justify-between mb-6">
           <h2 className="text-xl font-semibold">{branch}</h2>
 
-          <button className="cursor-pointer" onClick={() => setViewBranchModel(false)}>✕</button>
+          <button
+            className="cursor-pointer"
+            onClick={() => setViewBranchModel(false)}
+          >
+            ✕
+          </button>
         </div>
 
         {/* Vehicle List */}
 
         {vehicles.map((vehicle: any) => (
-          <div key={vehicle?.id} className="border rounded-md p-3 mb-3 grid grid-cols-2 gap-4 items-center dark:bg-black/90">
+          <div
+            key={vehicle?.id}
+            className="border rounded-md p-3 mb-3 grid grid-cols-2 gap-4 items-center dark:bg-black/90"
+          >
             <div>
               <h3 className="font-semibold">{vehicle.brand}</h3>
               <h3 className="text-sm text-gray-500">{vehicle.model}</h3>
@@ -55,13 +65,19 @@ export default function RightPanel({
               <p className="text-sm text-gray-500">Price: {vehicle.price}</p>
             </div>
             <div>
-              <Image
-                src={vehicle.images[0]}
-                alt={`${vehicle.brand} ${vehicle.model}`}
-                width={100}
-                height={100}
-                className="object-cover rounded-md"
-              />
+              {vehicle.images[0]  ? (
+                <Image
+                  src={vehicle.images[0]}
+                  alt={`${vehicle.brand} ${vehicle.model}`}
+                  width={120}
+                  height={100}
+                  className="object-cover rounded-md"
+                />
+              ) : (
+                <div className="w-[85%] mx-auto h-20 bg-gray-200 flex items-center justify-center rounded-md">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
             </div>
           </div>
         ))}

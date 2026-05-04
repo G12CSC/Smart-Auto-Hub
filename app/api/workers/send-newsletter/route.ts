@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getResendClient } from "@/lib/resend";
 import { sendNewsletterEmail } from "@/lib/emailForNewsletterSending";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +19,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ignored: true });
   }
 
-  const resend = getResendClient();
 
   // 2. Load subscribers
   const subscribers = await prisma.newsletterEntry.findMany();

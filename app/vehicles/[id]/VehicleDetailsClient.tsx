@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useEffect, useState, type FormEvent } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -11,234 +11,232 @@ import {
   Loader2,
   User,
   X,
-} from "lucide-react"
-import { localStorageAPI } from "@/lib/storage/localStorage.js"
-import { toast } from "sonner"
-import StarRating from "@/components/StarRating"
+} from "lucide-react";
+import { localStorageAPI } from "@/lib/storage/localStorage.js";
+import { toast } from "sonner";
+import StarRating from "@/components/StarRating";
 
 type Vehicle = {
-
-  id?: string | number
-  name?: string
-  price?: number
-  image?: string
-  images?: string[]
-  status?: string
-  location?: string
-  make?: string
-  model?: string
-  year?: number
-  type?: string
-  mileage?: number
-  transmission?: string
-  fuelType?: string
-  description?: string
-}
+  id?: string | number;
+  name?: string;
+  price?: number;
+  image?: string;
+  images?: string[];
+  status?: string;
+  location?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  type?: string;
+  mileage?: number;
+  transmission?: string;
+  fuelType?: string;
+  description?: string;
+};
 
 type ReviewForm = {
-  name: string
-  email: string
-  rating: number
-  comment: string
-    couponId: string
-}
+  name: string;
+  email: string;
+  rating: number;
+  comment: string;
+  couponId: string;
+};
 
 type Review = ReviewForm & {
-  id: string
-  timestamp: string
-    location:string
-}
+  id: string;
+  userName: string;
+  comment: string;
+  rating: number;
+  location: string;
+};
 
-type ReviewErrors = Partial<Record<keyof ReviewForm, string>>
+type ReviewErrors = Partial<Record<keyof ReviewForm, string>>;
 
 type VehicleDetailsClientProps = {
-  vehicle?: Vehicle | null
-  vehicleId?: string
-}
+  vehicle?: Vehicle | null;
+  vehicleId?: string;
+};
 
 export default function VehicleDetailsClient({
-
   vehicle: initialVehicle,
   vehicleId,
 }: VehicleDetailsClientProps) {
+  const [vehicle, setVehicle] = useState<Vehicle | null>(
+    initialVehicle || null,
+  );
+  const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [loanAmount, setLoanAmount] = useState(initialVehicle?.price || 0);
+  const [downPayment, setDownPayment] = useState(0);
+  const [loanTerm, setLoanTerm] = useState(5);
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(initialVehicle || null)
-  const [monthlyPayment, setMonthlyPayment] = useState(0)
-  const [loanAmount, setLoanAmount] = useState(initialVehicle?.price || 0)
-  const [downPayment, setDownPayment] = useState(0)
-  const [loanTerm, setLoanTerm] = useState(5)
+  const [isFavourite, setIsFavourite] = useState(false);
 
-  const [isFavourite, setIsFavourite] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-
-  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewForm, setReviewForm] = useState<ReviewForm>({
     name: "",
     email: "",
     rating: 0,
     comment: "",
-      couponId: "",
-  })
-  const [reviewErrors, setReviewErrors] = useState<ReviewErrors>({})
-  const [submittingReview, setSubmittingReview] = useState(false)
+    couponId: "",
+  });
+  const [reviewErrors, setReviewErrors] = useState<ReviewErrors>({});
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const resolvedVehicleId =
-    vehicleId ?? (vehicle?.id !== undefined && vehicle?.id !== null ? String(vehicle.id) : null)
+    vehicleId ??
+    (vehicle?.id !== undefined && vehicle?.id !== null
+      ? String(vehicle.id)
+      : null);
 
   // Mock images array for gallery - in production, this would come from vehicle data
-    const vehicleImages: string[] =
-        vehicle?.images && vehicle.images.length > 0
-            ? vehicle.images
-            : [vehicle?.image || "/placeholder.svg"];
+  const vehicleImages: string[] =
+    vehicle?.images && vehicle.images.length > 0
+      ? vehicle.images
+      : [vehicle?.image || "/placeholder.svg"];
 
   useEffect(() => {
-    if (!initialVehicle) return
-    setVehicle(initialVehicle)
-    setLoanAmount(initialVehicle.price || 0)
-  }, [initialVehicle])
+    if (!initialVehicle) return;
+    setVehicle(initialVehicle);
+    setLoanAmount(initialVehicle.price || 0);
+  }, [initialVehicle]);
 
   useEffect(() => {
-    if (!resolvedVehicleId) return
-    localStorageAPI.addRecentlyViewed(resolvedVehicleId)
-    setIsFavourite(localStorageAPI.isFavourite(resolvedVehicleId))
-    setReviews(localStorageAPI.getReviews(resolvedVehicleId))
-  }, [resolvedVehicleId])
+    if (!resolvedVehicleId) return;
+    localStorageAPI.addRecentlyViewed(resolvedVehicleId);
+    setIsFavourite(localStorageAPI.isFavourite(resolvedVehicleId));
+    setReviews(localStorageAPI.getReviews(resolvedVehicleId));
+  }, [resolvedVehicleId]);
 
   const calculatePayment = () => {
-    const principal = loanAmount - downPayment
-    const monthlyRate = 0.06 / 12
-    const numberOfPayments = loanTerm * 12
+    const principal = loanAmount - downPayment;
+    const monthlyRate = 0.06 / 12;
+    const numberOfPayments = loanTerm * 12;
     const monthlyPaymentCalc =
-      (principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments))) /
-      (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
-    setMonthlyPayment(monthlyPaymentCalc)
-  }
+      (principal *
+        (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments))) /
+      (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    setMonthlyPayment(monthlyPaymentCalc);
+  };
 
   const toggleFavourite = () => {
-    if (!resolvedVehicleId) return
+    if (!resolvedVehicleId) return;
 
     if (isFavourite) {
-      localStorageAPI.removeFavourite(resolvedVehicleId)
-      setIsFavourite(false)
+      localStorageAPI.removeFavourite(resolvedVehicleId);
+      setIsFavourite(false);
     } else {
-      localStorageAPI.addFavourite(resolvedVehicleId)
-      setIsFavourite(true)
+      localStorageAPI.addFavourite(resolvedVehicleId);
+      setIsFavourite(true);
     }
-  }
+  };
 
   const openLightbox = (index: number) => {
-    setCurrentImageIndex(index)
-    setLightboxOpen(true)
-    document.body.style.overflow = "hidden"
-  }
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+    document.body.style.overflow = "hidden";
+  };
 
   const closeLightbox = () => {
-    setLightboxOpen(false)
-    document.body.style.overflow = "unset"
-  }
+    setLightboxOpen(false);
+    document.body.style.overflow = "unset";
+  };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % vehicleImages.length)
-  }
+    setCurrentImageIndex((prev) => (prev + 1) % vehicleImages.length);
+  };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + vehicleImages.length) % vehicleImages.length)
-  }
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + vehicleImages.length) % vehicleImages.length,
+    );
+  };
 
   // Close lightbox on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && lightboxOpen) {
-        closeLightbox()
+        closeLightbox();
       }
-    }
-    window.addEventListener("keydown", handleEscape)
-    return () => window.removeEventListener("keydown", handleEscape)
-  }, [lightboxOpen])
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [lightboxOpen]);
 
   const validateReviewForm = () => {
-
-    const errors: ReviewErrors = {}
+    const errors: ReviewErrors = {};
 
     if (!reviewForm.name.trim()) {
-      errors.name = "Name is required"
+      errors.name = "Name is required";
     }
 
     if (!reviewForm.email.trim()) {
-      errors.email = "Email is required"
+      errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reviewForm.email)) {
-      errors.email = "Please enter a valid email address"
+      errors.email = "Please enter a valid email address";
     }
 
     if (reviewForm.rating === 0) {
-      errors.rating = "Please select a rating"
+      errors.rating = "Please select a rating";
     }
 
     if (!reviewForm.comment.trim()) {
-      errors.comment = "Review comment is required"
+      errors.comment = "Review comment is required";
     } else if (reviewForm.comment.trim().length < 10) {
-      errors.comment = "Review must be at least 10 characters"
+      errors.comment = "Review must be at least 10 characters";
     }
 
-    setReviewErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setReviewErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    const handleReviewSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleReviewSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-        e.preventDefault();
+    if (!validateReviewForm()) {
+      toast.error("Please fix the errors");
+      return;
+    }
 
-        if (!validateReviewForm()) {
-            toast.error("Please fix the errors");
-            return;
-        }
+    setSubmittingReview(true);
 
-        setSubmittingReview(true);
+    const res = await fetch("/api/reviews/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
 
-        const res = await fetch("/api/reviews/create", {
+      body: JSON.stringify({
+        carId: resolvedVehicleId,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment,
+        couponId: reviewForm.couponId,
+      }),
+    });
 
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+    const newReview = await res.json();
 
-            body: JSON.stringify({
-                carId: resolvedVehicleId,
-                rating: reviewForm.rating,
-                comment: reviewForm.comment,
-                couponId:reviewForm.couponId,
-            }),
+    setReviews([newReview, ...reviews]);
 
-        });
+    setSubmittingReview(false);
 
-        const newReview = await res.json();
+    toast.success("Review added!");
+  };
 
-        setReviews([newReview, ...reviews]);
+  useEffect(() => {
+    if (!resolvedVehicleId) return;
 
-        setSubmittingReview(false);
+    const fetchReviews = async () => {
+      const res = await fetch(`/api/reviews/${resolvedVehicleId}`);
+      const data = await res.json();
 
-        toast.success("Review added!");
-
+      setReviews(data);
     };
 
-    useEffect(() => {
-
-        if (!resolvedVehicleId) return;
-
-        const fetchReviews = async () => {
-
-            const res = await fetch(`/api/reviews/${resolvedVehicleId}`);
-            const data = await res.json();
-
-            setReviews(data);
-
-        };
-
-        fetchReviews();
-
-    }, [resolvedVehicleId]);
+    fetchReviews();
+  }, [resolvedVehicleId]);
 
   if (!vehicle) {
     return (
@@ -251,13 +249,13 @@ export default function VehicleDetailsClient({
           <Link href="/vehicles">Back to Vehicle Listing</Link>
         </Button>
       </div>
-    )
+    );
   }
 
   const averageRatingLabel = resolvedVehicleId
     ? localStorageAPI.getAverageRating(resolvedVehicleId)
-    : "0.0"
-  const averageRatingValue = Number.parseFloat(averageRatingLabel) || 0
+    : "0.0";
+  const averageRatingValue = Number.parseFloat(averageRatingLabel) || 0;
 
   return (
     <div className="w-full">
@@ -316,7 +314,7 @@ export default function VehicleDetailsClient({
               onClick={() => openLightbox(0)}
             >
               <img
-                  src={vehicleImages[0] || "/placeholder.svg"}
+                src={vehicleImages[0] || "/placeholder.svg"}
                 alt={vehicle?.name || "Vehicle"}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -347,7 +345,9 @@ export default function VehicleDetailsClient({
           <div className="lg:col-span-2">
             <div className="mb-6">
               <div className="flex items-start justify-between mb-3">
-                <h1 className="text-4xl font-bold">{vehicle?.name || "Vehicle"}</h1>
+                <h1 className="text-4xl font-bold">
+                  {vehicle?.name || "Vehicle"}
+                </h1>
 
                 <Button
                   variant="outline"
@@ -355,7 +355,9 @@ export default function VehicleDetailsClient({
                   onClick={toggleFavourite}
                   className="flex items-center gap-2 bg-transparent"
                 >
-                  <Heart className={`w-5 h-5 ${isFavourite ? "fill-red-500 text-red-500" : ""}`} />
+                  <Heart
+                    className={`w-5 h-5 ${isFavourite ? "fill-red-500 text-red-500" : ""}`}
+                  />
                   {isFavourite ? "Saved" : "Save"}
                 </Button>
               </div>
@@ -375,7 +377,9 @@ export default function VehicleDetailsClient({
                   {vehicle?.status || "Unknown"}
                 </span>
               </div>
-              <p className="text-lg text-muted-foreground">{vehicle?.location || "N/A"}</p>
+              <p className="text-lg text-muted-foreground">
+                {vehicle?.location || "N/A"}
+              </p>
             </div>
 
             {/* Key Details Table */}
@@ -401,12 +405,17 @@ export default function VehicleDetailsClient({
                 <div>
                   <p className="text-sm text-muted-foreground">Mileage</p>
                   <p className="font-semibold">
-                    {vehicle?.mileage ? vehicle.mileage.toLocaleString() : "N/A"} km
+                    {vehicle?.mileage
+                      ? vehicle.mileage.toLocaleString()
+                      : "N/A"}{" "}
+                    km
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Transmission</p>
-                  <p className="font-semibold">{vehicle?.transmission || "N/A"}</p>
+                  <p className="font-semibold">
+                    {vehicle?.transmission || "N/A"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Fuel Type</p>
@@ -420,7 +429,12 @@ export default function VehicleDetailsClient({
               <Button asChild className="flex-1 h-12" size="lg">
                 <Link href="/consultation">Book an Appointment</Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1 h-12 bg-transparent" size="lg">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 h-12 bg-transparent"
+                size="lg"
+              >
                 <Link href="/contact">Contact Us</Link>
               </Button>
             </div>
@@ -436,12 +450,16 @@ export default function VehicleDetailsClient({
         </div>
 
         {/* Leasing Calculator */}
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
-          <h3 className="font-bold text-2xl mb-6">Estimate Your Monthly Payment</h3>
+        <div className="bg-linear-to-r from-primary/10 to-accent/10 rounded-lg border border-border p-8 mb-12">
+          <h3 className="font-bold text-2xl mb-6">
+            Estimate Your Monthly Payment
+          </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold mb-2">Loan Amount (LKR)</label>
+              <label className="block text-sm font-semibold mb-2">
+                Loan Amount (LKR)
+              </label>
               <input
                 type="number"
                 value={loanAmount}
@@ -451,7 +469,9 @@ export default function VehicleDetailsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2">Down Payment (LKR)</label>
+              <label className="block text-sm font-semibold mb-2">
+                Down Payment (LKR)
+              </label>
               <input
                 type="number"
                 value={downPayment}
@@ -461,7 +481,9 @@ export default function VehicleDetailsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2">Loan Term (Years)</label>
+              <label className="block text-sm font-semibold mb-2">
+                Loan Term (Years)
+              </label>
               <select
                 value={loanTerm}
                 onChange={(e) => setLoanTerm(Number(e.target.value))}
@@ -484,9 +506,14 @@ export default function VehicleDetailsClient({
 
           {monthlyPayment > 0 && (
             <div className="mt-6 p-4 bg-primary/20 rounded-lg border border-primary/30">
-              <p className="text-sm text-muted-foreground mb-1">Estimated Monthly Payment</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Estimated Monthly Payment
+              </p>
               <p className="text-3xl font-bold text-primary">
-                LKR {monthlyPayment.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                LKR{" "}
+                {monthlyPayment.toLocaleString("en-US", {
+                  maximumFractionDigits: 0,
+                })}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 Based on 6% annual interset rate. Actual rates may vary.
@@ -502,219 +529,95 @@ export default function VehicleDetailsClient({
             {reviews.length > 0 && (
               <div className="flex items-center gap-3">
                 <StarRating rating={averageRatingValue} readOnly size={20} />
-                <span className="text-lg font-semibold">{averageRatingLabel} out of 5</span>
+                <span className="text-lg font-semibold">
+                  {averageRatingLabel} out of 5
+                </span>
                 <span className="text-muted-foreground">
-                  ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                  ({reviews.length}{" "}
+                  {reviews.length === 1 ? "review" : "reviews"})
                 </span>
               </div>
             )}
           </div>
 
-          {/* Review Form */}
-
-            <div className="bg-muted/50 rounded-lg p-6 mb-8">
-                <h4 className="font-semibold text-lg mb-6">Write a Review</h4>
-
-                <form onSubmit={handleReviewSubmit} className="space-y-5">
-
-                    {/* NAME + EMAIL */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        {/* NAME */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Your Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={reviewForm.name}
-                                onChange={(e) =>
-                                    setReviewForm({ ...reviewForm, name: e.target.value })
-                                }
-                                className={`input ${reviewErrors.name && "input-error"}`}
-                                placeholder="John Doe"
-                            />
-                            {reviewErrors.name && (
-                                <p className="error-text">{reviewErrors.name}</p>
-                            )}
-                        </div>
-
-                        {/* EMAIL */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Your Email <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                value={reviewForm.email}
-                                onChange={(e) =>
-                                    setReviewForm({ ...reviewForm, email: e.target.value })
-                                }
-                                className={`input ${reviewErrors.email && "input-error"}`}
-                                placeholder="john@example.com"
-                            />
-                            {reviewErrors.email && (
-                                <p className="error-text">{reviewErrors.email}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* COUPON */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Coupon Code
-                        </label>
-                        <input
-                            type="text"
-                            value={reviewForm.couponId}
-                            onChange={(e) =>
-                                setReviewForm({ ...reviewForm, couponId: e.target.value })
-                            }
-                            className={`input ${reviewErrors.couponId && "input-error"}`}
-                            placeholder="Enter coupon code"
-                        />
-                        {reviewErrors.couponId && (
-                            <p className="error-text">{reviewErrors.couponId}</p>
-                        )}
-                    </div>
-
-                    {/* RATING */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Rating <span className="text-red-500">*</span>
-                        </label>
-                        <StarRating
-                            rating={reviewForm.rating}
-                            onRatingChange={(rating) =>
-                                setReviewForm({ ...reviewForm, rating })
-                            }
-                            size={32}
-                        />
-                        {reviewErrors.rating && (
-                            <p className="error-text">{reviewErrors.rating}</p>
-                        )}
-                    </div>
-
-                    {/* COMMENT */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Your Review <span className="text-red-500">*</span>
-                        </label>
-
-                        <textarea
-                            value={reviewForm.comment}
-                            onChange={(e) =>
-                                setReviewForm({ ...reviewForm, comment: e.target.value })
-                            }
-                            rows={4}
-                            className={`textarea ${reviewErrors.comment && "textarea-error"}`}
-                            placeholder="Share your experience with this vehicle..."
-                        />
-
-                        <div className="flex justify-between mt-1">
-                            {reviewErrors.comment ? (
-                                <p className="error-text">{reviewErrors.comment}</p>
-                            ) : (
-                                <p className="text-muted-foreground text-sm">
-                                    Minimum 10 characters
-                                </p>
-                            )}
-                            <p className="text-muted-foreground text-sm">
-                                {reviewForm.comment.length} characters
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* SUBMIT */}
-                    <Button
-                        type="submit"
-                        disabled={submittingReview}
-                        className="w-full md:w-auto"
-                    >
-                        {submittingReview ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Submitting...
-                            </>
-                        ) : (
-                            "Submit Review"
-                        )}
-                    </Button>
-                </form>
-            </div>
-
-
           {/* Reviews List */}
-            {reviews.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                    <p>No reviews yet. Be the first to review this vehicle!</p>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {reviews.map((review) => (
-                        <div
-                            key={review.id}
-                            className="border-b border-border pb-6 last:border-b-0 last:pb-0"
-                        >
-                            <div className="flex items-start gap-4">
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No reviews yet. Be the first to review this vehicle!</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="border-b border-border pb-6 last:border-b-0 last:pb-0"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    <div className="bg-primary/10 rounded-full p-3">
+                      <User className="w-6 h-6 text-primary" />
+                    </div>
 
-                                {/* Avatar */}
-                                <div className="bg-primary/10 rounded-full p-3">
-                                    <User className="w-6 h-6 text-primary" />
-                                </div>
+                    {/* Content */}
+                    <div className="flex-1">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h5 className="font-semibold">{review.name}</h5>
 
-                                {/* Content */}
-                                <div className="flex-1">
-
-                                    {/* Header */}
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div>
-                                            <h5 className="font-semibold">{review.name}</h5>
-
-                                            {/* Location + Date */}
-                                            <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                                {review.location && (
-                                                    <>
-                                                        📍 {review.location}
-                                                        <span>•</span>
-                                                    </>
-                                                )}
-                                                {new Date(review.timestamp).toLocaleDateString("en-US", {
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })}
-                                            </p>
-                                        </div>
-
-                                        <StarRating rating={review.rating} readOnly size={18} />
-                                    </div>
-
-                                    {/* Comment */}
-                                    <p className="text-foreground leading-relaxed">
-                                        {review.comment}
-                                    </p>
-                                </div>
-                            </div>
+                          {/* Location + Date */}
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            {review.location && (
+                              <>
+                                📍 {review.location}
+                                <span>•</span>
+                              </>
+                            )}
+                            {new Date(review.timestamp).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )}
+                          </p>
                         </div>
-                    ))}
-                </div>
-            )}
 
-        {/* Similar Vehicles Section */}
-        <div className="mb-12">
-          <h3 className="font-bold text-2xl mb-6">Similar Vehicles you might like</h3>
-          <div className="bg-card rounded-lg border border-border p-6 text-center">
-            <p className="text-muted-foreground">
-              Check out our{" "}
-              <Link href="/vehicles" className="text-primary font-semibold hover:underline">
-                full inventory
-              </Link>{" "}
-              for more options
-            </p>
+                        <StarRating rating={review.rating} readOnly size={18} />
+                      </div>
+
+                      {/* Comment */}
+                      <p className="text-foreground leading-relaxed">
+                        {review.comment}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Similar Vehicles Section */}
+          <div className="mb-12">
+            <h3 className="font-bold text-2xl mb-6">
+              Similar Vehicles you might like
+            </h3>
+            <div className="bg-card rounded-lg border border-border p-6 text-center">
+              <p className="text-muted-foreground">
+                Check out our{" "}
+                <Link
+                  href="/vehicles"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  full inventory
+                </Link>{" "}
+                for more options
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    </div>
-  )}
+  );
+}

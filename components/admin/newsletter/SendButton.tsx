@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Check, Send } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SendButton({
   id,
@@ -12,20 +13,26 @@ export default function SendButton({
   const [isSending, setIsSending] = useState(false);
 
   async function handleSend() {
-    setIsSending(true);
+    try {
+      setIsSending(true);
 
-    if (!confirm("Send this newsletter to all subscribers?")) return;
+      if (!confirm("Send this newsletter to all subscribers?")) return;
 
-    const res = await fetch(`/api/newsletter/${id}/send`, {
-      method: "POST",
-    });
+      const res = await fetch(`/api/newsletter/${id}/send`, {
+        method: "POST",
+      });
 
-    if (!res.ok) {
-      alert("Failed to send newsletter");
-      return;
+      if (!res.ok) {
+        alert("Failed to send newsletter");
+        return;
+      }
+
+      window.location.reload();
+      toast.success("Newsletter sent successfully!");
+    } catch (error) {
+      console.error("Error sending newsletter:", error);
+      toast.error("An error occurred while sending the newsletter");
     }
-
-    window.location.reload();
   }
 
   return (

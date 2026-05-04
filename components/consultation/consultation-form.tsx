@@ -113,7 +113,6 @@ export default function ConsultationForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 🚨 BLOCK if not logged in
     if (!session) {
       toast.error("You must be logged in to book a consultation");
       return;

@@ -30,9 +30,9 @@ export async function sendNewsletterEmail({
 
     <div style="padding: 30px;">
       
-      <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 18px; text-align: center;">
+      <pre style="background: #f1f5f9; padding: 3px; border-radius: 2px; font-size: 12px;">
         ${content}
-      </div>
+      </pre>
 
     <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px;">
       © ${new Date().getFullYear()} Smart Auto Hub

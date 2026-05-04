@@ -29,9 +29,12 @@ export async function sendCouponCode({
     <div style="padding: 30px;">
       
       <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 18px; text-align: center;">
-        Thank you for your recent purchase! Use the coupon code to review our services.
-        <a href="https://smartautohub.live/review?code=${couponCode}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">Write a Review</a>
+        Thank you for your recent purchase! Use the coupon code to review our services.<br/><br/>
+        <strong style="font-size: 14px; color: #3b82f6;">${couponCode}</strong>
       </div>
+        <a href="https://smartautohub.live/review?code=${couponCode}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">Write a Review</a>
+    </div>
+      
 
     <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px;">
       © ${new Date().getFullYear()} Smart Auto Hub

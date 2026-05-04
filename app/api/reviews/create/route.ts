@@ -13,9 +13,9 @@ export async function POST(req: Request) {
   
 
   try {
-    console.log("Verifying coupon code:", code);
+    //console.log("Verifying coupon code:", code);
     const decoded: any = jwt.verify(code, process.env.COUPON_JWT_SECRET!);
-    console.log("Decoded JWT:", decoded);
+    //console.log("Decoded JWT:", decoded);
     const getTransaction = await prisma.transactions.findUnique({
         where: { id: decoded.tid },
         include: {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(submitedReview);
+    return NextResponse.json({ success: true, review: submitedReview });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create review" },

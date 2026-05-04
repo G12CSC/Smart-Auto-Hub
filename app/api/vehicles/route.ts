@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
 
@@ -49,12 +50,51 @@ export async function GET(req: Request) {
             },
         });
 
+        revalidatePath("/admin");
+        revalidatePath("/");
         return NextResponse.json(vehicles);
 
     } catch (error) {
 
         return NextResponse.json(
             { error: "Failed to fetch vehicles" },
+            { status: 500 }
+        );
+
+    }
+}
+
+export async function POST(req: Request) {
+
+    try {
+        const data = await req.json();
+
+        const newVehicle = await prisma.car.create({
+            data: {
+                brand: data.brand,
+                model: data.model,
+                year: data.year,
+                mileage: data.mileage,
+                transmission: data.transmission,
+                fuelType: data.fuelType,
+                bodyType: data.bodyType,
+                engineCapacity: data.engineCapacity,
+                location: data.location,
+                condition: data.condition,
+                dealer: data.dealer,
+                price: data.price,
+                images: data.images,
+            },
+        });
+        revalidatePath("/admin");
+        revalidatePath("/");
+
+        return NextResponse.json(newVehicle);
+
+    } catch (error) {
+
+        return NextResponse.json(
+            { error: "Failed to create vehicle" },
             { status: 500 }
         );
 
