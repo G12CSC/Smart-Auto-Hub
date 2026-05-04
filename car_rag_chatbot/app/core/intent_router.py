@@ -1,6 +1,6 @@
 from app.core.handler import *
 
-def intent_route(intent, user_text):
+def intent_route(intent, user_text = None):
 
     # ---------- Rule-Based Intents ----------
     if intent == "greeting":
@@ -9,7 +9,7 @@ def intent_route(intent, user_text):
     if intent == "goodbye":
         return handle_goodbye(user_text)
 
-    if intent == "location":
+    if intent == "filter_location":
         return handle_location()
 
     if intent == "book_test_drive":
@@ -23,3 +23,4 @@ def intent_route(intent, user_text):
 
     if intent == "financing_options":
         return handle_financing_options()
+    

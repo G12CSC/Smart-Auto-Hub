@@ -1,14 +1,15 @@
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+import urllib.parse
+from dotenv import load_dotenv
 
-class Setting(BaseSettings):
-    # ------------------Supabase---------------------- 
-    SUPABASE_URL: str 
-    SUPABASE_KEY: str 
+load_dotenv()
 
-    model_config = SettingsConfigDict(
-        env_file = ".env",
-        case_sensitive = True
-    )
+server = os.getenv("DB_SERVER")
+database = os.getenv("DB_NAME")
+admin = os.getenv("DB_ADMIN")
+password = os.getenv("DB_PASSWORD")
+driver = "ODBC Driver 17 for SQL Server"
 
-setting = Setting()
+params = urllib.parse.quote_plus(
+    f"DRIVER={driver};SERVER={server};DATABASE={database};UID={admin};PWD={password}"
+)

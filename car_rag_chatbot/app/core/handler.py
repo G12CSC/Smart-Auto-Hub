@@ -28,7 +28,7 @@ def handle_greeting(text): # under 'greeting' intent
             "Hi there! 😊 What can I assist you with?",
             "Hey! 🚗 Looking for something specific?"
         ])
-
+ 
 def handle_goodbye(text): # under 'goodbye' intent
     text = text.lower()
 
@@ -81,7 +81,7 @@ Customer question:
 def handle_location():
     return (
         "We have two showroom locations:\n\n"
-        "1️⃣ 109 Sunethradevi Rd, Nugegoda\n"
+        "1️⃣ 109 Sunethradevi Rd, Nugegoda\n\n"
         "2️⃣ 82 B345, Sri Jayawardenepura Kotte 10100\n\n"
     )
 
@@ -134,6 +134,9 @@ def handle_financing_options():
         "📞 For detailed financing terms and monthly installment information, "
         "please contact us."
     )
+    
+def handle_compare_cars(query):
+    
 
 def build_fallback_prompt(user_query):
     return [

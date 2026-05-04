@@ -1,4 +1,24 @@
 text,intent
+hey there how's it going,greeting
+hello can you help me,greeting
+hi i have a question,greeting
+hey are you the car assistant,greeting
+hi there i just joined,greeting
+hello is this the car sales bot,greeting
+hey i need some help,greeting
+hi good to see you here,greeting
+hello anyone available,greeting
+hey is this working,greeting
+hi i just opened the app,greeting
+hello i need some information,greeting
+hey can we talk,greeting
+hi can you help me with cars,greeting
+hello there can you assist me,greeting
+hey i want to ask something,greeting
+hi quick question,greeting
+hello i need your help,greeting
+hey what's going on here,greeting
+hi are you online,greeting
 hello,greeting
 hi,greeting
 hey,greeting
@@ -370,6 +390,36 @@ bye until we talk again,goodbye
 goodbye until next time,goodbye
 im closing this now,goodbye
 thats all for now goodbye,goodbye
+okay thanks goodbye,goodbye
+thanks for the help bye,goodbye
+alright talk later bye,goodbye
+thanks that helped goodbye,goodbye
+okay see you next time,goodbye
+alright i will come back later,goodbye
+thanks for your time bye,goodbye
+i am leaving now bye,goodbye
+okay chat later goodbye,goodbye
+thanks i will check again later,goodbye
+i'm looking to buy a car,search_car
+do you have any cars available right now,search_car
+show me some good cars,search_car
+what kind of cars do you have,search_car
+can you recommend some cars,search_car
+i need a car for daily use,search_car
+i want to buy a small car,search_car
+i need something affordable,search_car
+show me some options please,search_car
+i want to see what cars are available,search_car
+do you have any budget cars,search_car
+i'm trying to find a good vehicle,search_car
+can you help me pick a car,search_car
+what cars are currently in stock,search_car
+i need a reliable car,search_car
+show me some vehicles i can buy,search_car
+do you have any cheap cars,search_car
+i need something under my budget,search_car
+can you show me cars i might like,search_car
+i'm planning to purchase a car soon,search_car
 show me cars,search_car
 i want to buy a car,search_car
 find cars for sale,search_car
@@ -459,6 +509,16 @@ is it expensive,search_car
 is it affordable,search_car
 give price info,search_car
 tell me pricing,search_car
+can you tell me more about this car,ask_details
+i want more information about that vehicle,ask_details
+what are the features of this car,ask_details
+can you explain the specs of this car,ask_details
+tell me everything about this model,ask_details
+what details does this vehicle have,ask_details
+can you give me more specs,ask_details
+what should i know about this car,ask_details
+please explain the car features,ask_details
+what engine does this car use,ask_details
 tell me more about this car,ask_details
 give me car details,ask_details
 what are the specifications,ask_details
@@ -977,6 +1037,16 @@ cars available within my radius,filter_location
 vehicles within driving distance,filter_location
 cars near my current location,filter_location
 show nearby listings,filter_location
+show me cars available in colombo,filter_location
+do you have cars in kandy,filter_location
+find vehicles near my area,filter_location
+show cars in my city,filter_location
+what cars are available in jaffna,filter_location
+find cars close to me,filter_location
+are there cars in my region,filter_location
+show nearby vehicle listings,filter_location
+cars available near my location,filter_location
+find vehicles around my city,filter_location
 local vehicle listings,filter_location
 cars in nearby districts,filter_location
 vehicles around my city,filter_location
@@ -1071,6 +1141,21 @@ find cars close to my city center,filter_location
 vehicles near city center,filter_location
 cars available in downtown area,filter_location
 vehicles in uptown area,filter_location
+where is your shop located,filter_location
+where is your showroom located,filter_location
+where is your dealership located,filter_location
+where is your shop,filter_location
+what is your shop location,filter_location
+where can i find your shop,filter_location
+what city is your shop in,filter_location
+where is your car showroom,filter_location
+where is your dealership,filter_location
+where are you located,filter_location
+what is your business location,filter_location
+what is the address of your shop,filter_location
+where can i visit your showroom,filter_location
+how can i find your shop location,filter_location
+where exactly is your showroom located,filter_location
 search cars in surrounding towns,filter_location
 find vehicles near this showroom,filter_location
 cars available at nearest branch,filter_location
@@ -1121,6 +1206,16 @@ prioritize low cost cars,sort_price
 prioritize high cost cars,sort_price
 show vehicles with lowest price first,sort_price
 show vehicles with highest price first,sort_price
+show cheapest cars first,sort_price
+show expensive cars first,sort_price
+sort the cars by price,sort_price
+order the cars by price please,sort_price
+display cars from lowest price,sort_price
+display cars from highest price,sort_price
+list cheapest vehicles first,sort_price
+show cars sorted by price,sort_price
+organize results by price,sort_price
+rank cars by price,sort_price
 arrange by selling price,sort_price
 order vehicle list by cost,sort_price
 display lowest priced vehicles first,sort_price
@@ -1270,6 +1365,16 @@ sort the car list by year,sort_year
 rank cars by year,sort_year
 rank vehicles by model year,sort_year
 prioritize new cars first,sort_year
+show newest cars first,sort_year
+show older cars first,sort_year
+sort cars by year,sort_year
+display latest models first,sort_year
+list cars by manufacturing year,sort_year
+show cars from newest to oldest,sort_year
+show cars from oldest to newest,sort_year
+order cars by model year,sort_year
+sort vehicles by year please,sort_year
+rank cars by year,sort_year
 prioritize old cars first,sort_year
 show cars with latest year first,sort_year
 show cars with earliest year first,sort_year
@@ -1433,6 +1538,16 @@ sort cars according to kilometers,sort_mileage
 sort vehicles based on km driven,sort_mileage
 show least used cars first,sort_mileage
 show most used cars first,sort_mileage
+show cars with lowest mileage first,sort_mileage
+sort cars by mileage please,sort_mileage
+show least driven cars first,sort_mileage
+order cars by mileage,sort_mileage
+display vehicles with low mileage,sort_mileage
+sort results by mileage,sort_mileage
+rank cars by mileage,sort_mileage
+show cars by kilometers driven,sort_mileage
+organize cars by mileage,sort_mileage
+list lowest mileage cars first,sort_mileage
 organize list by total mileage,sort_mileage
 arrange car results by mileage,sort_mileage
 sort by kilometers covered,sort_mileage
@@ -1569,6 +1684,16 @@ compare the performance of these models,compare_cars
 show me differences between these cars,compare_cars
 which is better between these two cars,compare_cars
 help me decide between two cars,compare_cars
+can you compare these two cars for me,compare_cars
+which car is better between them,compare_cars
+what is the difference between these cars,compare_cars
+help me decide between these two vehicles,compare_cars
+which one should i buy between these,compare_cars
+can you show me a comparison,compare_cars
+which car has better performance,compare_cars
+compare these models please,compare_cars
+which car is more reliable,compare_cars
+can you compare their features,compare_cars
 compare the advantages of these cars,compare_cars
 compare the disadvantages of these cars,compare_cars
 give me a side by side comparison,compare_cars
@@ -1753,6 +1878,16 @@ can i confirm stock status,check_availability
 is this model available at your location,check_availability
 is the car present in your showroom,check_availability
 is the car still listed,check_availability
+is this car still available,check_availability
+can i still buy this car,check_availability
+has this vehicle been sold,check_availability
+is this model still in stock,check_availability
+is this listing still active,check_availability
+is the car still for sale,check_availability
+is the vehicle still available today,check_availability
+can i purchase this car now,check_availability
+is this car already sold,check_availability
+is this vehicle currently available,check_availability
 is the car available at the moment,check_availability
 is the car available right now,check_availability
 is this vehicle ready for delivery,check_availability
@@ -1888,6 +2023,16 @@ test drive this model,book_test_drive
 book a driving trial,book_test_drive
 schedule driving test,book_test_drive
 test run the vehicle,book_test_drive
+can i book a test drive for this car,book_test_drive
+i want to schedule a test drive,book_test_drive
+can i try driving this car,book_test_drive
+i want to test drive the vehicle,book_test_drive
+please arrange a test drive,book_test_drive
+can i drive the car before buying,book_test_drive
+schedule a test drive appointment,book_test_drive
+i want to try the car first,book_test_drive
+can i test the car on the road,book_test_drive
+book a driving trial for this car,book_test_drive
 drive the car before purchase,book_test_drive
 trial drive booking,book_test_drive
 book demo drive,book_test_drive
@@ -2091,6 +2236,16 @@ seller details please,contact_seller
 get seller information,contact_seller
 reach out to seller,contact_seller
 seller contact info,contact_seller
+can you give me the seller contact,contact_seller
+how can i reach the car owner,contact_seller
+i want the seller phone number,contact_seller
+can you connect me with the dealer,contact_seller
+i want to talk to the seller,contact_seller
+please share the seller contact details,contact_seller
+how do i contact the dealership,contact_seller
+give me the owner contact information,contact_seller
+can i call the seller,contact_seller
+i want to message the dealer,contact_seller
 can i speak to the seller,contact_seller
 need seller phone number,contact_seller
 share seller contact,contact_seller
@@ -2290,6 +2445,16 @@ any chance for a better price,negotiate_price
 is there any price flexibility,negotiate_price
 can we work something out on price,negotiate_price
 can you match a lower price,negotiate_price
+can you lower the price a bit,negotiate_price
+is the price negotiable,negotiate_price
+can you give me a discount,negotiate_price
+what is the best price you can offer,negotiate_price
+can we negotiate the price,negotiate_price
+the price seems high can you reduce it,negotiate_price
+can you make the price cheaper,negotiate_price
+any discount available for this car,negotiate_price
+can you offer a better deal,negotiate_price
+can we agree on a lower price,negotiate_price
 can you reduce it a little,negotiate_price
 can you drop the price slightly,negotiate_price
 can you make the deal sweeter,negotiate_price
@@ -2416,6 +2581,16 @@ can i finance this purchase,financing_options
 are car loans accepted here,financing_options
 what banks do you work with,financing_options
 do you provide emi plans,financing_options
+can i buy this car with a loan,financing_options
+do you offer financing options,financing_options
+can i pay monthly installments,financing_options
+is there a car loan available,financing_options
+what is the down payment required,financing_options
+can i finance this vehicle,financing_options
+are installment plans available,financing_options
+can i buy this car through bank loan,financing_options
+what are the finance options for this car,financing_options
+can i pay in monthly payments,financing_options
 can i split the payment monthly,financing_options
 is there a zero down payment option,financing_options
 are flexible payment plans available,financing_options
@@ -2567,6 +2742,16 @@ is financing faster than bank process,financing_options
 can i negotiate interest rate,financing_options
 i do not get it,fallback_help
 this is unclear,fallback_help
+i do not understand what you mean,fallback_help
+can you explain that again,fallback_help
+this is confusing me,fallback_help
+i am not sure i follow,fallback_help
+that answer was not clear,fallback_help
+can you explain in simple words,fallback_help
+i am still confused,fallback_help
+please clarify your response,fallback_help
+i do not get it,fallback_help
+can you help me understand better,fallback_help
 can you explain that better,fallback_help
 i still do not understand,fallback_help
 that answer is confusing,fallback_help

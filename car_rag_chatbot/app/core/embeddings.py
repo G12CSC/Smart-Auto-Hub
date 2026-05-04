@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 from app.utils.logger import get_logger
 from typing import List
 
-logger = get_logger(__name__)
+logger = get_logger(__name__) 
  
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2" # Max 256 - 512 words each sentence. Otherwise sentence should need to chunk.
 _embedder: SentenceTransformer | None = None
