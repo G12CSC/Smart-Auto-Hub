@@ -8,7 +8,8 @@ export async function POST(req: NextRequest) {
 
         console.log(question);
 
-        const response = await fetch("http://20.51.112.194:8000/api/v1/chat", {
+        const chatbotUrl = process.env.CHATBOT_URL ?? "http://20.51.112.194:8000";
+        const response = await fetch(`${chatbotUrl}/api/v1/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

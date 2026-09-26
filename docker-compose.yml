@@ -1,39 +1,31 @@
-# Local development stack for Smart Auto Hub.
+# Local stack for Smart Auto Hub — runs against your EXISTING Supabase DB.
 #
-# Services:
-#   db       - Postgres 16 + pgvector, serves the Next.js web app via Prisma (local data).
-#   web      - Next.js full-stack app (frontend + API), port 3000.
-#   chatbot  - Python FastAPI RAG service, port 8000.
+# Two SEPARATE containers (best practice: one runtime/process per container):
+#   web      - Next.js full-stack app (Node)   -> http://localhost:3000
+#   chatbot  - FastAPI RAG service   (Python)  -> http://localhost:8000
 #
-# IMPORTANT:
-#   * The chatbot talks to Supabase through the Supabase SDK (not a raw Postgres
-#     connection), so it CANNOT use the local `db` service. Point it at your cloud
-#     Supabase project via SUPABASE_URL / SUPABASE_KEY in ./car_rag_chatbot/.env.
-#   * The chatbot loads Phi-3 locally; on a CPU-only machine /chat inference is slow
-#     and downloads several GB on first call. The health endpoint and embeddings work.
+# Both talk to your cloud Supabase project:
+#   * web     uses Prisma via DATABASE_URL / DIRECT_URL from ./.env (use the
+#             IPv4 POOLER URLs — the direct db.<ref>.supabase.co host is IPv6-only
+#             and won't connect from Docker).
+#   * chatbot uses the Supabase SDK via SUPABASE_URL / SUPABASE_KEY from
+#             ./car_rag_chatbot/.env
+#
+# The web container reaches the chatbot over the compose network by service name
+# (http://chatbot:8000), injected as CHATBOT_URL below.
 #
 # Usage:
-#   cp .env.docker.example .env                       # fill in web app secrets
-#   cp .env.docker.example car_rag_chatbot/.env       # fill in SUPABASE_URL / SUPABASE_KEY
-#   docker compose up --build
+#   docker-compose up --build
+#     -> starts 2 containers (web + chatbot) on a shared network.
+#
+# Migrations are NOT run automatically (Supabase already has the schema). To apply
+# pending migrations manually:
+#   docker-compose run --rm web npx prisma migrate deploy
+#
+# Note: the chatbot loads Phi-3 locally; on CPU-only machines the first /chat call
+# downloads several GB and is slow. Health endpoint + embeddings work regardless.
 
 services:
-  db:
-    image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: smartautohub
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d smartautohub"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   web:
     build:
       context: .
@@ -41,17 +33,14 @@ services:
     env_file:
       - .env
     environment:
-      # Override to use the local db service (comment out to use Supabase from .env)
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/smartautohub?schema=public
-      DIRECT_URL: postgresql://postgres:postgres@db:5432/smartautohub?schema=public
       NODE_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
+      # Reach the chatbot container by its service name on the compose network.
+      CHATBOT_URL: http://chatbot:8000
     ports:
       - "3000:3000"
-    # Apply migrations against the local db, then start the server.
-    command: sh -c "npx prisma migrate deploy && npm start"
+    depends_on:
+      - chatbot
+    command: sh -c "npm start"
 
   chatbot:
     build:
@@ -62,9 +51,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persist downloaded HF models between restarts
+      # Persist downloaded HF models between restarts.
       - hfmodels:/models
 
 volumes:
-  pgdata:
   hfmodels:
