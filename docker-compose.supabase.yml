@@ -1,0 +1,50 @@
+# Local run against your EXISTING Supabase database (no local Postgres).
+#
+#   web  -> Next.js full-stack app on http://localhost:3000
+#           DATABASE_URL / DIRECT_URL come from ./.env (Supabase pooler URLs).
+#
+# Why the pooler (and not the direct db.<ref>.supabase.co host)?
+#   The Supabase *direct* host is IPv6-only, but Docker's default network is
+#   IPv4-only, so a container cannot reach it. The Supabase *pooler* endpoints
+#   (aws-0-<region>.pooler.supabase.com) are IPv4 and work from inside Docker.
+#
+#   In ./.env set:
+#     DATABASE_URL = Transaction pooler string (port 6543) + "?pgbouncer=true"
+#     DIRECT_URL   = Session pooler string     (port 5432)
+#   Copy both from Supabase Dashboard -> Connect.
+#
+# Usage:
+#   docker-compose -f docker-compose.supabase.yml up --build
+#
+# Migrations are NOT run automatically (your Supabase DB already has the schema).
+# To apply pending migrations manually:
+#   docker-compose -f docker-compose.supabase.yml run --rm web npx prisma migrate deploy
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    command: sh -c "npm start"
+
+  # Optional: the RAG chatbot also talks to Supabase (via the Supabase SDK).
+  # Uncomment to run it too. Heavy: downloads several GB of models on first /chat call.
+  # chatbot:
+  #   build:
+  #     context: ./car_rag_chatbot
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./car_rag_chatbot/.env
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - hfmodels:/models
+
+# volumes:
+#   hfmodels:
