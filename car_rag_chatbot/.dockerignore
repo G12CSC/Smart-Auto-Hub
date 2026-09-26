@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+
+# Local secrets / env
+.env
+.env.*
+
+# Model caches / large artifacts (downloaded at runtime)
+models/
+*.bin
+*.safetensors
+
+# Notebooks & docs
+*.ipynb
+README*.md
+
+# Frontend demo (not part of the API service)
+Front-End/
+
+# Git
+.git
+.gitignore

@@ -1,0 +1,58 @@
+# Local stack for Smart Auto Hub — runs against your EXISTING Supabase DB.
+#
+# Two SEPARATE containers (best practice: one runtime/process per container):
+#   web      - Next.js full-stack app (Node)   -> http://localhost:3000
+#   chatbot  - FastAPI RAG service   (Python)  -> http://localhost:8000
+#
+# Both talk to your cloud Supabase project:
+#   * web     uses Prisma via DATABASE_URL / DIRECT_URL from ./.env (use the
+#             IPv4 POOLER URLs — the direct db.<ref>.supabase.co host is IPv6-only
+#             and won't connect from Docker).
+#   * chatbot uses the Supabase SDK via SUPABASE_URL / SUPABASE_KEY from
+#             ./car_rag_chatbot/.env
+#
+# The web container reaches the chatbot over the compose network by service name
+# (http://chatbot:8000), injected as CHATBOT_URL below.
+#
+# Usage:
+#   docker-compose up --build
+#     -> starts 2 containers (web + chatbot) on a shared network.
+#
+# Migrations are NOT run automatically (Supabase already has the schema). To apply
+# pending migrations manually:
+#   docker-compose run --rm web npx prisma migrate deploy
+#
+# Note: the chatbot loads Phi-3 locally; on CPU-only machines the first /chat call
+# downloads several GB and is slow. Health endpoint + embeddings work regardless.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      # Reach the chatbot container by its service name on the compose network.
+      CHATBOT_URL: http://chatbot:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - chatbot
+    command: sh -c "npm start"
+
+  chatbot:
+    build:
+      context: ./car_rag_chatbot
+      dockerfile: Dockerfile
+    env_file:
+      - ./car_rag_chatbot/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist downloaded HF models between restarts.
+      - hfmodels:/models
+
+volumes:
+  hfmodels:
