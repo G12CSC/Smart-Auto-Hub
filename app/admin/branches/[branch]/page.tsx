@@ -7,6 +7,8 @@ import { vehicleAPI } from "@/lib/api/vehicles"
 import { getBranchBySlug } from "@/lib/branches"
 import { Car, CheckCircle, ChevronLeft, Clock, MapPin, Truck } from "lucide-react"
 
+export const dynamic = "force-dynamic";
+
 const formatBranchName = (value) => {
   if (!value) return ""
   return String(value)
