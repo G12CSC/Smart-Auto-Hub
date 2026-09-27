@@ -64,7 +64,12 @@ async function main() {
             price: 4500000,
             mileage: 55000,
             images: [],
-            specifications: { hybrid: true, engine: "1500cc" },
+            fuelType: "Hybrid",
+            transmission: "Automatic",
+            bodyType: "Hatchback",
+            condition: "Used",
+            location: "Colombo 07",
+            engineCapacity: 1500,
             createdById: admin.id
         }
     });
@@ -77,7 +82,12 @@ async function main() {
             price: 7200000,
             mileage: 65000,
             images: [],
-            specifications: { hybrid: true, engine: "1500cc" },
+            fuelType: "Hybrid",
+            transmission: "Automatic",
+            bodyType: "SUV",
+            condition: "Used",
+            location: "Kandy City",
+            engineCapacity: 1500,
             createdById: admin.id
         }
     });

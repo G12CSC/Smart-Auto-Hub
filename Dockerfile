@@ -15,6 +15,17 @@ RUN npm config set fetch-retry-mintimeout 20000 \
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+# Development image: dependencies + hot-reloading dev server.
+# Used by docker-compose.dev.yml (source is bind-mounted over /app at runtime,
+# while node_modules stays baked in via an anonymous volume). The same image is
+# reused by the one-shot `migrate` service to run `prisma migrate deploy`.
+FROM deps AS dev
+WORKDIR /app
+COPY prisma ./prisma
+RUN npx prisma generate
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 # Build stage
 FROM base AS builder
 WORKDIR /app

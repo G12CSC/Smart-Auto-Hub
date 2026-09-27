@@ -7,6 +7,6 @@ dotenv.config({ path: ".env" });
 export default defineConfig({
     schema: "./prisma/schema.prisma",
     seed: {
-        command: "node prisma/seed.js",
+        command: "node prisma/seed.cjs",
     },
 });
