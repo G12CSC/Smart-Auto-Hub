@@ -18,6 +18,9 @@ import FeedbackPopup from "@/components/advertisements/findVehicle/FeedbackPopup
 import Creditability from "@/components/client/creditability-section/Creditability";
 import { VideoReviews } from "@/components/client/video-section/VideoReviews";
 
+// Renders per-request (needs DB at runtime); keeps it out of build-time prerender.
+export const dynamic = "force-dynamic";
+
 interface VideoReview {
   id: string;
   title: string;

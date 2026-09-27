@@ -1,0 +1,70 @@
+# Local development stack for Smart Auto Hub.
+#
+# Services:
+#   db       - Postgres 16 + pgvector, serves the Next.js web app via Prisma (local data).
+#   web      - Next.js full-stack app (frontend + API), port 3000.
+#   chatbot  - Python FastAPI RAG service, port 8000.
+#
+# IMPORTANT:
+#   * The chatbot talks to Supabase through the Supabase SDK (not a raw Postgres
+#     connection), so it CANNOT use the local `db` service. Point it at your cloud
+#     Supabase project via SUPABASE_URL / SUPABASE_KEY in ./car_rag_chatbot/.env.
+#   * The chatbot loads Phi-3 locally; on a CPU-only machine /chat inference is slow
+#     and downloads several GB on first call. The health endpoint and embeddings work.
+#
+# Usage:
+#   cp .env.docker.example .env                       # fill in web app secrets
+#   cp .env.docker.example car_rag_chatbot/.env       # fill in SUPABASE_URL / SUPABASE_KEY
+#   docker compose up --build
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smartautohub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smartautohub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Override to use the local db service (comment out to use Supabase from .env)
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/smartautohub?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@db:5432/smartautohub?schema=public
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    # Apply migrations against the local db, then start the server.
+    command: sh -c "npx prisma migrate deploy && npm start"
+
+  chatbot:
+    build:
+      context: ./car_rag_chatbot
+      dockerfile: Dockerfile
+    env_file:
+      - ./car_rag_chatbot/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist downloaded HF models between restarts
+      - hfmodels:/models
+
+volumes:
+  pgdata:
+  hfmodels:
