@@ -1,0 +1,97 @@
+# Local development stack: Postgres (pgvector) + Next.js web app + Python RAG chatbot.
+# Each runs in its own container on a shared network and talks to the others by
+# service name (e.g. the DB host is "postgres", not "localhost").
+#
+# Usage:
+#   docker-compose -f docker-compose.dev.yml up            # build + run everything
+#   docker-compose -f docker-compose.dev.yml up --build    # force rebuild images
+#
+# Startup order (handled by depends_on):
+#   postgres (healthy) -> migrate (deploy schema + seed, runs once) -> web + chatbot
+#
+# The chatbot's vector ingest is intentionally NOT run automatically (slow on CPU).
+# Run it on demand once the stack is up:
+#   docker-compose -f docker-compose.dev.yml exec chatbot python -m app.ingest.car_ingest
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: smartautohub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smartauto
+      POSTGRES_PASSWORD: smartauto
+      POSTGRES_DB: smartautohub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartauto -d smartautohub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot job: apply the Prisma baseline to a fresh DB, then seed.
+  # Exits 0 when done; web/chatbot wait for that via service_completed_successfully.
+  migrate:
+    build:
+      context: .
+      target: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://smartauto:smartauto@postgres:5432/smartautohub
+      DIRECT_URL: postgresql://smartauto:smartauto@postgres:5432/smartautohub
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             (node prisma/seed.cjs || echo 'seed skipped (already seeded)')"
+
+  web:
+    build:
+      context: .
+      target: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://smartauto:smartauto@postgres:5432/smartautohub
+      DIRECT_URL: postgresql://smartauto:smartauto@postgres:5432/smartautohub
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -c "npx prisma generate && npm run dev"
+
+  chatbot:
+    build:
+      context: ./car_rag_chatbot
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://smartauto:smartauto@postgres:5432/smartautohub
+      # Swap to a small model for faster CPU dev, e.g.:
+      # LLM_MODEL_NAME: Qwen/Qwen2.5-0.5B-Instruct
+      LLM_MODEL_NAME: microsoft/phi-3-mini-4k-instruct
+    volumes:
+      - ./car_rag_chatbot:/app
+      - hf_cache:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:
+  hf_cache:

@@ -287,6 +287,7 @@ model CarVector {
   created_at  DateTime              @default(now())
   car         Car                   @relation(fields: [car_id], references: [id], onDelete: Cascade)
 
+  @@unique([car_id, chunk_index])
   @@index([car_id])
   @@map("car_vector")
 }

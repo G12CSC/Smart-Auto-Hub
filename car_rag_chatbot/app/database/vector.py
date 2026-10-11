@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from app.database.supabase_client import supabase_client
+from app.database.db import pool
 from app.core.embeddings import embed_text
 from app.utils.logger import get_logger
 
@@ -27,23 +27,42 @@ def embed_query(query: str) -> List[float]:
 
 def search_car_vectors(query_embedding: List[float], top_k: int = 5) -> List[Dict]:
     """
-    Call the pgvector SQL function to retrieve
-    the best-matching chunk per car.
-    """
-    try:
-        response = supabase_client.rpc(
-            "match_car_vectors_new",
-            {
-                "query_embedding": query_embedding,
-                "match_count": top_k
-            }
-        ).execute()
+    Retrieve the best-matching chunk per car via pgvector cosine similarity.
 
-        if not response.data:
+    This is the SQL equivalent of the previous "match_car_vectors_new" RPC:
+    for each car, pick its most similar chunk, then return the top_k cars
+    ordered by similarity. Embeddings are L2-normalized, so cosine similarity
+    is 1 - cosine_distance (the pgvector "<=>" operator).
+    """
+    sql = """
+        SELECT car_id, content, similarity
+        FROM (
+            SELECT DISTINCT ON (car_id)
+                car_id,
+                content,
+                1 - (embedding <=> %(query_embedding)s::vector) AS similarity
+            FROM car_vector
+            ORDER BY car_id, embedding <=> %(query_embedding)s::vector
+        ) AS best_per_car
+        ORDER BY similarity DESC
+        LIMIT %(match_count)s
+    """
+
+    try:
+        with pool.connection() as conn:
+            rows = conn.execute(
+                sql,
+                {
+                    "query_embedding": query_embedding,
+                    "match_count": top_k,
+                },
+            ).fetchall()
+
+        if not rows:
             logger.info("No vector matches found")
             return []
 
-        return response.data
+        return rows
 
     except Exception as e:
         logger.exception("Vector search failed")
@@ -54,7 +73,7 @@ def search_car_vectors(query_embedding: List[float], top_k: int = 5) -> List[Dic
 # 3. Fetch structured car metadata
 # --------------------------------------------------
 
-def fetch_car_details(car_ids: List[int]) -> List[Dict]:
+def fetch_car_details(car_ids: List[str]) -> List[Dict]:
     """
     Fetch car details from the Car table using car IDs.
     """
@@ -62,15 +81,13 @@ def fetch_car_details(car_ids: List[int]) -> List[Dict]:
         return []
 
     try:
-        response = (
-            supabase_client
-            .table("Car")
-            .select("*")
-            .in_("id", car_ids)
-            .execute()
-        )
+        with pool.connection() as conn:
+            rows = conn.execute(
+                'SELECT * FROM "Car" WHERE id = ANY(%(car_ids)s)',
+                {"car_ids": car_ids},
+            ).fetchall()
 
-        return response.data or []
+        return rows or []
 
     except Exception as e:
         logger.exception("Failed to fetch car metadata")

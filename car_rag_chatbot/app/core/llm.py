@@ -2,12 +2,13 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import List, Dict
 
+from app.config import setting
 from app.utils.logger import get_logger
 from app.core.prompts import build_prompt
 
 logger = get_logger(__name__)
 
-MODEL_NAME = "microsoft/phi-3-mini-4k-instruct"
+MODEL_NAME = setting.LLM_MODEL_NAME
 
 _tokenizer: AutoTokenizer | None = None
 _model: AutoModelForCausalLM | None = None
@@ -23,7 +24,12 @@ def load_llm() -> None:
         return
 
     try:
-        logger.info(f"Loading Phi-3 model: {MODEL_NAME}")
+        logger.info(f"Loading LLM: {MODEL_NAME}")
+
+        # fp16 is only well supported on CUDA; fall back to fp32 on CPU.
+        use_cuda = torch.cuda.is_available()
+        dtype = torch.float16 if use_cuda else torch.float32
+        device_map = "auto" if use_cuda else None
 
         _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         if _tokenizer.pad_token is None:
@@ -31,13 +37,16 @@ def load_llm() -> None:
 
         _model = AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
-            torch_dtype=torch.float16,
-            device_map="auto",
+            torch_dtype=dtype,
+            device_map=device_map,
             trust_remote_code=True,
         )
 
+        if not use_cuda:
+            _model = _model.to("cpu")
+
         _model.eval()
-        logger.info("LLM loaded successfully")
+        logger.info(f"LLM loaded successfully (device={'cuda' if use_cuda else 'cpu'})")
 
     except Exception as e:
         logger.exception("Failed to load LLM")
