@@ -10,7 +10,7 @@ async function main() {
     // ADMIN
     const adminPassword = await bcrypt.hash("admin123", 10);
 
-    const admin = await prisma.admin.create({
+    const admin = await prisma.admin.upsert({
         data: {
             name: "Main Admin",
             email: "admin@smartauto.com",
@@ -23,7 +23,7 @@ async function main() {
     const user1Password = await bcrypt.hash("password123", 10);
     const user2Password = await bcrypt.hash("password456", 10);
 
-    const user1 = await prisma.user.create({
+    const user1 = await prisma.user.upsert({
         data: {
             name: "John Doe",
             email: "john@example.com",
@@ -32,7 +32,7 @@ async function main() {
         }
     });
 
-    const user2 = await prisma.user.create({
+    const user2 = await prisma.user.upsert({
         data: {
             name: "Sarah Lee",
             email: "sarah@example.com",
@@ -40,7 +40,7 @@ async function main() {
         }
     });
 
-    const colomboBranch = await prisma.branch.create({
+    const colomboBranch = await prisma.branch.upsert({
         data: {
             name: "Colombo Branch",
             location: "Colombo 07",
@@ -48,7 +48,7 @@ async function main() {
         }
     });
 
-    const kandyBranch = await prisma.branch.create({
+    const kandyBranch = await prisma.branch.upsert({
         data: {
             name: "Kandy Branch",
             location: "Kandy City",
@@ -56,7 +56,7 @@ async function main() {
         }
     });
 
-    const car1 = await prisma.car.create({
+    const car1 = await prisma.car.upsert({
         data: {
             brand: "Toyota",
             model: "Aqua",
@@ -74,7 +74,7 @@ async function main() {
         }
     });
 
-    const car2 = await prisma.car.create({
+    const car2 = await prisma.car.upsert({
         data: {
             brand: "Honda",
             model: "Vezel",
